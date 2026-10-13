@@ -1,6 +1,6 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { ProductView } from "@/components/store/ProductView";
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return <PagePlaceholder title="Produto" note={`Identificador: ${slug}. Conteúdo em uma fatia futura.`} />;
+  return <ProductView slug={slug} />;
 }

@@ -14,10 +14,10 @@ function v(productId: string, sku: string) {
 }
 
 const customers = {
-  marta: { name: "Marta Alves (demo)", email: "marta@example.com", phone: "(41) 90000-0011" },
-  paulo: { name: "Paulo Nunes (demo)", email: "paulo@example.com", phone: "(41) 90000-0012" },
-  lia: { name: "Lia Prado (demo)", email: "lia@example.com", phone: "(41) 90000-0013" },
-  rui: { name: "Rui Castro (demo)", email: "rui@example.com", phone: "(41) 90000-0014" },
+  marta: { name: "Marta Alves (demo)", email: "marta@example.com", phone: "(11) 90000-0011" },
+  paulo: { name: "Paulo Nunes (demo)", email: "paulo@example.com", phone: "(11) 90000-0012" },
+  lia: { name: "Lia Prado (demo)", email: "lia@example.com", phone: "(11) 90000-0013" },
+  rui: { name: "Rui Castro (demo)", email: "rui@example.com", phone: "(11) 90000-0014" },
 };
 
 export const orders: Order[] = [
@@ -25,7 +25,7 @@ export const orders: Order[] = [
     id: "FV-2001", status: "aguardando_pagamento", createdAt: "2026-03-12T11:20:00-03:00",
     items: [orderItem(p("fv-001"), 1, v("fv-001", "FV-LAS-800"))],
     customer: customers.marta,
-    delivery: { type: "entrega", address: "Rua das Palmeiras, 80 — Curitiba/PR", shipping: 990 },
+    delivery: { type: "entrega", address: "Rua das Palmeiras, 80 — São Paulo/SP", shipping: 990 },
     payment: { method: "pix" },
   }),
   order({
@@ -39,7 +39,7 @@ export const orders: Order[] = [
     id: "FV-2003", status: "em_separacao", createdAt: "2026-03-12T09:40:00-03:00",
     items: [orderItem(p("fv-002"), 2, v("fv-002", "FV-FEI-1500")), orderItem(p("fv-009"), 1, v("fv-009", "FV-BCC-1000"))],
     customer: customers.lia,
-    delivery: { type: "entrega", address: "Av. Brasil, 1200 — Curitiba/PR", shipping: 0 },
+    delivery: { type: "entrega", address: "Av. Brasil, 1200 — São Paulo/SP", shipping: 0 },
     payment: { method: "cartao", installments: 1 },
   }),
   order({
@@ -53,7 +53,7 @@ export const orders: Order[] = [
     id: "FV-2005", status: "entregue", createdAt: "2026-03-09T18:30:00-03:00",
     items: [orderItem(p("fv-003"), 2)],
     customer: customers.marta,
-    delivery: { type: "entrega", address: "Rua das Palmeiras, 80 — Curitiba/PR", shipping: 0 },
+    delivery: { type: "entrega", address: "Rua das Palmeiras, 80 — São Paulo/SP", shipping: 0 },
     payment: { method: "cartao", installments: 1 },
   }),
   order({

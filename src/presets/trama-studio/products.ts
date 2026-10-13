@@ -1,10 +1,11 @@
 import type { Category, Product } from "@/domain/types";
-import { attrs, gridVariants, product } from "../helpers";
+import { categoryImages, productImages } from "./images";
+import { attrs, gridVariants, placeholderImage, product } from "../helpers";
 
 export const categories: Category[] = [
-  { id: "feminino", slug: "feminino", name: "Feminino" },
-  { id: "masculino", slug: "masculino", name: "Masculino" },
-  { id: "acessorios", slug: "acessorios", name: "Acessórios" },
+  { id: "feminino", slug: "feminino", name: "Feminino", image: categoryImages["feminino"] ?? placeholderImage("Feminino", "8a7f72", "Peças da linha feminina") },
+  { id: "masculino", slug: "masculino", name: "Masculino", image: categoryImages["masculino"] ?? placeholderImage("Masculino", "8a7f72", "Peças da linha masculina") },
+  { id: "acessorios", slug: "acessorios", name: "Acessórios", image: categoryImages["acessorios"] ?? placeholderImage("Acessórios", "8a7f72", "Bolsas, cintos e acessórios") },
 ];
 
 const C = "8a7f72";
@@ -14,7 +15,7 @@ const off = { name: "Off-white", code: "OW" };
 const areia = { name: "Areia", code: "AR" };
 const marinho = { name: "Marinho", code: "MR" };
 
-export const products: Product[] = [
+const catalog: Product[] = [
   product({
     id: "ts-001", name: "Vestido Midi Linho", price: 38990, sku: "TS-VML", categoryId: "feminino", color: C,
     description: "Vestido midi em linho misto com caimento leve e fenda lateral.",
@@ -36,12 +37,12 @@ export const products: Product[] = [
   product({
     id: "ts-004", name: "Saia Plissada", price: 18990, sku: "TS-SPL", categoryId: "feminino", color: C, stock: 9,
     description: "Saia plissada midi com elástico na cintura.",
-    attributes: attrs({ tamanho: ["Tamanho", "Único (P ao G)"], cor: ["Cor", "Areia"], material: ["Material", "Poliéster"] }),
+    attributes: attrs({ modelagem: ["Modelagem", "Elástico na cintura, serve do P ao G"], cor: ["Cor", "Areia"], material: ["Material", "Poliéster"] }),
   }),
   product({
     id: "ts-005", name: "Camisa Oversized", price: 22990, sku: "TS-COV", categoryId: "feminino", color: C, stock: 12,
     description: "Camisa oversized de algodão com bolso.",
-    attributes: attrs({ tamanho: ["Tamanho", "Único"], cor: ["Cor", "Off-white"], material: ["Material", "Algodão"] }),
+    attributes: attrs({ modelagem: ["Modelagem", "Oversized, tamanho único"], cor: ["Cor", "Off-white"], material: ["Material", "Algodão"] }),
   }),
   product({
     id: "ts-006", name: "Cardigan Tricô", price: 27990, sku: "TS-CTR", categoryId: "feminino", color: C, stock: 0,
@@ -68,12 +69,12 @@ export const products: Product[] = [
   product({
     id: "ts-010", name: "Calça Chino", price: 24990, sku: "TS-CCH", categoryId: "masculino", color: C, stock: 14,
     description: "Calça chino slim em sarja com elastano.",
-    attributes: attrs({ tamanho: ["Tamanho", "40 ao 46"], cor: ["Cor", "Areia"], material: ["Material", "Sarja com elastano"] }),
+    attributes: attrs({ modelagem: ["Modelagem", "Slim, do 40 ao 46"], cor: ["Cor", "Areia"], material: ["Material", "Sarja com elastano"] }),
   }),
   product({
     id: "ts-011", name: "Bermuda Sarja", price: 15990, sku: "TS-BSJ", categoryId: "masculino", color: C, stock: 10,
     description: "Bermuda de sarja com cós ajustável.",
-    attributes: attrs({ tamanho: ["Tamanho", "38 ao 44"], cor: ["Cor", "Marinho"], material: ["Material", "Sarja"] }),
+    attributes: attrs({ modelagem: ["Modelagem", "Cós ajustável, do 38 ao 44"], cor: ["Cor", "Marinho"], material: ["Material", "Sarja"] }),
   }),
   product({
     id: "ts-012", name: "Jaqueta Jeans", price: 39990, sku: "TS-JJN", categoryId: "masculino", color: C, stock: 4,
@@ -83,7 +84,7 @@ export const products: Product[] = [
   product({
     id: "ts-013", name: "Polo Piquet", price: 13990, sku: "TS-PPQ", categoryId: "masculino", color: C, stock: 11,
     description: "Polo em malha piquet com gola estruturada.",
-    attributes: attrs({ tamanho: ["Tamanho", "P ao GG"], cor: ["Cor", "Preto"], material: ["Material", "Piquet de algodão"] }),
+    attributes: attrs({ modelagem: ["Modelagem", "Regular, do P ao GG"], cor: ["Cor", "Preto"], material: ["Material", "Piquet de algodão"] }),
   }),
   product({
     id: "ts-014", name: "Bolsa Tote Couro", price: 45990, sku: "TS-BTC", categoryId: "acessorios", color: C, stock: 6,
@@ -111,3 +112,6 @@ export const products: Product[] = [
     attributes: attrs({ cor: ["Cor", "Dourado"], material: ["Material", "Latão banhado"] }),
   }),
 ];
+
+/** Produtos com as fotos reais do preset (quem não tiver foto mantém o placeholder gerado por `product()`). */
+export const products: Product[] = catalog.map((p) => ({ ...p, images: productImages[p.id] ?? p.images }));

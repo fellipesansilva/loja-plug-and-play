@@ -17,7 +17,7 @@ function run(storage: { getItem: (k: string) => string | null }) {
 describe("early theme script", () => {
   it("gera o mesmo CSS que tokensToCss para o tema salvo", () => {
     const theme = getPreset("forno-da-vila")!.config.theme;
-    const saved = JSON.stringify({ state: { config: { theme } }, version: 1 });
+    const saved = JSON.stringify({ state: { config: { theme } }, version: 2 });
     const css = run({ getItem: (k) => (k === STORAGE_KEY ? saved : null) });
     expect(css).toBe(tokensToCss(theme));
   });

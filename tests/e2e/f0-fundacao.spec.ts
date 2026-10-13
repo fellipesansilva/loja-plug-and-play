@@ -133,10 +133,10 @@ test.describe("F0 · vitrine em 360 px", () => {
     await page.goto("/");
     const toggle = page.getByRole("button", { name: "Abrir menu" });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(page.getByRole("link", { name: "Carrinho" })).toBeHidden();
+    await expect(page.getByRole("link", { name: "Sobre", exact: true })).toBeHidden();
     await toggle.click();
     await expect(page.getByRole("button", { name: "Fechar menu" })).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("link", { name: "Carrinho" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sobre", exact: true })).toBeVisible();
   });
 });
 

@@ -1,4 +1,4 @@
-# Loja Virtual Plug and Play — Fatia 0 (Fundação)
+# Loja Virtual Plug and Play — Fatias 0 (Fundação) e 1 (Vitrine: catálogo)
 
 Mockup navegável de e-commerce reutilizável e agnóstico de nicho. Nada específico de cliente ou nicho está no código: tema (tokens), módulos (liga/desliga) e catálogo vêm de **presets** (dados).
 
@@ -46,9 +46,54 @@ Se o Chromium baixado pelo Playwright não abrir na sua máquina, use um navegad
 
 Os dados legais devem ser fictícios e claramente de demonstração.
 
+## Como adicionar um bloco de home a um preset
+
+A home é montada por `config.homeBlocks` (em `src/presets/<preset>/config.ts`): a **ordem do array é a ordem na página** e `enabled: false` esconde o bloco.
+Tipos existentes (`HomeBlock` em `src/domain/types.ts`): `banner`, `categories` e `featured`. Para criar um bloco novo de um tipo existente, basta acrescentar um item
+com `id` único (ex.: um segundo `featured` com outros `productIds`). Para um **tipo** novo: (1) adicione a variante em `HomeBlock`, (2) crie o componente em
+`src/components/store/HomeBlocks.tsx` e trate-o no `switch` de `HomeBlocks` (o TypeScript acusa o caso esquecido). O teste de presets valida que categorias e produtos citados existem.
+
+## Como adicionar um atributo a um preset
+
+1. Dê o atributo aos produtos (`attrs({ chave: ["Rótulo", "valor"] })`) e/ou às variantes (`attributes: { chave: "valor" }`).
+2. Declare-o em `config.attributeDefs`: `{ key, label, selector: "pill" | "swatch" | "list", filterable, highlight }`.
+   - `filterable: true` gera o filtro na categoria (só com os valores existentes); `highlight: true` vira selo no card.
+   - `selector` define o seletor de variação na página do produto; `swatch` pede `swatches: { valor: "#cor" }`.
+3. O teste de presets falha se algum atributo usado não tiver definição ou se faltar cor para um valor de `swatch`.
+
+Outros dados da vitrine vindos do preset: `seo` (modelo de título e descrição), `layout` (busca em ícone ou barra, tile de categoria), `shipping` (opções e cobertura do frete simulado),
+`modules.parcelamento.minInstallment` (parcela mínima, padrão R$ 20,00) e `policies.regret` (aviso de arrependimento do produto).
+
+## Armadilhas de estilo
+
+- **Não use `max-w-xl` nem `max-w-md`** (nem outras classes `max-w-*` / `w-*` de tamanho nomeado que coincidam com os tokens de espaçamento `xs`, `sm`, `md`, `lg`, `xl`):
+  eles colidem com `--spacing-md` / `--spacing-xl` do tema e resolvem para valores minúsculos (o texto do banner chegou a quebrar uma palavra por linha).
+  Use valores explícitos, como `max-w-[36rem]`, ou as escalas numéricas (`max-w-5xl` não colide).
+
+
+Hoje todas são placeholders SVG locais (`/placeholder`). Fotos reais vão em `public/images/presets/<preset>/` (WebP, ≤ 1600 px, ≤ 200 KB) e **precisam** constar em `IMAGE_CREDITS.md` (teste de presets).
+
 ## Estado e persistência
 
-O estado é salvo em `localStorage` (chave `loja-demo-v1`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). Em tempo de execução o store fica exposto em `window.__demoStore` para testes e depuração.
+O estado é salvo em `localStorage` (chave `loja-demo-v1`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). O formato é versionado (`STORAGE_VERSION`): estado salvo em versão antiga é descartado. O carrinho (`cart`) é persistido e zerado ao resetar ou trocar de preset. Em tempo de execução o store fica exposto em `window.__demoStore` para testes e depuração.
+
+## Publicação (Vercel)
+
+Importe o repositório na Vercel (framework Next.js detectado automaticamente, sem variáveis de ambiente). Cada push na branch principal gera um novo deploy de produção.
+
+## Portas e convenções
+
+- Este projeto **não usa a porta 3000** (reservada a outro projeto na máquina de desenvolvimento): `npm run dev`/`npm start` usam **3410**; o E2E usa **3411** (build com `window.__demoStore`) e **3412** (build de produção sem a flag). O E2E não reaproveita servidores já abertos: se a porta estiver ocupada, falha em vez de usar o servidor alheio.
+- Valores monetários são **inteiros em centavos** (`18990` = R$ 189,90); a exibição passa sempre por `formatBRL` (`src/lib/money.ts`). O `sample.csv` usa reais com vírgula/ponto e será convertido por `parseBRLToCents` na importação.
+- `window.__demoStore` só existe fora de produção ou com `NEXT_PUBLIC_EXPOSE_STORE=1` (usado só no build de teste do E2E).## Imagens
+
+As fotos dos dois presets são do Unsplash (licença gratuita), em `public/images/presets/<preset>/` (WebP, ≤ 1600 px, ≤ 200 KB), referenciadas em `src/presets/<preset>/images.ts`
+e **creditadas em `IMAGE_CREDITS.md`** (arquivo, URL, autor, licença). O texto alternativo descreve o que a foto mostra. Preset novo sem fotos cai nos placeholders SVG de `/placeholder`.
+O teste de presets exige que toda imagem de arquivo exista em `public/` e conste no `IMAGE_CREDITS.md`.
+
+## Estado e persistência
+
+O estado é salvo em `localStorage` (chave `loja-demo-v1`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). O formato é versionado (`STORAGE_VERSION`): estado salvo em versão antiga é descartado. O carrinho (`cart`) é persistido e zerado ao resetar ou trocar de preset. Em tempo de execução o store fica exposto em `window.__demoStore` para testes e depuração.
 
 ## Publicação (Vercel)
 

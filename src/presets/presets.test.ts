@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { ORDER_STATUSES } from "@/domain/types";
 import { isCouponValid } from "./helpers";
@@ -54,8 +56,74 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
     for (const o of preset.orders) for (const i of o.items) expect(ids.has(i.productId)).toBe(true);
   });
 
-  it("usa apenas imagens locais de placeholder", () => {
-    for (const p of preset.products) for (const img of p.images) expect(img.startsWith("/placeholder?")).toBe(true);
+  it("todo atributo usado por produto ou variante tem definição no preset", () => {
+    const defined = new Set(preset.config.attributeDefs.map((d) => d.key));
+    for (const p of preset.products) {
+      for (const a of p.attributes) expect(defined, `${p.id}: ${a.key}`).toContain(a.key);
+      for (const v of p.variants) for (const k of Object.keys(v.attributes)) expect(defined, `${v.sku}: ${k}`).toContain(k);
+    }
+  });
+
+  it("swatches cobrem todos os valores de atributos do tipo swatch nas variantes", () => {
+    for (const def of preset.config.attributeDefs.filter((d) => d.selector === "swatch")) {
+      for (const p of preset.products) {
+        for (const v of p.variants) {
+          const value = v.attributes[def.key];
+          if (value) expect(def.swatches?.[value], `${v.sku}: ${value}`).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it("homeBlocks referenciam categorias e produtos existentes, com ids únicos", () => {
+    const blocks = preset.config.homeBlocks;
+    expect(new Set(blocks.map((b) => b.id)).size).toBe(blocks.length);
+    const categoryIds = new Set(preset.categories.map((c) => c.id));
+    const productIds = new Set(preset.products.map((p) => p.id));
+    for (const b of blocks) {
+      if (b.type === "categories") for (const id of b.categoryIds) expect(categoryIds).toContain(id);
+      if (b.type === "featured") {
+        expect(b.productIds).toHaveLength(8);
+        for (const id of b.productIds) expect(productIds).toContain(id);
+      }
+    }
+  });
+
+  it("policies.regret afirma o direito de arrependimento de 7 dias (CDC, art. 49)", () => {
+    const { regret, exchange } = preset.config.policies;
+    expect(regret).toMatch(/7 dias/);
+    expect(regret.toLowerCase()).toContain("arrependimento");
+    expect(exchange).toMatch(/7 dias/);
+    expect(regret.toLowerCase()).not.toMatch(/não (há|tem) (troca|direito)/);
+  });
+
+  it("tem título/descrição de SEO sem \"mockup\" nem \"demonstração\"", () => {
+    const { seo } = preset.config;
+    expect(seo.titleTemplate).toContain("%s");
+    for (const text of [seo.titleTemplate, seo.description]) {
+      expect(text.toLowerCase()).not.toMatch(/mockup|demonstra/);
+    }
+  });
+
+  it("tem pelo menos 1 produto com variações de 3 fotos e demais com 1 foto", () => {
+    for (const p of preset.products) {
+      expect(p.images.length).toBeGreaterThanOrEqual(p.variants.length > 0 ? 3 : 1);
+    }
+  });
+
+  it("toda imagem tem texto alternativo; imagem de arquivo existe em public/ e consta em IMAGE_CREDITS.md", () => {
+    const root = path.resolve(import.meta.dirname, "../..");
+    const credits = fs.readFileSync(path.join(root, "IMAGE_CREDITS.md"), "utf8");
+    const banners = preset.config.homeBlocks.flatMap((b) => (b.type === "banner" ? [b.image] : []));
+    const images = [...banners, ...preset.categories.map((c) => c.image), ...preset.products.flatMap((p) => p.images)];
+    expect(images.length).toBeGreaterThan(0);
+    for (const img of images) {
+      expect(img.alt.trim().length).toBeGreaterThan(0);
+      if (img.src.startsWith("/placeholder?")) continue; // placeholder SVG local, sem terceiros
+      expect(img.src.startsWith("/images/presets/"), img.src).toBe(true);
+      expect(fs.existsSync(path.join(root, "public", img.src)), img.src).toBe(true);
+      expect(credits, img.src).toContain(img.src);
+    }
   });
 });
 

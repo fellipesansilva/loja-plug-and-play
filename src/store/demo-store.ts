@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type {
+  CartLine,
   Category,
   Coupon,
   Order,
@@ -10,7 +11,7 @@ import type {
 } from "@/domain/types";
 import { DEFAULT_PRESET_ID, getPreset } from "@/presets";
 import { safeStorage } from "./safe-storage";
-import { STORAGE_KEY } from "./storage-key";
+import { STORAGE_KEY, STORAGE_VERSION } from "./storage-key";
 
 type DemoData = {
   presetId: string;
@@ -19,6 +20,7 @@ type DemoData = {
   products: Product[];
   orders: Order[];
   coupons: Coupon[];
+  cart: CartLine[];
 };
 
 type DemoActions = {
@@ -28,6 +30,8 @@ type DemoActions = {
   reset: () => void;
   setThemeColor: (key: keyof ThemeTokens["colors"], value: string) => void;
   setStoreName: (name: string) => void;
+  /** Soma `qty` à linha do mesmo produto/variante, limitando ao estoque disponível. */
+  addToCart: (line: CartLine) => void;
 };
 
 export type DemoState = DemoData & DemoActions;
@@ -42,7 +46,7 @@ function dataFromPreset(id: string): DemoData {
     orders: preset.orders,
     coupons: preset.coupons,
   });
-  return { presetId: preset.id, ...clone };
+  return { presetId: preset.id, ...clone, cart: [] };
 }
 
 export const useDemoStore = create<DemoState>()(
@@ -59,15 +63,31 @@ export const useDemoStore = create<DemoState>()(
           },
         })),
       setStoreName: (name) => set((s) => ({ config: { ...s.config, name } })),
+      addToCart: ({ productId, variantId, qty }) =>
+        set((s) => {
+          const product = s.products.find((p) => p.id === productId);
+          if (!product || qty < 1) return {};
+          const stock = variantId
+            ? (product.variants.find((v) => v.id === variantId)?.stock ?? 0)
+            : product.stock;
+          const same = (l: CartLine) => l.productId === productId && l.variantId === variantId;
+          const current = s.cart.find(same)?.qty ?? 0;
+          const next = Math.min(current + qty, stock);
+          if (next <= current) return {};
+          const lines = s.cart.filter((l) => !same(l));
+          return { cart: [...lines, { productId, variantId, qty: next }] };
+        }),
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: STORAGE_VERSION,
+      // Formato antigo é descartado (cai no preset padrão) em vez de quebrar a vitrine.
+      migrate: () => ({}) as DemoState,
       storage: createJSONStorage(() => safeStorage),
       // Hidratação manual (no cliente, após montar) para evitar mismatch com o SSR.
       skipHydration: true,
-      partialize: ({ presetId, config, categories, products, orders, coupons }) => ({
-        presetId, config, categories, products, orders, coupons,
+      partialize: ({ presetId, config, categories, products, orders, coupons, cart }) => ({
+        presetId, config, categories, products, orders, coupons, cart,
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<DemoData> | undefined;

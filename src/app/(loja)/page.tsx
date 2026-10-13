@@ -1,5 +1,11 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { HomeBlocks } from "@/components/store/HomeBlocks";
+import { PageTitle } from "@/components/store/PageTitle";
 
 export default function Page() {
-  return <PagePlaceholder title="Início" />;
+  return (
+    <>
+      <PageTitle title="Início" />
+      <HomeBlocks />
+    </>
+  );
 }

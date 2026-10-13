@@ -3,7 +3,7 @@
 /*
  * Os valores reais vêm de ThemeProvider (variáveis --t-*, definidas pelo preset).
  * Aqui apenas mapeamos para utilitários do Tailwind: bg-primary, text-muted,
- * rounded-md, font-heading, p-md etc.
+ * rounded-md, font-heading, p-md, aspect-product etc.
  */
 @theme inline {
   --color-primary: var(--t-color-primary);
@@ -16,6 +16,8 @@
   --color-success: var(--t-color-success);
   --color-warning: var(--t-color-warning);
   --color-danger: var(--t-color-danger);
+  --color-announcement-bg: var(--t-color-announcementBg);
+  --color-announcement-text: var(--t-color-announcementText);
 
   --font-heading: var(--t-font-heading);
   --font-body: var(--t-font-body);
@@ -23,6 +25,9 @@
   --radius-sm: var(--t-radius-sm);
   --radius-md: var(--t-radius-md);
   --radius-lg: var(--t-radius-lg);
+  --radius-button: var(--t-radius-button);
+
+  --aspect-product: var(--t-ratio-product);
 
   --spacing-xs: var(--t-space-xs);
   --spacing-sm: var(--t-space-sm);
@@ -31,14 +36,44 @@
   --spacing-xl: var(--t-space-xl);
 }
 
-body {
-  background-color: var(--color-background);
-  color: var(--color-text);
-  font-family: var(--font-body);
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: var(--t-font-headingWeight);
+  }
+
+  /* Foco visível em tudo que é interativo. */
+  :focus-visible {
+    outline: 2px solid var(--t-color-primary);
+    outline-offset: 2px;
+  }
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-heading);
+@layer components {
+  /* Logo (nome da loja): estilo vindo dos tokens do preset. */
+  .store-logo {
+    font-family: var(--font-heading);
+    font-weight: var(--t-logo-weight);
+    text-transform: var(--t-logo-transform);
+    letter-spacing: var(--t-logo-tracking);
+    color: var(--t-logo-color);
+  }
+
+  /* Degradê escuro na base de imagens com texto por cima (usa a cor de texto do preset). */
+  .scrim-bottom {
+    background-image: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--t-color-text) 80%, transparent),
+      color-mix(in srgb, var(--t-color-text) 35%, transparent) 55%,
+      transparent
+    );
+  }
 }

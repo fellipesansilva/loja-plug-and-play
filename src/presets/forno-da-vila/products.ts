@@ -1,10 +1,11 @@
 import type { Category, Product, Variant } from "@/domain/types";
-import { attrs, product } from "../helpers";
+import { categoryImages, productImages } from "./images";
+import { attrs, placeholderImage, product } from "../helpers";
 
 export const categories: Category[] = [
-  { id: "pratos", slug: "pratos", name: "Pratos" },
-  { id: "doces", slug: "doces", name: "Doces" },
-  { id: "bebidas", slug: "bebidas", name: "Bebidas" },
+  { id: "pratos", slug: "pratos", name: "Pratos", image: categoryImages["pratos"] ?? placeholderImage("Pratos", "c9722f", "Pratos prontos do dia a dia") },
+  { id: "doces", slug: "doces", name: "Doces", image: categoryImages["doces"] ?? placeholderImage("Doces", "c9722f", "Doces e sobremesas artesanais") },
+  { id: "bebidas", slug: "bebidas", name: "Bebidas", image: categoryImages["bebidas"] ?? placeholderImage("Bebidas", "c9722f", "Sucos, chás e cafés") },
 ];
 
 const C = "c9722f";
@@ -25,7 +26,7 @@ function portions(
 
 const validade = (v: string) => ["Validade", v] as [string, string];
 
-export const products: Product[] = [
+const catalog: Product[] = [
   product({
     id: "fv-001", name: "Lasanha à Bolonhesa", price: 4290, sku: "FV-LAS", categoryId: "pratos", color: C,
     description: "Massa fresca, molho bolonhesa caseiro e queijo gratinado.",
@@ -48,12 +49,12 @@ export const products: Product[] = [
   product({
     id: "fv-003", name: "Frango Assado com Batatas", price: 4990, sku: "FV-FRA", categoryId: "pratos", color: C, stock: 9,
     description: "Coxa e sobrecoxa assadas com batatas rústicas e ervas.",
-    attributes: attrs({ porcao: ["Peso/porção", "600 g"], sabor: ["Sabor", "Ervas finas"], validade: validade("3 dias refrigerado"), restricoes: ["Restrições", "Sem glúten"] }),
+    attributes: attrs({ porcao: ["Peso/porção", "600 g"], sabor: ["Sabor", "Ervas finas"], validade: validade("3 dias refrigerado"), dieta: ["Restrição alimentar", "Sem glúten"], restricoes: ["Restrições", "Sem glúten"] }),
   }),
   product({
     id: "fv-004", name: "Risoto de Cogumelos", price: 4690, sku: "FV-RIS", categoryId: "pratos", color: C, stock: 7,
     description: "Arroz arbóreo cremoso com mix de cogumelos e parmesão.",
-    attributes: attrs({ porcao: ["Peso/porção", "400 g"], sabor: ["Sabor", "Cogumelos"], validade: validade("2 dias refrigerado"), restricoes: ["Restrições", "Contém lactose; vegetariano"] }),
+    attributes: attrs({ porcao: ["Peso/porção", "400 g"], sabor: ["Sabor", "Cogumelos"], validade: validade("2 dias refrigerado"), dieta: ["Restrição alimentar", "Vegetariano"], restricoes: ["Restrições", "Contém lactose"] }),
   }),
   product({
     id: "fv-005", name: "Escondidinho de Carne Seca", price: 4490, sku: "FV-ESC", categoryId: "pratos", color: C, stock: 11,
@@ -112,7 +113,7 @@ export const products: Product[] = [
   product({
     id: "fv-014", name: "Suco de Laranja Natural", price: 1290, sku: "FV-SLA", categoryId: "bebidas", color: C,
     description: "Suco espremido na hora, sem adição de açúcar.",
-    attributes: attrs({ sabor: ["Sabor", "Laranja"], validade: validade("2 dias refrigerado"), restricoes: ["Restrições", "Sem glúten; vegano"] }),
+    attributes: attrs({ sabor: ["Sabor", "Laranja"], validade: validade("2 dias refrigerado"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
     variants: portions("FV-SLA", [
       { label: "300 ml", code: "300", stock: 25 },
       { label: "1 litro", code: "1000", price: 2990, stock: 12 },
@@ -126,16 +127,19 @@ export const products: Product[] = [
   product({
     id: "fv-016", name: "Café Coado Especial", price: 1190, sku: "FV-CAF", categoryId: "bebidas", color: C, stock: 40,
     description: "Café especial coado, grãos de torra média.",
-    attributes: attrs({ porcao: ["Peso/porção", "250 ml"], sabor: ["Sabor", "Chocolate e caramelo"], validade: validade("Consumir no dia"), restricoes: ["Restrições", "Sem glúten; vegano"] }),
+    attributes: attrs({ porcao: ["Peso/porção", "250 ml"], sabor: ["Sabor", "Chocolate e caramelo"], validade: validade("Consumir no dia"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
   }),
   product({
     id: "fv-017", name: "Chá Gelado de Pêssego", price: 1390, sku: "FV-CHA", categoryId: "bebidas", color: C, stock: 16,
     description: "Chá preto gelado com pêssego e hortelã.",
-    attributes: attrs({ porcao: ["Peso/porção", "500 ml"], sabor: ["Sabor", "Pêssego"], validade: validade("3 dias refrigerado"), restricoes: ["Restrições", "Sem glúten; vegano"] }),
+    attributes: attrs({ porcao: ["Peso/porção", "500 ml"], sabor: ["Sabor", "Pêssego"], validade: validade("3 dias refrigerado"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
   }),
   product({
     id: "fv-018", name: "Kombucha de Gengibre", price: 1690, sku: "FV-KOM", categoryId: "bebidas", color: C, stock: 10,
     description: "Bebida fermentada artesanal com gengibre.",
-    attributes: attrs({ porcao: ["Peso/porção", "300 ml"], sabor: ["Sabor", "Gengibre"], validade: validade("30 dias refrigerada"), restricoes: ["Restrições", "Sem glúten; vegano"] }),
+    attributes: attrs({ porcao: ["Peso/porção", "300 ml"], sabor: ["Sabor", "Gengibre"], validade: validade("30 dias refrigerada"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
   }),
 ];
+
+/** Produtos com as fotos reais do preset (quem não tiver foto mantém o placeholder gerado por `product()`). */
+export const products: Product[] = catalog.map((p) => ({ ...p, images: productImages[p.id] ?? p.images }));

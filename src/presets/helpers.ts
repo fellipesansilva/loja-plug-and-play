@@ -1,5 +1,6 @@
 import type {
   Attribute,
+  Image,
   Coupon,
   Money,
   Order,
@@ -23,6 +24,11 @@ export function placeholderUrl(label: string, color: string): string {
   return `/placeholder?l=${encodeURIComponent(label)}&c=${color}`;
 }
 
+/** Imagem de placeholder com texto alternativo. */
+export function placeholderImage(label: string, color: string, alt: string = label): Image {
+  return { src: placeholderUrl(label, color), alt };
+}
+
 export function attrs(entries: Record<string, [label: string, value: string]>): Attribute[] {
   return Object.entries(entries).map(([key, [label, value]]) => ({ key, label, value }));
 }
@@ -41,7 +47,7 @@ type ProductInput = {
 };
 
 /** Produto com variações tem estoque = soma das variantes. */
-export function product(input: ProductInput, imageCount = 2): Product {
+export function product(input: ProductInput, imageCount = input.variants?.length ? 3 : 1): Product {
   const variants = input.variants ?? [];
   const stock = variants.length
     ? variants.reduce((sum, v) => sum + v.stock, 0)
@@ -52,7 +58,11 @@ export function product(input: ProductInput, imageCount = 2): Product {
     name: input.name,
     price: input.price,
     images: Array.from({ length: imageCount }, (_, i) =>
-      placeholderUrl(i === 0 ? input.name : `${input.name} ${i + 1}`, input.color),
+      placeholderImage(
+        i === 0 ? input.name : `${input.name} ${i + 1}`,
+        input.color,
+        i === 0 ? input.name : `${input.name} — foto ${i + 1} de ${imageCount}`,
+      ),
     ),
     description: input.description,
     sku: input.sku,
