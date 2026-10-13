@@ -1,0 +1,6 @@
+sku,nome,preco,estoque,categoria,descricao,tamanho,cor,material
+TS-NOV-001,Vestido Slip Cetim,319.90,6,feminino,Vestido slip em cetim fluido,M,Champagne,Poliéster
+TS-NOV-002,Camiseta Gola V,89.90,15,masculino,Camiseta gola V em algodão,G,Cinza,Algodão
+TS-NOV-003,Bolsa Transversal,279.90,4,acessorios,Bolsa transversal compacta,Único,Preto,Couro sintético
+TS-NOV-004,Blazer Alfaiataria,429.90,3,feminino,Blazer estruturado forrado,P,Preto,Poliviscose
+TS-NOV-005,Cachecol Lã,99.90,0,acessorios,Cachecol de lã macio,Único,Marinho,Lã

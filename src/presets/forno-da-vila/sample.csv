@@ -1,0 +1,6 @@
+sku,nome,preco,estoque,categoria,descricao,porcao,sabor,validade,restricoes
+FV-NOV-001,Panqueca de Carne,34.90,10,pratos,Panqueca recheada com carne moída e molho de tomate,450 g,Carne,3 dias refrigerada,Contém glúten e lactose
+FV-NOV-002,Brownie Tradicional,14.90,22,doces,Brownie denso de chocolate meio amargo,90 g,Chocolate,7 dias,Contém glúten e ovos
+FV-NOV-003,Água de Coco Natural,9.90,30,bebidas,Água de coco gelada,300 ml,Coco,2 dias refrigerada,Sem glúten; vegano
+FV-NOV-004,Moqueca de Peixe,58.90,5,pratos,Moqueca capixaba com arroz e pirão,600 g,Peixe,2 dias refrigerada,Contém peixe
+FV-NOV-005,Cuca de Banana,24.90,0,doces,Cuca com farofa crocante,500 g,Banana,5 dias,Contém glúten e ovos

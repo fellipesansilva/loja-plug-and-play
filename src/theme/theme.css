@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/*
+ * Os valores reais vêm de ThemeProvider (variáveis --t-*, definidas pelo preset).
+ * Aqui apenas mapeamos para utilitários do Tailwind: bg-primary, text-muted,
+ * rounded-md, font-heading, p-md etc.
+ */
+@theme inline {
+  --color-primary: var(--t-color-primary);
+  --color-secondary: var(--t-color-secondary);
+  --color-background: var(--t-color-background);
+  --color-surface: var(--t-color-surface);
+  --color-text: var(--t-color-text);
+  --color-muted: var(--t-color-muted);
+  --color-border: var(--t-color-border);
+  --color-success: var(--t-color-success);
+  --color-warning: var(--t-color-warning);
+  --color-danger: var(--t-color-danger);
+
+  --font-heading: var(--t-font-heading);
+  --font-body: var(--t-font-body);
+
+  --radius-sm: var(--t-radius-sm);
+  --radius-md: var(--t-radius-md);
+  --radius-lg: var(--t-radius-lg);
+
+  --spacing-xs: var(--t-space-xs);
+  --spacing-sm: var(--t-space-sm);
+  --spacing-md: var(--t-space-md);
+  --spacing-lg: var(--t-space-lg);
+  --spacing-xl: var(--t-space-xl);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+}
