@@ -239,3 +239,124 @@ test.describe("H2 · detalhe do pedido", () => {
     });
   });
 });
+
+test.describe("H3 · mudança de status", () => {
+  const detailStatus = (page: Page) => page.getByTestId("detail-status");
+  const onlyActions = async (page: Page, expected: string[]) => {
+    const ids = await page.locator('[data-testid^="status-to-"]').evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!.replace("status-to-", "")));
+    expect(ids).toEqual(expected);
+  };
+
+  test("pedido de entrega percorre o fluxo completo, e só as próximas etapas aparecem", async ({ page }) => {
+    await ready(page, "/");
+    await placeOrder(page, { id: "XX-8201", status: "aguardando_pagamento" });
+    await page.goto("/painel/pedidos/XX-8201");
+    await expect(detailStatus(page)).toHaveText("Aguardando pagamento");
+
+    await onlyActions(page, ["pago"]);
+    await page.getByTestId("status-to-pago").click();
+    await expect(detailStatus(page)).toHaveText("Pago");
+
+    await onlyActions(page, ["em_separacao"]);
+    await page.getByTestId("status-to-em_separacao").click();
+    await expect(detailStatus(page)).toHaveText("Em separação");
+
+    await onlyActions(page, ["enviado"]);
+    await expect(page.getByTestId("status-to-enviado")).toHaveText("Marcar como Enviado");
+    await page.getByTestId("status-to-enviado").click();
+    await expect(detailStatus(page)).toHaveText("Enviado");
+
+    await onlyActions(page, ["entregue"]);
+    await page.getByTestId("status-to-entregue").click();
+    await expect(detailStatus(page)).toHaveText("Entregue");
+
+    // final: sem próximas etapas e sem cancelar
+    await expect(page.getByTestId("status-actions")).toHaveCount(0);
+    await expect(page.getByTestId("status-final")).toBeVisible();
+    await expect(page.getByTestId("status-cancel")).toHaveCount(0);
+
+    // histórico com data e hora, na ordem
+    const entries = page.getByTestId("history-entry");
+    await expect(entries).toHaveCount(5);
+    await expect(entries).toHaveText([/Aguardando pagamento/, /Pago/, /Em separação/, /Enviado/, /Entregue/]);
+    for (const text of await entries.allTextContents()) expect(text).toMatch(/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/);
+  });
+
+  test("pedido de retirada: 'enviado' usa o rótulo do preset (Forno: Pronto para retirada)", async ({ page }) => {
+    await ready(page, "/");
+    await placeOrder(page, { id: "XX-8202", status: "em_separacao", delivery: "retirada" });
+    await page.goto("/painel/pedidos/XX-8202");
+    const label = currentPreset() === FORNO ? "Pronto para retirada" : "Enviado";
+    await expect(page.getByTestId("status-to-enviado")).toHaveText(`Marcar como ${label}`);
+    await page.getByTestId("status-to-enviado").click();
+    await expect(detailStatus(page)).toHaveText(label);
+    await expect(page.getByTestId("history-entry").last()).toContainText(label);
+
+    // a lista e a confirmação na loja usam o mesmo rótulo
+    await page.goto("/painel/pedidos");
+    await expect(page.locator('[data-order-id="XX-8202"] [data-testid="order-row-status"]')).toHaveText(label);
+    await page.goto("/pedido/XX-8202");
+    await expect(page.getByTestId("order-status")).toHaveText(label);
+  });
+
+  test("pedido só digital vai de pago direto para entregue", async ({ page }) => {
+    await ready(page, "/");
+    await placeOrder(page, { id: "XX-8203", status: "pago", delivery: "digital" });
+    await page.goto("/painel/pedidos/XX-8203");
+    await onlyActions(page, ["entregue"]);
+    await page.getByTestId("status-to-entregue").click();
+    await expect(detailStatus(page)).toHaveText("Entregue");
+    await expect(page.getByTestId("history-entry")).toHaveText([/Pago/, /Entregue/]);
+  });
+
+  test("cancelar exige confirmação; 'Voltar' e Esc não cancelam", async ({ page }) => {
+    await ready(page, "/");
+    await placeOrder(page, { id: "XX-8204", status: "em_separacao" });
+    await page.goto("/painel/pedidos/XX-8204");
+    await page.getByTestId("status-cancel").click();
+    const confirm = page.getByTestId("cancel-confirm");
+    await expect(confirm).toBeVisible();
+    await expect(page.getByTestId("cancel-confirm-yes")).toBeFocused();
+    await expect(detailStatus(page)).toHaveText("Em separação"); // ainda não cancelou
+
+    await confirm.getByRole("button", { name: "Voltar" }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(detailStatus(page)).toHaveText("Em separação");
+
+    await page.getByTestId("status-cancel").click();
+    await page.keyboard.press("Escape");
+    await expect(confirm).toHaveCount(0);
+    await expect(detailStatus(page)).toHaveText("Em separação");
+
+    await page.getByTestId("status-cancel").click();
+    await page.getByTestId("cancel-confirm-yes").click();
+    await expect(detailStatus(page)).toHaveText("Cancelado");
+    await expect(page.getByTestId("status-actions")).toHaveCount(0);
+    await expect(page.getByTestId("history-entry").last()).toContainText("Cancelado");
+  });
+
+  test("a confirmação do pedido na loja mostra o status novo", async ({ page }) => {
+    const id = await buyThroughStore(page);
+    await expect(page.getByTestId("order-status")).toHaveText("Pago");
+    await page.goto(`/painel/pedidos/${id}`);
+    await page.getByTestId("status-to-em_separacao").click();
+    await page.getByTestId("status-to-enviado").click();
+    await expect(detailStatus(page)).toHaveText("Enviado");
+    await page.goto(`/pedido/${id}`);
+    await expect(page.getByTestId("order-status")).toHaveText("Enviado");
+    // sobrevive ao recarregar (fica no localStorage da loja)
+    await page.reload();
+    await expect(page.getByTestId("order-status")).toHaveText("Enviado");
+  });
+
+  test("o painel Demo 'Simular pagamento aprovado' também entra no histórico", async ({ page }) => {
+    await ready(page, "/");
+    await placeOrder(page, { id: "XX-8205", status: "aguardando_pagamento" });
+    await page.goto("/pedido/XX-8205");
+    await page.getByRole("button", { name: "Demo", exact: true }).click();
+    await page.getByRole("button", { name: "Simular pagamento aprovado" }).click();
+    await page.goto("/painel/pedidos/XX-8205");
+    await expect(detailStatus(page)).toHaveText("Pago");
+    await expect(page.getByTestId("history-entry")).toHaveText([/Aguardando pagamento/, /Pago/]);
+  });
+});
