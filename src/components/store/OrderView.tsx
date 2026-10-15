@@ -10,6 +10,7 @@ import { useHydrated } from "@/store/use-hydrated";
 import { CopyButton } from "./CopyButton";
 import { FakeQr } from "./FakeQr";
 import { PageTitle } from "./PageTitle";
+import { ShippingRow } from "./ShippingRow";
 
 const METHOD_LABEL = { pix: "Pix", cartao: "Cartão de crédito", boleto: "Boleto" } as const;
 
@@ -202,10 +203,11 @@ export function OrderView({ id }: { id: string }) {
                 <dd>−{formatBRL(order.pixDiscount)}</dd>
               </div>
             ) : null}
-            <div className="flex justify-between gap-md">
-              <dt>Frete</dt>
-              <dd>{order.delivery.type === "entrega" ? (shipping === 0 ? "Grátis" : formatBRL(shipping)) : "—"}</dd>
-            </div>
+            <ShippingRow
+              testId="order-shipping"
+              kind={order.delivery.type === "entrega" ? "ship" : order.delivery.type === "retirada" ? "pickup" : "digital"}
+              price={shipping}
+            />
             <div className="flex justify-between gap-md border-t border-border pt-sm text-base font-extrabold">
               <dt>Total</dt>
               <dd data-testid="order-total">{formatBRL(order.total)}</dd>

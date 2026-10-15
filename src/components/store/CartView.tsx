@@ -9,6 +9,7 @@ import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { MinusIcon, PlusIcon } from "./Icons";
 import { PageTitle } from "./PageTitle";
+import { ShippingRow } from "./ShippingRow";
 import { StoreImage } from "./StoreImage";
 import { useCartWords } from "./useCartWords";
 import { useCartPricing } from "./useCartPricing";
@@ -307,12 +308,11 @@ export function CartView() {
                 <dd data-testid="sum-coupon">−{formatBRL(withCoupon.couponDiscount)}</dd>
               </div>
             )}
-            <div className="flex justify-between gap-md">
-              <dt>Frete</dt>
-              <dd data-testid="sum-shipping">
-                {pricing.allDigital ? "Não se aplica" : selected ? (selected.price === 0 ? "Grátis" : formatBRL(selected.price)) : "A calcular"}
-              </dd>
-            </div>
+            <ShippingRow
+              testId="sum-shipping"
+              kind={pricing.allDigital ? "digital" : selected ? (selected.kind === "pickup" ? "pickup" : "ship") : "pending"}
+              price={selected?.price}
+            />
             <div className="flex justify-between gap-md border-t border-border pt-sm text-base font-extrabold">
               <dt>Total</dt>
               <dd data-testid="sum-total">{formatBRL(withCoupon.total)}</dd>

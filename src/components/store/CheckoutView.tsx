@@ -38,6 +38,7 @@ import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { FormField } from "./FormField";
 import { PageTitle } from "./PageTitle";
+import { ShippingRow } from "./ShippingRow";
 import { useCartPricing } from "./useCartPricing";
 import { useCartWords } from "./useCartWords";
 
@@ -86,7 +87,7 @@ function OrderSummary({ pricing, method }: { pricing: ReturnType<typeof useCartP
           <li key={line.lineId} className="flex justify-between gap-md">
             <span>
               {line.qty}× {product.name}
-              {variantLabel ? ` (${variantLabel})` : ""}
+              {variantLabel ? ` · ${variantLabel}` : ""}
               {addons.length > 0 && <span className="block text-muted">+ {addons.map((a) => a.label).join(", ")}</span>}
             </span>
             <span>{formatBRL(total)}</span>
@@ -110,10 +111,12 @@ function OrderSummary({ pricing, method }: { pricing: ReturnType<typeof useCartP
             <dd data-testid="summary-pix-discount">−{formatBRL(totals.pixDiscount)}</dd>
           </div>
         )}
-        <div className="flex justify-between gap-md">
-          <dt>Frete</dt>
-          <dd>{pricing.allDigital ? "Não se aplica" : selected ? (selected.price === 0 ? "Grátis" : formatBRL(selected.price)) : "—"}</dd>
-        </div>
+        <ShippingRow
+          testId="summary-shipping"
+          kind={pricing.allDigital ? "digital" : selected ? (selected.kind === "pickup" ? "pickup" : "ship") : "pending"}
+          price={selected?.price}
+          pending="—"
+        />
         <div className="flex justify-between gap-md border-t border-border pt-sm text-base font-extrabold">
           <dt>Total</dt>
           <dd>{formatBRL(totals.total)}</dd>

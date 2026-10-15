@@ -228,7 +228,9 @@ test.describe("F2-01 · carrinho", () => {
 
     await page.getByLabel(/Retirar na loja/).check();
     await expect(page.getByRole("link", { name: "Continuar" })).toHaveAttribute("href", "/checkout");
-    await expect(page.getByTestId("sum-shipping")).toHaveText("Grátis");
+    await expect(page.getByTestId("sum-shipping-row")).toContainText("Retirada no local");
+    await expect(page.getByTestId("sum-shipping")).toHaveText(/^R\$\s0,00$/);
+    await expect(page.getByTestId("sum-shipping-row")).not.toContainText("Grátis");
   });
 
   test("o checkout sem entrega escolhida volta para o carrinho", async ({ page }) => {
@@ -735,6 +737,112 @@ test.describe("F2 · ajustes de revisão", () => {
 
     screens.forEach((text, i) => expect(text, `tela ${i + 1}`).not.toMatch(/sacola/i));
     expect(screens.join("\n")).toMatch(/carrinho/i);
+  });
+});
+
+test.describe("F2 · copy de frete e nomes de item", () => {
+  test("Forno, retirada: o resumo diz 'Retirada no local · R$ 0,00' no carrinho, no checkout e no pedido", async ({ page }) => {
+    await openAs(page, FORNO, "/carrinho");
+    await seedCart(page, { productId: "fv-013", qty: 6 }); // R$ 89,40: acima de R$ 80, mas é retirada
+    await page.getByLabel(/Retirar na loja/).check();
+    await expect(page.getByTestId("sum-shipping-row")).toHaveText(/Retirada no local\s*R\$\s0,00/);
+
+    await page.getByRole("link", { name: "Continuar" }).click();
+    await expect(page.getByTestId("summary-shipping-row")).toHaveText(/Retirada no local\s*R\$\s0,00/);
+    await fillIdentification(page);
+    await next(page);
+    await next(page);
+    await expect(page.getByTestId("summary-shipping-row")).not.toContainText("Grátis");
+    await finish(page);
+
+    await expect(page.getByTestId("order-shipping-row")).toHaveText(/Retirada no local\s*R\$\s0,00/);
+    await expect(page.getByTestId("order-shipping-row")).not.toContainText("Frete");
+  });
+
+  test("Forno, entrega com subtotal acima de R$ 80: a linha continua 'Frete · Grátis'", async ({ page }) => {
+    await openAs(page, FORNO, "/carrinho");
+    await seedCart(page, { productId: "fv-013", qty: 6 }); // R$ 89,40
+    await page.getByLabel("CEP").fill("01310100");
+    await page.getByRole("button", { name: "Calcular" }).click();
+    await page.getByTestId("shipping-options").getByLabel(/Econômico/).check();
+    await expect(page.getByTestId("sum-shipping-row")).toHaveText(/Frete\s*Grátis/);
+
+    // o Expresso (previsto no Forno) segue com o valor calculado
+    await page.getByTestId("shipping-options").getByLabel(/Expresso/).check();
+    await expect(page.getByTestId("sum-shipping-row")).toHaveText(/Frete\s*R\$\s16,90/);
+    await page.getByTestId("shipping-options").getByLabel(/Econômico/).check();
+
+    await page.getByRole("link", { name: "Continuar" }).click();
+    await expect(page.getByTestId("summary-shipping-row")).toHaveText(/Frete\s*Grátis/);
+    await fillIdentification(page);
+    await next(page);
+    await fillAddress(page);
+    await next(page);
+    await finish(page);
+    await expect(page.getByTestId("order-shipping-row")).toHaveText(/Frete\s*Grátis/);
+  });
+
+  test("Trama: sem opção de retirada no carrinho nem no checkout", async ({ page }) => {
+    await openAs(page, TRAMA, "/carrinho");
+    await seedCart(page, { productId: "ts-014" });
+    await page.getByLabel("CEP").fill("01310100");
+    await page.getByRole("button", { name: "Calcular" }).click();
+    await expect(page.getByTestId("shipping-options")).toContainText("Econômico");
+    await expect(page.getByText(/Retirar na loja|Retirada no local/)).toHaveCount(0);
+    await page.getByTestId("shipping-options").getByLabel(/Econômico/).check();
+    await page.getByRole("link", { name: "Continuar" }).click();
+    await fillIdentification(page);
+    await next(page);
+    await expect(page.locator("#chk-street")).toBeVisible(); // só endereço de entrega
+    await expect(page.getByText(/Retirar na loja|Retirada no local/)).toHaveCount(0);
+    await expect(page.getByTestId("summary-shipping-row")).toContainText("Frete");
+  });
+
+  test("nome do item sem parênteses aninhados no resumo e no pedido", async ({ page }) => {
+    await readyToCheckout(page, FORNO, { productId: "fv-001", variantId: "fv-mar-gra" });
+    await expect(page.getByTestId("order-summary")).toContainText("Pizza Margherita · Grande, 8 fatias");
+    await fillIdentification(page);
+    await next(page);
+    await fillAddress(page);
+    await next(page);
+    await finish(page);
+
+    const items = page.getByTestId("order-items");
+    await expect(items).toContainText("1× Pizza Margherita · Grande, 8 fatias");
+    expect(await items.innerText()).not.toMatch(/\([^)]*\(/);
+    expect((await state(page)).orders[0].items[0].name).toBe("Pizza Margherita · Grande, 8 fatias");
+  });
+
+  test("Forno, retirada: nenhuma tela fala em 'carrinho' (rótulos do preset)", async ({ page }) => {
+    await openAs(page, FORNO, "/carrinho");
+    await seedCart(page, { productId: "fv-013", qty: 2 });
+    const texts: string[] = [];
+    const collect = async () => {
+      await page.waitForLoadState("networkidle");
+      await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
+      texts.push(
+        await page.evaluate(() => {
+          const attrs = [...document.querySelectorAll("[aria-label],[alt],[title],[placeholder]")].flatMap((el) =>
+            ["aria-label", "alt", "title", "placeholder"].map((a) => el.getAttribute(a) ?? ""),
+          );
+          return [document.title, document.body.innerText, ...attrs].join("\n");
+        }),
+      );
+    };
+    await page.getByLabel(/Retirar na loja/).check();
+    await collect();
+    await page.getByRole("link", { name: "Continuar" }).click();
+    await collect();
+    await fillIdentification(page);
+    await next(page);
+    await collect();
+    await next(page);
+    await collect();
+    await finish(page);
+    await expect(page.getByTestId("order-status")).toBeVisible();
+    await collect();
+    texts.forEach((t, n) => expect(t, `tela ${n + 1}`).not.toMatch(/carrinho/i));
+    expect(texts.join("\n")).toContain("Retirada no local");
   });
 });
 

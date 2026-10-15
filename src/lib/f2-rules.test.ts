@@ -36,7 +36,9 @@ import {
   simulateCepLookup,
 } from "./validation";
 import { cartWords } from "./cart-words";
-import { getPreset, resolvePresetParam } from "@/presets";
+import { itemName, variantText } from "./item-name";
+import { shippingRow } from "./shipping-row";
+import { getPreset, presets, resolvePresetParam } from "@/presets";
 
 const trama = getPreset("trama-studio")!;
 const forno = getPreset("forno-da-vila")!;
@@ -363,5 +365,76 @@ describe("cartão como módulo próprio", () => {
     expect(trama.config.modules.parcelamento?.enabled).toBe(true);
     expect(forno.config.modules.cartao?.enabled).toBe(true);
     expect(forno.config.modules.parcelamento?.enabled).toBeFalsy();
+  });
+});
+
+describe("linha de frete: retirada não é frete grátis", () => {
+  it("retirada vira 'Retirada no local' com R$ 0,00 (nunca 'Grátis')", () => {
+    const row = shippingRow("pickup", 0);
+    expect(row.label).toBe("Retirada no local");
+    expect(row.value.replace(/\u00a0/g, " ")).toBe("R$ 0,00");
+    expect(shippingRow("pickup", 999).value).not.toBe("Grátis");
+  });
+
+  it("entrega continua 'Frete', com 'Grátis' quando o valor é zero", () => {
+    expect(shippingRow("ship", 0)).toEqual({ label: "Frete", value: "Grátis" });
+    const paid = shippingRow("ship", 990);
+    expect(paid.label).toBe("Frete");
+    expect(paid.value.replace(/\u00a0/g, " ")).toBe("R$ 9,90");
+  });
+
+  it("digital e ainda sem escolha", () => {
+    expect(shippingRow("digital")).toEqual({ label: "Frete", value: "Não se aplica" });
+    expect(shippingRow("pending")).toEqual({ label: "Frete", value: "A calcular" });
+    expect(shippingRow("pending", 0, "—")).toEqual({ label: "Frete", value: "—" });
+  });
+
+  it("só o Forno tem retirada; a Trama não oferece", () => {
+    expect(forno.config.modules.retiradaLocal).toBe(true);
+    expect(trama.config.modules.retiradaLocal).toBeFalsy();
+    const q = quoteShipping({
+      cep: "01310-100",
+      itemPrice: 50000,
+      shipping: trama.config.shipping,
+      modules: trama.config.modules,
+      storeAddress: trama.config.legal.address,
+    });
+    if (q.status !== "ok") throw new Error("esperava ok");
+    expect(q.pickup).toBeNull();
+  });
+
+  it("o Expresso do Forno continua previsto (R$ 16,90, hoje) e a regra de frete não mudou", () => {
+    expect(forno.config.shipping.options.find((o) => o.id === "expresso")).toMatchObject({ basePrice: 1690, days: "same-day" });
+    expect(forno.config.modules.freteGratis).toEqual({ enabled: true, minValue: 8000 });
+  });
+});
+
+describe("nome de item sem parênteses aninhados", () => {
+  it("variante com parênteses vira vírgula e o item usa ' · '", () => {
+    expect(variantText({ porcao: "Grande (8 fatias)" })).toBe("Grande, 8 fatias");
+    expect(variantText({ tamanho: "M", cor: "Off-white" })).toBe("M / Off-white");
+    expect(variantText({ porcao: "Fatia" })).toBe("Fatia");
+    expect(itemName("Pizza Margherita", variantText({ porcao: "Grande (8 fatias)" }))).toBe("Pizza Margherita · Grande, 8 fatias");
+    expect(itemName("Bolsa", null)).toBe("Bolsa");
+  });
+
+  const nested = /\([^)]*\(/;
+  it.each(presets.map((p) => [p.id, p] as const))("preset %s: nenhum nome (produto, variação ou item de pedido) tem parênteses aninhados", (_id, preset) => {
+    const names: string[] = [];
+    for (const p of preset.products) {
+      names.push(p.name);
+      for (const v of p.variants) names.push(itemName(p.name, variantText(v.attributes)));
+      for (const a of p.addons ?? []) names.push(a.label);
+    }
+    for (const o of preset.orders) for (const i of o.items) names.push(i.name);
+    expect(names.length).toBeGreaterThan(preset.products.length);
+    for (const name of names) expect(name, name).not.toMatch(nested);
+  });
+
+  it("os itens de pedido do Forno usam o novo formato", () => {
+    const names = forno.orders.flatMap((o) => o.items.map((i) => i.name));
+    expect(names).toContain("Pizza Margherita · Média, 6 fatias");
+    expect(names).toContain("Pizza Quatro Queijos · Grande, 8 fatias");
+    expect(names.filter((n) => n.includes("(") && n.includes(" · "))).toEqual([]);
   });
 });

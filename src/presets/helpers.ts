@@ -11,6 +11,8 @@ import type {
   Variant,
 } from "@/domain/types";
 
+import { itemName, variantText } from "@/lib/item-name";
+
 export function slugify(text: string): string {
   return text
     .normalize("NFD")
@@ -99,7 +101,7 @@ export function orderItem(p: Product, quantity: number, variant?: Variant): Orde
   return {
     productId: p.id,
     variantId: variant?.id,
-    name: variant ? `${p.name} (${Object.values(variant.attributes).join(" / ")})` : p.name,
+    name: itemName(p.name, variant ? variantText(variant.attributes) : null),
     quantity,
     unitPrice: variant?.price ?? p.price,
   };

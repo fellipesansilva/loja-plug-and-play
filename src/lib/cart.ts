@@ -1,4 +1,5 @@
 import type { Addon, CartLine, Money, Product } from "@/domain/types";
+import { variantText } from "./item-name";
 import { availableStock, isDigital } from "./product";
 
 /** Identificador da combinação produto + variante + adicionais (a ordem dos adicionais não importa). */
@@ -112,7 +113,7 @@ export function resolveLines(cart: CartLine[], products: Product[]): ResolvedLin
       {
         line,
         product,
-        variantLabel: variant ? Object.values(variant.attributes).join(" / ") : null,
+        variantLabel: variant ? variantText(variant.attributes) : null,
         addons: selectedAddons(product, line.addonIds),
         unit: unitPrice(product, line.variantId, line.addonIds),
         total: lineTotal(product, line),

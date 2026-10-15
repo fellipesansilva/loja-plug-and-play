@@ -1,5 +1,6 @@
 import type { Order, OrderStatus } from "@/domain/types";
 import type { ResolvedLine } from "./cart";
+import { itemName } from "./item-name";
 import type { Totals } from "./totals";
 
 /** Monta o pedido a partir das linhas do carrinho já resolvidas. Nenhum dado sensível de cartão entra aqui. */
@@ -21,7 +22,7 @@ export function buildOrder(input: {
       variantId: line.variantId,
       lineId: line.lineId,
       addons: addons.length ? addons : undefined,
-      name: variantLabel ? `${product.name} (${variantLabel})` : product.name,
+      name: itemName(product.name, variantLabel),
       quantity: line.qty,
       unitPrice: unit,
     })),
