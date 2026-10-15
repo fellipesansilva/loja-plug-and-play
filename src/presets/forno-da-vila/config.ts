@@ -126,9 +126,10 @@ export const config: StoreConfig = {
     regretConditions:
       "Por se tratar de alimentos perecíveis, o produto deve estar lacrado e conservado conforme a embalagem. (Texto de demonstração.)",
     defect: {
-      days: 7,
+      durability: "nonDurable",
+      days: 30,
       conditions:
-        "Se o pedido chegar com problema (produto estragado, trocado ou fora das condições de consumo), avise em até 7 dias após o recebimento, com uma foto: refazemos o pedido ou devolvemos o valor. (Texto de demonstração.)",
+        "Se o pedido chegar com problema (produto estragado, trocado ou fora das condições de consumo), avise em até 30 dias após o recebimento, com uma foto: refazemos o pedido ou devolvemos o valor. Alimentos perecíveis devem ser avisados o quanto antes. (Texto de demonstração.)",
     },
     digital:
       "Produtos digitais (como vales e receitas em PDF) são enviados por e-mail após a confirmação do pagamento. O direito de arrependimento de 7 dias vale a partir da compra, e o reembolso é integral. (Texto de demonstração.)",

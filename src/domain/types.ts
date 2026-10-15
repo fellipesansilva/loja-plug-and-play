@@ -191,7 +191,13 @@ export type StoreConfig = {
     /** Condições para devolver o produto no arrependimento (ex.: "peça sem uso e com etiqueta"). */
     regretConditions: string;
     /** Troca por defeito: prazo em dias a partir do recebimento e condições. */
-    defect: { days: number; conditions: string };
+    defect: {
+      /** Os produtos da loja são duráveis (ex.: roupas) ou não duráveis (ex.: alimentos)? Define o prazo mínimo legal. */
+      durability: Durability;
+      /** Prazo para reclamar de defeito, em dias. Nunca menor que `MIN_DEFECT_DAYS[durability]` (validado no build). */
+      days: number;
+      conditions: string;
+    };
     /** Texto sobre produto digital (acesso, arrependimento). Obrigatório se o preset tiver produto digital; só aparece quando há. */
     digital?: string;
     about: string;
@@ -216,6 +222,11 @@ export type PrivacyPolicy = {
   /** Responsável pelos dados (encarregado). */
   controller: { name: string; email: string };
 };
+
+export type Durability = "durable" | "nonDurable";
+
+/** Prazo mínimo para reclamar de defeito (CDC, art. 26): 30 dias em produto não durável, 90 dias em durável. */
+export const MIN_DEFECT_DAYS: Record<Durability, number> = { nonDurable: 30, durable: 90 };
 
 /** Prazo mínimo legal do direito de arrependimento (CDC, art. 49), em dias. */
 export const MIN_REGRET_DAYS = 7;

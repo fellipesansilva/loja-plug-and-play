@@ -83,6 +83,8 @@ test.describe("H2 · trocas e devoluções", () => {
     await expect(link).toHaveAttribute("href", inStore("/arrependimento"));
     const defect = await page.evaluate(() => window.__demoStore!.getState().config.policies.defect);
     await expect(page.getByTestId("defect-days")).toHaveText(`${defect.days} dias`);
+    // CDC, art. 26: 30 dias (não durável, Forno) e 90 dias (durável, Trama)
+    await expect(page.getByTestId("defect-days")).toHaveText(currentPreset() === TRAMA ? "90 dias" : "30 dias");
     await expect(page.getByTestId("defeito")).toContainText(defect.conditions);
     await link.click();
     await expect(page).toHaveURL(new RegExp(`/${SHORT[currentPreset()]}/arrependimento$`));

@@ -42,6 +42,31 @@ describe.each(presets.map((p) => [p.id, p] as const))("conformidade do preset %s
     expect(validatePreset(bad)).toEqual([]);
   });
 
+  it("defeito · prazo abaixo do CDC (art. 26) derruba o build; no mínimo passa", () => {
+    const bad = clone(preset);
+    const { defect } = bad.config.policies;
+    defect.durability = "nonDurable";
+    defect.days = 7;
+    expect(() => assertValidPreset(bad)).toThrow(/defect\.days[\s\S]*30 dias[\s\S]*não durável/);
+    defect.days = 30;
+    expect(validatePreset(bad)).toEqual([]);
+    defect.durability = "durable";
+    defect.days = 30;
+    expect(() => assertValidPreset(bad)).toThrow(/defect\.days[\s\S]*90 dias[\s\S]*durável/);
+    defect.days = 89;
+    expect(validatePreset(bad).join()).toContain("defect.days");
+    defect.days = 90;
+    expect(validatePreset(bad)).toEqual([]);
+    defect.days = 120;
+    expect(validatePreset(bad)).toEqual([]);
+  });
+
+  it("defeito · sem declarar durável/não durável o build falha", () => {
+    const bad = clone(preset);
+    delete (bad.config.policies.defect as { durability?: string }).durability;
+    expect(validatePreset(bad).join()).toContain("defect.durability");
+  });
+
   it("H2 · produto digital exige o texto sobre produto digital", () => {
     const bad = clone(preset);
     bad.products[0].type = "digital";

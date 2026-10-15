@@ -124,9 +124,10 @@ export const config: StoreConfig = {
     regretDays: 7,
     regretConditions: "A peça deve estar sem uso, lavagem ou alteração, e com a etiqueta. (Texto de demonstração.)",
     defect: {
-      days: 30,
+      durability: "durable",
+      days: 90,
       conditions:
-        "Se a peça chegar com defeito de fabricação, avise em até 30 dias após o recebimento: trocamos por outra igual ou devolvemos o valor, e o frete da devolução é por nossa conta. (Texto de demonstração.)",
+        "Se a peça apresentar defeito de fabricação, avise em até 90 dias após o recebimento: trocamos por outra igual ou devolvemos o valor, e o frete da devolução é por nossa conta. (Texto de demonstração.)",
     },
     digital:
       "Produtos digitais (como e-books e cursos) liberam o acesso logo após a confirmação do pagamento. O direito de arrependimento de 7 dias vale a partir da compra, e o reembolso é integral. (Texto de demonstração.)",

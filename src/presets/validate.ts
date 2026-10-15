@@ -1,4 +1,4 @@
-import { MIN_REGRET_DAYS, type Preset } from "@/domain/types";
+import { MIN_DEFECT_DAYS, MIN_REGRET_DAYS, type Preset } from "@/domain/types";
 
 const filled = (v: unknown): boolean => typeof v === "string" && v.trim().length > 0;
 const filledList = (v: unknown): boolean => Array.isArray(v) && v.length > 0 && v.every(filled);
@@ -30,11 +30,21 @@ export function validatePreset(preset: Preset): string[] {
   );
   need(filled(policies?.regret), "config.policies.regret", "informe o aviso curto de arrependimento");
   need(filled(policies?.regretConditions), "config.policies.regretConditions", "informe as condições de devolução no arrependimento");
+  const durability = policies?.defect?.durability;
   need(
-    Number.isInteger(policies?.defect?.days) && policies.defect.days > 0 && filled(policies.defect.conditions),
-    "config.policies.defect",
-    "informe o prazo (dias) e as condições da troca por defeito",
+    durability === "durable" || durability === "nonDurable",
+    "config.policies.defect.durability",
+    'declare se os produtos são duráveis ("durable") ou não duráveis ("nonDurable")',
   );
+  need(filled(policies?.defect?.conditions), "config.policies.defect.conditions", "informe as condições da troca por defeito");
+  if (durability === "durable" || durability === "nonDurable") {
+    const min = MIN_DEFECT_DAYS[durability];
+    need(
+      Number.isInteger(policies.defect.days) && policies.defect.days >= min,
+      "config.policies.defect.days",
+      `o prazo de troca por defeito não pode ser menor que ${min} dias para produto ${durability === "durable" ? "durável" : "não durável"} (CDC, art. 26); recebido: ${policies.defect.days}`,
+    );
+  }
   const hasDigital = preset.products.some((p) => p.type === "digital");
   need(!hasDigital || filled(policies?.digital), "config.policies.digital", "o preset tem produto digital: informe o texto sobre produto digital");
 
