@@ -42,6 +42,11 @@
   --spacing-xl: var(--t-space-xl);
 }
 
+/* Link direto por preset (?preset=): esconde a página até a vitrine aplicar o preset (ver early-theme-script.ts). */
+html[data-preset-pending] {
+  visibility: hidden;
+}
+
 @layer base {
   body {
     background-color: var(--color-background);

@@ -1,4 +1,4 @@
-# Loja Virtual Plug and Play — Fatias 0 (Fundação), 1 (Vitrine: catálogo) e 1.1 (Forno da Vila v2)
+# Loja Virtual Plug and Play — Fatias 0 (Fundação), 1 (Catálogo), 1.1 (Forno da Vila v2) e 2 (Compra)
 
 Mockup navegável de e-commerce reutilizável e agnóstico de nicho. Nada específico de cliente ou nicho está no código: tema (tokens), módulos (liga/desliga) e catálogo vêm de **presets** (dados).
 
@@ -88,6 +88,20 @@ Outros dados da vitrine vindos do preset: `seo` (modelo de título e descrição
 
 
 Hoje todas são placeholders SVG locais (`/placeholder`). Fotos reais vão em `public/images/presets/<preset>/` (WebP, ≤ 1600 px, ≤ 200 KB) e **precisam** constar em `IMAGE_CREDITS.md` (teste de presets).
+
+## Compra: carrinho, checkout e confirmação (F2)
+
+Tudo simulado: nenhum pagamento, frete ou e-mail real. Rotas `/carrinho`, `/checkout` (3 etapas: Identificação, Entrega, Pagamento) e `/pedido/<id>`.
+O total vem de um único cálculo (`src/lib/totals.ts`): subtotal − cupom − desconto Pix (só no Pix, sobre o valor após o cupom, nunca sobre o frete) + frete, em centavos.
+O frete grátis compara o **subtotal do carrinho** (só itens físicos). O pedido é gravado em `store.orders`, o carrinho é zerado, e na tela de confirmação o botão Demo ganha "Simular pagamento aprovado".
+
+- **Link direto por preset:** `?preset=forno` (ou `?preset=trama`, ou o id completo) em qualquer rota aplica e persiste o preset, sem piscar o preset padrão, e remove o parâmetro da URL. Id desconhecido é ignorado. O apelido vem de `shortId` em `src/presets/<preset>/index.ts`.
+- **Ligar o desconto no Pix:** em `config.modules` do preset, `descontoPix: { enabled: true, percent: 5 }`. A linha "No Pix: R$ X" aparece no card, na página do produto, no carrinho e no pagamento.
+- **Criar cupons:** em `src/presets/<preset>/coupons.ts`: `{ code, type: "percent" | "fixed", value, minValue?, active, expiresAt? }`. `percent` usa o número (10 = 10%); `fixed` e `minValue` em centavos. O código não diferencia maiúsculas; o campo só aparece com `modules.cupom: true`.
+- **Produto digital:** `type: "digital"` no produto. Sem estoque (sempre disponível), sem calculadora de frete na página, não conta para o frete grátis; carrinho só com digitais pula a etapa de entrega e a confirmação diz "O acesso será enviado para {e-mail}". Nenhum preset tem produto digital ainda (os testes usam fixture).
+- **Nomes do preset:** `cartLabel` ("Carrinho" ou "Sacola") e `orderPrefix` ("TS" gera TS-1009).
+- **Cartão (simulado):** só `4111 1111 1111 1111` é aprovado. O pedido guarda apenas bandeira e últimos 4 dígitos; número completo e CVV nunca são gravados. Formas de pagamento disponíveis: Pix sempre; cartão com `parcelamento` ligado; boleto com `boleto` ligado.
+- **LGPD:** a identificação pede só nome, e-mail, celular e CPF (para a nota fiscal); a caixa de marketing vem desmarcada.
 
 ## Estado e persistência
 

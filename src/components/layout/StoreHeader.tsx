@@ -69,6 +69,7 @@ export function StoreHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const name = useDemoStore((s) => s.config.name);
   const wordmark = useDemoStore((s) => s.config.wordmark);
+  const cartLabel = useDemoStore((s) => s.config.cartLabel ?? "Carrinho");
   const searchLayout = useDemoStore((s) => s.config.layout.search);
   const categories = useDemoStore((s) => s.categories);
   const count = useDemoStore((s) => s.cart.reduce((sum, l) => sum + l.qty, 0));
@@ -112,7 +113,7 @@ export function StoreHeader() {
             <Link
               href="/carrinho"
               className={`${iconButton} relative`}
-              aria-label={`Carrinho, ${count} ${count === 1 ? "item" : "itens"}`}
+              aria-label={`${cartLabel}, ${count} ${count === 1 ? "item" : "itens"}`}
             >
               <CartIcon />
               {count > 0 && (

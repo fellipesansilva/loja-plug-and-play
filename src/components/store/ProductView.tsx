@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/domain/types";
 import { unitPrice } from "@/lib/cart";
 import { formatBRL } from "@/lib/money";
+import { availableStock, isDigital, isSoldOut } from "@/lib/product";
 import {
   missingAxes,
   selectedVariant,
@@ -18,6 +19,7 @@ import { useHydrated } from "@/store/use-hydrated";
 import { ChevronLeftIcon, HeartIcon, MinusIcon, PlusIcon } from "./Icons";
 import { InstallmentLine } from "./InstallmentLine";
 import { PageTitle } from "./PageTitle";
+import { PixLine } from "./PixLine";
 import { ProductGallery } from "./ProductGallery";
 import { ShippingCalculator } from "./ShippingCalculator";
 import { VariantSelectors } from "./VariantSelectors";
@@ -110,8 +112,9 @@ function ProductDetails({ product }: { product: Product }) {
   const price = variantPrice(product, variant);
   const unit = unitPrice(product, variant?.id, addonIds);
   const total = unit * qty;
-  const soldOut = product.stock === 0 || (variant !== undefined && variant.stock === 0);
-  const available = variant ? variant.stock : axes.length === 0 ? product.stock : null;
+  const digital = isDigital(product);
+  const soldOut = isSoldOut(product) || (!digital && variant !== undefined && variant.stock === 0);
+  const available = variant ? availableStock(product, variant.id) : axes.length === 0 ? availableStock(product) : null;
   const inCart = cart
     .filter((l) => l.productId === product.id && l.variantId === variant?.id)
     .reduce((sum, l) => sum + l.qty, 0);
@@ -245,6 +248,7 @@ function ProductDetails({ product }: { product: Product }) {
                 {formatBRL(price)}
               </p>
               <InstallmentLine price={price} variant="page" className="text-sm text-muted" />
+              <PixLine amount={price} className="text-sm text-muted" />
             </div>
 
             {axes.length > 0 && (
@@ -256,7 +260,7 @@ function ProductDetails({ product }: { product: Product }) {
             {lowStock}
             {warningMessage}
 
-            <ShippingCalculator itemPrice={unit} />
+            {!digital && <ShippingCalculator itemPrice={unit} />}
             {regretLine}
           </div>
         </div>
@@ -351,6 +355,7 @@ function ProductDetails({ product }: { product: Product }) {
               {formatBRL(price)}
             </p>
             <InstallmentLine price={price} variant="page" className="text-sm text-muted" />
+              <PixLine amount={price} className="text-sm text-muted" />
           </div>
 
           {axes.length > 0 && (
@@ -373,7 +378,7 @@ function ProductDetails({ product }: { product: Product }) {
             {warningMessage}
           </div>
 
-          <ShippingCalculator itemPrice={unit} />
+          {!digital && <ShippingCalculator itemPrice={unit} />}
 
           <section aria-labelledby="descricao">
             <h2 id="descricao" className="text-lg">

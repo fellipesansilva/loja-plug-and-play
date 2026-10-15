@@ -7,6 +7,7 @@ import sampleCsv from "./sample.csv";
 
 export const tramaStudio: Preset = {
   id: "trama-studio",
+  shortId: "trama",
   config,
   categories,
   products,

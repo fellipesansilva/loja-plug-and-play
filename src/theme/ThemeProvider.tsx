@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { resolvePresetParam } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
 import { EARLY_THEME_SCRIPT } from "./early-theme-script";
 import { tokensToCss } from "./tokens";
@@ -26,7 +27,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (EXPOSE_STORE) window.__demoStore = useDemoStore;
-    void useDemoStore.persist.rehydrate();
+    // Link direto (?preset=): aplica o preset (sem resetar se já for o ativo), tira o parâmetro da URL e mostra a página.
+    const requested = resolvePresetParam(window.location.search);
+    void Promise.resolve(useDemoStore.persist.rehydrate()).then(() => {
+      const state = useDemoStore.getState();
+      if (requested && state.presetId !== requested) state.applyPreset(requested);
+      if (requested) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("preset");
+        window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+      }
+      // Dois quadros depois: o React já trocou o conteúdo para o preset pedido.
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => document.documentElement.removeAttribute("data-preset-pending")),
+      );
+    });
   }, []);
 
   return (

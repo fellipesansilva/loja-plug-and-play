@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import type { Product } from "@/domain/types";
 import { productValues } from "@/lib/filters";
 import { formatBRL } from "@/lib/money";
+import { isSoldOut } from "@/lib/product";
 import { useDemoStore } from "@/store/demo-store";
 import { CheckIcon, PlusIcon } from "./Icons";
+import { PixLine } from "./PixLine";
 import { StoreImage } from "./StoreImage";
 
 const THUMB_SIZES = "100px";
@@ -19,7 +21,7 @@ const FEEDBACK_MS = 1400;
 export function QuickAddButton({ product, className = "size-10" }: { product: Product; className?: string }) {
   const addToCart = useDemoStore((s) => s.addToCart);
   const [added, setAdded] = useState(false);
-  const soldOut = product.stock === 0;
+  const soldOut = isSoldOut(product);
   const needsChoice = product.variants.length > 0;
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function QuickAddButton({ product, className = "size-10" }: { product: Pr
 /** Item do cardápio: nome, descrição curta, preço e selos à esquerda; miniatura com "+" à direita. */
 export function ProductMenuItem({ product }: { product: Product }) {
   const defs = useDemoStore((s) => s.config.attributeDefs);
-  const soldOut = product.stock === 0;
+  const soldOut = isSoldOut(product);
   const badges = defs.filter((d) => d.highlight).flatMap((d) => productValues(product, d.key));
   const href = `/produto/${product.slug}`;
 
@@ -67,6 +69,7 @@ export function ProductMenuItem({ product }: { product: Product }) {
         <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-muted">{product.description}</p>
         <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-base font-extrabold text-primary">{formatBRL(product.price)}</span>
+          <PixLine amount={product.price} className="text-xs text-muted" />
           {badges.map((b) => (
             <span key={b} className="rounded-button bg-highlight-bg px-2 py-0.5 text-xs font-bold text-highlight-text">
               {b}

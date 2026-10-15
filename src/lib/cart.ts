@@ -1,4 +1,5 @@
 import type { Addon, CartLine, Money, Product } from "@/domain/types";
+import { availableStock, isDigital } from "./product";
 
 /** Identificador da combinação produto + variante + adicionais (a ordem dos adicionais não importa). */
 export function makeLineId(productId: string, variantId: string | undefined, addonIds: string[]): string {
@@ -72,9 +73,7 @@ export function addLine(cart: CartLine[], products: Product[], input: AddToCartI
     .sort();
   const lineId = makeLineId(product.id, input.variantId, addonIds);
 
-  const stock = input.variantId
-    ? (product.variants.find((v) => v.id === input.variantId)?.stock ?? 0)
-    : product.stock;
+  const stock = availableStock(product, input.variantId);
   const sameStock = (l: CartLine) => l.productId === product.id && l.variantId === input.variantId;
   const inOtherLines = cart.filter((l) => sameStock(l) && l.lineId !== lineId).reduce((s, l) => s + l.qty, 0);
   const current = cart.find((l) => l.lineId === lineId)?.qty ?? 0;
@@ -83,4 +82,65 @@ export function addLine(cart: CartLine[], products: Product[], input: AddToCartI
 
   const line: CartLine = { lineId, productId: product.id, variantId: input.variantId, addonIds, qty: next };
   return current > 0 ? cart.map((l) => (l.lineId === lineId ? line : l)) : [...cart, line];
+}
+
+/** Linha do carrinho com o produto, a variante e os preços já resolvidos. */
+export type ResolvedLine = {
+  line: CartLine;
+  product: Product;
+  variantLabel: string | null;
+  addons: Addon[];
+  unit: Money;
+  total: Money;
+  /** Máximo que o seletor de quantidade permite (estoque da variante menos o das outras linhas do mesmo item). */
+  maxQty: number;
+  digital: boolean;
+};
+
+const MAX_QTY = 99;
+
+export function resolveLines(cart: CartLine[], products: Product[]): ResolvedLine[] {
+  return cart.flatMap((line) => {
+    const product = products.find((p) => p.id === line.productId);
+    if (!product) return [];
+    const variant = line.variantId ? product.variants.find((v) => v.id === line.variantId) : undefined;
+    const others = cart
+      .filter((l) => l.lineId !== line.lineId && l.productId === line.productId && l.variantId === line.variantId)
+      .reduce((s, l) => s + l.qty, 0);
+    const stock = availableStock(product, line.variantId);
+    return [
+      {
+        line,
+        product,
+        variantLabel: variant ? Object.values(variant.attributes).join(" / ") : null,
+        addons: selectedAddons(product, line.addonIds),
+        unit: unitPrice(product, line.variantId, line.addonIds),
+        total: lineTotal(product, line),
+        maxQty: Math.max(1, Math.min(MAX_QTY, stock - others)),
+        digital: isDigital(product),
+      },
+    ];
+  });
+}
+
+/** Carrinho só com produtos digitais (e com itens): não tem entrega nem frete. */
+export function cartIsAllDigital(lines: ResolvedLine[]): boolean {
+  return lines.length > 0 && lines.every((l) => l.digital);
+}
+
+/** Subtotal dos itens físicos: base do frete grátis (produto digital não conta para o frete). */
+export function physicalSubtotal(lines: ResolvedLine[]): Money {
+  return lines.filter((l) => !l.digital).reduce((sum, l) => sum + l.total, 0);
+}
+
+/** Ajusta a quantidade de uma linha, entre 1 e o máximo permitido (estoque). */
+export function setLineQty(cart: CartLine[], products: Product[], lineId: string, qty: number): CartLine[] {
+  const resolved = resolveLines(cart, products).find((l) => l.line.lineId === lineId);
+  if (!resolved) return cart;
+  const next = Math.max(1, Math.min(Math.floor(qty), resolved.maxQty));
+  return cart.map((l) => (l.lineId === lineId ? { ...l, qty: next } : l));
+}
+
+export function removeLine(cart: CartLine[], lineId: string): CartLine[] {
+  return cart.filter((l) => l.lineId !== lineId);
 }

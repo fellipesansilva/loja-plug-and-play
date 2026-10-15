@@ -27,4 +27,46 @@ describe("early theme script", () => {
     expect(run({ getItem: () => { throw new Error("bloqueado"); } })).toBe("original");
     expect(run({ getItem: () => "{lixo" })).toBe("original");
   });
+
+  describe("link direto ?preset=", () => {
+    function runWith(search: string, storage: { getItem: (k: string) => string | null } = { getItem: () => null }) {
+      const el = { textContent: "original" };
+      const attrs: Record<string, string> = {};
+      vm.runInNewContext(EARLY_THEME_SCRIPT, {
+        location: { search },
+        localStorage: storage,
+        setTimeout: () => 0,
+        document: {
+          getElementById: (id: string) => (id === "theme-tokens" ? el : null),
+          documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v), removeAttribute: (k: string) => delete attrs[k] },
+        },
+      });
+      return { css: el.textContent, attrs };
+    }
+
+    it("aplica os tokens do preset pedido (apelido ou id) e esconde a página até a troca", () => {
+      const forno = getPreset("forno-da-vila")!.config.theme;
+      for (const q of ["?preset=forno", "?preset=forno-da-vila", "?a=1&preset=FORNO"]) {
+        const { css, attrs } = runWith(q);
+        expect(css, q).toBe(tokensToCss(forno));
+        expect(attrs).toHaveProperty("data-preset-pending");
+      }
+    });
+
+    it("o parâmetro vale mais do que o preset salvo", () => {
+      const trama = getPreset("trama-studio")!.config.theme;
+      const saved = JSON.stringify({ state: { config: { theme: trama } }, version: STORAGE_VERSION });
+      const { css } = runWith("?preset=forno", { getItem: (k) => (k === STORAGE_KEY ? saved : null) });
+      expect(css).toBe(tokensToCss(getPreset("forno-da-vila")!.config.theme));
+    });
+
+    it("id desconhecido é ignorado: segue o preset salvo e a página não é escondida", () => {
+      const forno = getPreset("forno-da-vila")!.config.theme;
+      const saved = JSON.stringify({ state: { config: { theme: forno } }, version: STORAGE_VERSION });
+      const { css, attrs } = runWith("?preset=orbita", { getItem: (k) => (k === STORAGE_KEY ? saved : null) });
+      expect(css).toBe(tokensToCss(forno));
+      expect(attrs).not.toHaveProperty("data-preset-pending");
+      expect(runWith("?preset=orbita").css).toBe("original");
+    });
+  });
 });

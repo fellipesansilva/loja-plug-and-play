@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { CheckoutView } from "@/components/store/CheckoutView";
 
 export default function Page() {
-  return <PagePlaceholder title="Checkout" />;
+  return <CheckoutView />;
 }

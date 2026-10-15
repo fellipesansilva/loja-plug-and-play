@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { CartView } from "@/components/store/CartView";
 
 export default function Page() {
-  return <PagePlaceholder title="Carrinho" />;
+  return <CartView />;
 }

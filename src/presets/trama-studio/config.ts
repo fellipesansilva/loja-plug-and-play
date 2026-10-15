@@ -3,6 +3,8 @@ import { bannerImage } from "./images";
 
 export const config: StoreConfig = {
   name: "Trama Studio",
+  cartLabel: "Carrinho",
+  orderPrefix: "TS",
   logo: "/placeholder?l=Trama%20Studio&c=4b5340",
   seo: {
     titleTemplate: "%s · Trama Studio",
@@ -110,6 +112,7 @@ export const config: StoreConfig = {
     freteGratis: { enabled: true, minValue: 19900 },
     parcelamento: { enabled: true, maxInstallments: 6, minInstallment: 2000 },
     boleto: true,
+    descontoPix: { enabled: true, percent: 5 },
     cupom: true,
     assistenteVirtual: false,
   },

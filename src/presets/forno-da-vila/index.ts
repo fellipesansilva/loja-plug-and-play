@@ -7,6 +7,7 @@ import sampleCsv from "./sample.csv";
 
 export const fornoDaVila: Preset = {
   id: "forno-da-vila",
+  shortId: "forno",
   config,
   categories,
   products,

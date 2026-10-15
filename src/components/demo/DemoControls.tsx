@@ -12,6 +12,9 @@ export function DemoControls() {
   const presetId = useDemoStore((s) => s.presetId);
   const applyPreset = useDemoStore((s) => s.applyPreset);
   const reset = useDemoStore((s) => s.reset);
+  const setOrderStatus = useDemoStore((s) => s.setOrderStatus);
+  const orderId = /^\/pedido\/([^/]+)$/.exec(pathname)?.[1];
+  const awaitingPayment = useDemoStore((s) => s.orders.some((o) => o.id === orderId && o.status === "aguardando_pagamento"));
   const inPainel = pathname.startsWith("/painel");
   // Páginas de produto podem ter barra fixa de compra no rodapé: o botão sobe para não cobri-la.
   const aboveBuyBar = pathname.startsWith("/produto/");
@@ -38,6 +41,18 @@ export function DemoControls() {
               </button>
             ))}
           </div>
+          {orderId && awaitingPayment && (
+            <button
+              type="button"
+              onClick={() => {
+                setOrderStatus(orderId, "pago");
+                setOpen(false);
+              }}
+              className="mt-md w-full rounded-md bg-primary px-md py-sm text-sm font-bold text-background"
+            >
+              Simular pagamento aprovado
+            </button>
+          )}
           <button
             type="button"
             onClick={reset}

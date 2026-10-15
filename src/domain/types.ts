@@ -48,6 +48,8 @@ export type Modules = {
   /** `minInstallment` = valor mínimo da parcela em centavos (padrão 2000). */
   parcelamento?: { enabled: boolean; maxInstallments: number; minInstallment?: Money };
   boleto?: boolean;
+  /** Desconto no Pix: `percent` (ex.: 5 = 5%) sobre o valor após o cupom, nunca sobre o frete. */
+  descontoPix?: { enabled: boolean; percent: number };
   cupom?: boolean;
   assistenteVirtual?: boolean;
 };
@@ -127,6 +129,10 @@ export type ShippingConfig = {
 
 export type StoreConfig = {
   name: string;
+  /** Como a loja chama o carrinho ("Carrinho", "Sacola"). Padrão: "Carrinho". */
+  cartLabel?: string;
+  /** Prefixo do número dos pedidos (ex.: "TS" → TS-1009). Padrão: "PD". */
+  orderPrefix?: string;
   logo: string;
   seo: { titleTemplate: string; description: string };
   /** Variantes de layout da vitrine, escolhidas pelo preset. */
@@ -180,9 +186,14 @@ export type Variant = {
 /** Item opcional vendido junto do produto (ex.: sorvete, morangos), com preço próprio em centavos. */
 export type Addon = { id: string; label: string; price: Money };
 
+/** Produto físico (padrão) ou digital: sem estoque, sem frete e sem etapa de entrega no checkout. */
+export type ProductType = "physical" | "digital";
+
 export type Product = {
   id: string;
   slug: string;
+  /** Padrão: `"physical"`. */
+  type?: ProductType;
   name: string;
   price: Money;
   images: Image[];
@@ -218,6 +229,9 @@ export const ORDER_STATUSES: readonly OrderStatus[] = [
 export type OrderItem = {
   productId: string;
   variantId?: string;
+  /** Linha do carrinho de origem (produto + variante + adicionais). */
+  lineId?: string;
+  addons?: Addon[];
   name: string;
   quantity: number;
   unitPrice: Money;
@@ -238,11 +252,33 @@ export type CartLine = {
 export type Order = {
   id: string;
   items: OrderItem[];
-  customer: { name: string; email: string; phone: string };
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    /** Só dígitos; usado para a nota fiscal. */
+    cpf?: string;
+    marketingOptIn?: boolean;
+  };
   delivery:
     | { type: "entrega"; address: string; shipping: Money }
-    | { type: "retirada" };
-  payment: { method: "pix" | "cartao" | "boleto"; installments?: number };
+    | { type: "retirada" }
+    | { type: "digital" };
+  payment: {
+    method: "pix" | "cartao" | "boleto";
+    installments?: number;
+    /** Cartão: só bandeira e últimos 4 dígitos. O número completo e o CVV nunca são gravados. */
+    brand?: string;
+    last4?: string;
+    /** Boleto: vencimento (AAAA-MM-DD). */
+    dueDate?: string;
+    /** Pix: código copia-e-cola fictício; boleto: linha digitável fictícia. */
+    code?: string;
+  };
+  subtotal?: Money;
+  couponCode?: string;
+  couponDiscount?: Money;
+  pixDiscount?: Money;
   status: OrderStatus;
   /** ISO 8601 */
   createdAt: string;
@@ -259,8 +295,19 @@ export type Coupon = {
   expiresAt?: string;
 };
 
+/** Escolhas do carrinho que seguem para o checkout (cupom, CEP e entrega). */
+export type CheckoutDraft = {
+  couponCode: string | null;
+  /** Só dígitos (8) quando válido; vazio = não informado. */
+  cep: string;
+  /** id da opção de frete, ou "pickup" (retirada). */
+  shippingId: string | null;
+};
+
 export type Preset = {
   id: string;
+  /** Apelido curto para o link direto (`?preset=forno`). O id completo também funciona. */
+  shortId?: string;
   config: StoreConfig;
   categories: Category[];
   products: Product[];

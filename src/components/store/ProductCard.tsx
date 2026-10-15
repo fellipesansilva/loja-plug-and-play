@@ -3,9 +3,11 @@
 import Link from "next/link";
 import type { Product } from "@/domain/types";
 import { formatBRL } from "@/lib/money";
+import { isSoldOut } from "@/lib/product";
 import { productValues } from "@/lib/filters";
 import { useDemoStore } from "@/store/demo-store";
 import { InstallmentLine } from "./InstallmentLine";
+import { PixLine } from "./PixLine";
 import { ProductMenuItem } from "./ProductMenuItem";
 import { StoreImage } from "./StoreImage";
 
@@ -13,7 +15,7 @@ const CARD_SIZES = "(min-width: 768px) 25vw, 50vw";
 
 export function ProductCard({ product }: { product: Product }) {
   const defs = useDemoStore((s) => s.config.attributeDefs);
-  const soldOut = product.stock === 0;
+  const soldOut = isSoldOut(product);
   const badges = defs
     .filter((d) => d.highlight)
     .flatMap((d) => productValues(product, d.key));
@@ -46,6 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
         </h3>
         <p className="mt-xs text-base font-bold text-text">{formatBRL(product.price)}</p>
         <InstallmentLine price={product.price} variant="card" className="text-xs text-muted" />
+        <PixLine amount={product.price} className="text-xs text-muted" />
       </Link>
     </li>
   );
