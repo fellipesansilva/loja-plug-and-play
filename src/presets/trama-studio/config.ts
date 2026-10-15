@@ -42,13 +42,14 @@ export const config: StoreConfig = {
     { id: "frete-gratis", type: "shippingProgress", enabled: true },
   ],
   attributeDefs: [
-    { key: "tamanho", label: "Tamanho", selector: "pill", filterable: true, highlight: false },
+    { key: "tamanho", label: "Tamanho", selector: "pill", filterable: true, highlight: false, variant: true },
     {
       key: "cor",
       label: "Cor",
       selector: "swatch",
       filterable: true,
       highlight: false,
+      variant: true,
       swatches: {
         Preto: "#1c1b19",
         "Off-white": "#ece7dc",

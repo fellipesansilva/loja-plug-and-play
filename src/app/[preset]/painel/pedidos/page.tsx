@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { OrdersList } from "@/components/painel/OrdersList";
 
 export default function Page() {
-  return <PagePlaceholder title="Pedidos" />;
+  return <OrdersList />;
 }

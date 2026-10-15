@@ -8,7 +8,7 @@ export const config: StoreConfig = {
   orderPrefix: "FV",
   logo: "/placeholder?l=Forno%20da%20Vila&c=cf3512",
   wordmark: { text: "forno.da vila", accent: "." },
-  pickup: { leadTime: "20 min" },
+  pickup: { leadTime: "20 min", readyLabel: "Pronto para retirada" },
   seo: {
     titleTemplate: "%s · Forno da Vila",
     description: "Pizzas, pães e doces saindo do forno todos os dias. Peça online e receba em casa ou retire na loja em 20 minutos.",
@@ -53,7 +53,7 @@ export const config: StoreConfig = {
     { id: "frete-gratis", type: "shippingProgress", enabled: true },
   ],
   attributeDefs: [
-    { key: "porcao", label: "Porção", selector: "list", filterable: false, highlight: false },
+    { key: "porcao", label: "Porção", selector: "list", filterable: false, highlight: false, variant: true },
     { key: "dieta", label: "Restrição alimentar", selector: "pill", filterable: true, highlight: true },
     { key: "sabor", label: "Sabor", selector: "pill", filterable: false, highlight: false },
     { key: "validade", label: "Validade", selector: "pill", filterable: false, highlight: false },

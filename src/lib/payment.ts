@@ -78,6 +78,8 @@ export function nextOrderId(prefix: string, orders: Pick<Order, "id">[]): string
   return `${prefix}-${(used.length ? Math.max(...used) : 1000) + 1}`;
 }
 
+export const PAYMENT_METHOD_LABEL = { pix: "Pix", cartao: "Cartão de crédito", boleto: "Boleto" } as const;
+
 export const ORDER_STATUS_LABEL: Record<Order["status"], string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pago",

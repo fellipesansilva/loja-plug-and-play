@@ -125,6 +125,8 @@ export type AttributeDef = {
   highlight: boolean;
   /** Aparece como linha de resumo (muted) sob a descrição, na página do produto em folha. */
   summary?: boolean;
+  /** Pode ser eixo de variação do produto (ex.: tamanho, cor, porção). O formulário do painel gera as variações a partir destes. */
+  variant?: boolean;
   /** Só para `swatch`: valor do atributo → cor CSS do círculo. */
   swatches?: Record<string, string>;
 };
@@ -166,8 +168,8 @@ export type StoreConfig = {
   };
   /** Logo em texto com um caractere de destaque colorido (ex.: "forno.da vila" com o ponto). Sem isso, usa `name`. */
   wordmark?: { text: string; accent: string };
-  /** Retirada no local: prazo exibido na faixa de aviso (ex.: "20 min"). */
-  pickup?: { leadTime: string };
+  /** Retirada no local: prazo exibido na faixa de aviso (ex.: "20 min") e rótulo do status "enviado" nos pedidos de retirada (ex.: "Pronto para retirada"). */
+  pickup?: { leadTime: string; readyLabel: string };
   homeBlocks: HomeBlock[];
   attributeDefs: AttributeDef[];
   shipping: ShippingConfig;
@@ -268,6 +270,8 @@ export type Product = {
   addons?: Addon[];
   /** Selos de destaque do produto (ex.: "Nº 1 da semana"). */
   badges?: string[];
+  /** Padrão: `true`. Inativo some da loja (lista, busca, home e página do produto), mas continua no painel. */
+  active?: boolean;
 };
 
 export type OrderStatus =
@@ -286,6 +290,9 @@ export const ORDER_STATUSES: readonly OrderStatus[] = [
   "entregue",
   "cancelado",
 ];
+
+/** Uma mudança de status do pedido, com data e hora (ISO 8601). */
+export type StatusEntry = { status: OrderStatus; at: string };
 
 export type OrderItem = {
   productId: string;
@@ -343,6 +350,8 @@ export type Order = {
   couponDiscount?: Money;
   pixDiscount?: Money;
   status: OrderStatus;
+  /** Histórico de status, do mais antigo ao mais recente. O primeiro item é o status inicial na data do pedido. */
+  history?: StatusEntry[];
   /** Pedido de arrependimento (simulado): protocolo e data. O status passa a "cancelado". */
   regret?: { protocol: string; requestedAt: string };
   /** ISO 8601 */

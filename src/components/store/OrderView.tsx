@@ -4,7 +4,7 @@ import { StoreLink as Link } from "@/components/store/StoreLink";
 import { useEffect, useState } from "react";
 import type { Order } from "@/domain/types";
 import { formatBRL } from "@/lib/money";
-import { ORDER_STATUS_LABEL, PIX_EXPIRES_MINUTES } from "@/lib/payment";
+import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, PIX_EXPIRES_MINUTES } from "@/lib/payment";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { CopyButton } from "./CopyButton";
@@ -12,7 +12,7 @@ import { FakeQr } from "./FakeQr";
 import { PageTitle } from "./PageTitle";
 import { ShippingRow } from "./ShippingRow";
 
-const METHOD_LABEL = { pix: "Pix", cartao: "Cartão de crédito", boleto: "Boleto" } as const;
+const METHOD_LABEL = PAYMENT_METHOD_LABEL;
 
 function formatDate(isoDate: string): string {
   const [y, m, d] = isoDate.split("-");
