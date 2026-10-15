@@ -215,9 +215,20 @@ export function OrderView({ id }: { id: string }) {
           </dl>
         </section>
 
-        <Link href="/" className="inline-flex min-h-11 items-center self-start text-primary underline">
-          Continuar comprando
-        </Link>
+        <div className="flex flex-wrap gap-x-lg">
+          <Link href="/" className="inline-flex min-h-11 items-center self-start text-primary underline">
+            Continuar comprando
+          </Link>
+          {order.status !== "cancelado" && (
+            <Link
+              href={`/arrependimento?pedido=${encodeURIComponent(order.id)}`}
+              className="inline-flex min-h-11 items-center self-start underline"
+              data-testid="regret-order-link"
+            >
+              Desistir da compra
+            </Link>
+          )}
+        </div>
       </div>
     </article>
   );

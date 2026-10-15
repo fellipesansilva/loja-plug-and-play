@@ -222,7 +222,7 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
 
   function submitIdentification(e: FormEvent) {
     e.preventDefault();
-    const errs = validateIdentification(ident);
+    const errs = validateIdentification(ident, { requirePhone: !allDigital });
     if (Object.keys(errs).length) return fail(errs, IDENTIFICATION_FIELDS);
     nextStep();
   }
@@ -272,9 +272,10 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
       customer: {
         name: ident.name.trim(),
         email: ident.email.trim(),
-        phone: ident.phone,
+        phone: ident.phone, // vazio só em pedido 100% digital (sem entrega, o celular não é necessário)
         cpf: maskCpfForStorage(ident.cpf), // o CPF completo nunca é gravado
         marketingOptIn: ident.marketing,
+        marketingConsentAt: ident.marketing ? new Date().toISOString() : undefined,
       },
       delivery,
       payment,
@@ -311,7 +312,7 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
             {errorSummary}
             <FormField name="name" label="Nome completo" autoComplete="name" value={ident.name} error={errors.name} onChange={(e) => setIdent({ ...ident, name: e.target.value })} />
             <FormField name="email" label="E-mail" type="email" autoComplete="email" value={ident.email} error={errors.email} onChange={(e) => setIdent({ ...ident, email: e.target.value })} />
-            <FormField name="phone" label="Celular" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={ident.phone} error={errors.phone} onChange={(e) => setIdent({ ...ident, phone: maskPhone(e.target.value) })} />
+            <FormField name="phone" label={allDigital ? "Celular (opcional)" : "Celular"} inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={ident.phone} error={errors.phone} onChange={(e) => setIdent({ ...ident, phone: maskPhone(e.target.value) })} />
             <FormField name="cpf" label="CPF" inputMode="numeric" placeholder="000.000.000-00" hint="Usado para a nota fiscal" value={ident.cpf} error={errors.cpf} onChange={(e) => setIdent({ ...ident, cpf: maskCpf(e.target.value) })} />
             <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
               <input
@@ -320,10 +321,10 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
                 onChange={(e) => setIdent({ ...ident, marketing: e.target.checked })}
                 className="mt-0.5 size-5 shrink-0 accent-primary"
               />
-              <span>Quero receber novidades e ofertas por e-mail (opcional)</span>
+              <span>Quero receber ofertas</span>
             </label>
             <p className="text-sm text-muted">
-              Ao continuar, você concorda com a{" "}
+              Usamos estes dados só para entrega, pagamento e nota fiscal. Saiba mais na{" "}
               <Link href="/privacidade" className="underline">
                 Política de Privacidade
               </Link>

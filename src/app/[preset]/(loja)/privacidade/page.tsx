@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { PrivacyView } from "@/components/store/PolicyPages";
 
 export default function Page() {
-  return <PagePlaceholder title="Política de privacidade" />;
+  return <PrivacyView />;
 }

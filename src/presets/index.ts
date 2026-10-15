@@ -1,9 +1,13 @@
 import type { Preset } from "@/domain/types";
 import { tramaStudio } from "./trama-studio";
 import { fornoDaVila } from "./forno-da-vila";
+import { assertValidPreset } from "./validate";
 
 /** Registro de presets. Para adicionar um novo, crie a pasta e registre aqui. */
 export const presets: readonly Preset[] = [tramaStudio, fornoDaVila];
+
+// Preset sem os dados de conformidade (identificação, arrependimento, privacidade, cookies) derruba o build.
+for (const preset of presets) assertValidPreset(preset);
 
 export function getPreset(id: string): Preset | undefined {
   return presets.find((p) => p.id === id);

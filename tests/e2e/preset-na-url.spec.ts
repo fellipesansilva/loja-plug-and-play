@@ -199,7 +199,7 @@ test.describe("endereços: raiz, links antigos e 404", () => {
 });
 
 test.describe("links internos sempre levam o prefixo do preset", () => {
-  const routes = ["/", "/categoria/{categoria}", "/produto/{produto}", "/busca?q=a", "/carrinho", "/checkout", "/sobre", "/privacidade", "/trocas-e-devolucoes", "/pedido/{pedido}", "/painel/produtos", "/painel/pedidos", "/painel/configuracoes/loja"];
+  const routes = ["/", "/categoria/{categoria}", "/produto/{produto}", "/busca?q=a", "/carrinho", "/checkout", "/sobre", "/privacidade", "/trocas-e-devolucoes", "/arrependimento", "/pedido/{pedido}", "/painel/produtos", "/painel/pedidos", "/painel/configuracoes/loja"];
 
   for (const route of routes) {
     test(`${route}: todo <a href="/…"> começa por /${"<preset>"}`, async ({ page }) => {

@@ -67,9 +67,11 @@ export const config: StoreConfig = {
     coverage: "national",
   },
   legal: {
+    name: "Trama Studio Comércio de Moda Ltda. (fictícia)",
     document: "00.000.000/0001-00 (fictício, apenas demonstração)",
     address: "Rua Exemplo, 123 — São Paulo/SP (endereço fictício)",
-    contact: "contato@trama.example · (11) 0000-0000",
+    email: "contato@trama.example",
+    phone: "(11) 0000-0000",
   },
   theme: {
     colors: {
@@ -119,11 +121,46 @@ export const config: StoreConfig = {
   },
   policies: {
     regret: "Direito de arrependimento: você pode desistir da compra em até 7 dias após o recebimento.",
-    exchange:
-      "Você pode solicitar a troca ou devolução em até 7 dias após o recebimento, com a peça sem uso e com etiqueta. (Texto de demonstração.)",
-    privacy:
-      "Coletamos apenas os dados necessários para processar seu pedido. Esta é uma loja de demonstração: nenhum dado real é enviado a servidores.",
+    regretDays: 7,
+    regretConditions: "A peça deve estar sem uso, lavagem ou alteração, e com a etiqueta. (Texto de demonstração.)",
+    defect: {
+      days: 30,
+      conditions:
+        "Se a peça chegar com defeito de fabricação, avise em até 30 dias após o recebimento: trocamos por outra igual ou devolvemos o valor, e o frete da devolução é por nossa conta. (Texto de demonstração.)",
+    },
+    digital:
+      "Produtos digitais (como e-books e cursos) liberam o acesso logo após a confirmação do pagamento. O direito de arrependimento de 7 dias vale a partir da compra, e o reembolso é integral. (Texto de demonstração.)",
     about:
       "A Trama Studio é uma marca fictícia de moda atemporal, criada para demonstrar a plataforma de loja virtual plug and play.",
+    privacy: {
+      dataCollected: [
+        "Nome, e-mail, celular e CPF, informados no checkout.",
+        "Endereço de entrega.",
+        "Itens, valores e forma de pagamento do pedido (nunca o número completo do cartão nem o CVV).",
+        "Sua escolha sobre cookies e sobre o recebimento de ofertas.",
+      ],
+      purpose:
+        "Processar e entregar o pedido, emitir a nota fiscal, atender você após a compra e cumprir obrigações legais. Só enviamos ofertas se você marcar essa opção. (Texto de demonstração.)",
+      retention:
+        "Dados do pedido ficam guardados por 5 anos, prazo das obrigações fiscais. Dados de ofertas ficam até você pedir a remoção. (Texto de demonstração.)",
+      sharing: [
+        "Operadora de pagamento, para autorizar a cobrança.",
+        "Transportadora, para entregar o pedido.",
+        "Autoridades, quando a lei exigir.",
+      ],
+      rights: [
+        "Confirmar que tratamos seus dados e acessá-los.",
+        "Corrigir dados incompletos ou desatualizados.",
+        "Pedir anonimização, bloqueio ou eliminação de dados desnecessários.",
+        "Pedir a portabilidade dos dados.",
+        "Revogar o consentimento e se opor ao tratamento, quando cabível.",
+      ],
+      controller: { name: "Encarregado de dados da Trama Studio (fictício)", email: "privacidade@trama.example" },
+    },
+    cookies: {
+      notice:
+        "Usamos apenas cookies essenciais para a loja funcionar. Você escolhe se permite também os não essenciais (como medição de audiência), que hoje não usamos. (Texto de demonstração.)",
+      version: "1",
+    },
   },
 };

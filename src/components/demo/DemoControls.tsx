@@ -24,7 +24,10 @@ export function DemoControls() {
   const presetRow = "rounded-md border px-md py-sm text-left text-sm";
 
   return (
-    <div className={`fixed right-md z-50 flex flex-col items-end gap-sm ${aboveBuyBar ? "bottom-24" : "bottom-md"}`}>
+    <div
+      className={`fixed right-md z-50 flex flex-col items-end gap-sm ${aboveBuyBar ? "bottom-24" : "bottom-md"}`}
+      style={{ transform: "translateY(calc(var(--cookie-banner-h, 0px) * -1))" }}
+    >
       {open && (
         <div
           role="dialog"

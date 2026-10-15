@@ -268,7 +268,7 @@ function ProductDetails({ product }: { product: Product }) {
         </div>
 
         {/* Barra fixa de compra: gruda no rodapé da tela e para ao fim do artigo, sem cobrir o rodapé da loja. */}
-        <div className="sticky bottom-0 z-30 border-t border-border bg-surface px-md py-sm">
+        <div className="sticky bottom-0 z-30 border-t border-border bg-surface px-md py-sm" style={{ transform: "translateY(calc(var(--cookie-banner-h, 0px) * -1))" }}>
           <div className="mx-auto flex w-full max-w-5xl items-center gap-sm">
             <div className="flex items-center gap-xs" role="group" aria-label="Quantidade">
               <button

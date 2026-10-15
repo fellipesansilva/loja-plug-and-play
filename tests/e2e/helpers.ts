@@ -30,8 +30,21 @@ export function inStore(url: string, preset: string = currentPreset()): string {
  * `test` com page.goto e request.get que já entram na loja do projeto: os specs escrevem "/carrinho" e a requisição
  * vai para "/<preset>/carrinho". Para testar o endereço cru (redirecionamentos, 404) use `raw(page)` / `rawRequest`.
  */
-export const test = base.extend<{ page: Page; request: APIRequestContext }>({
-  page: async ({ page }, provide) => {
+export const test = base.extend<{ page: Page; request: APIRequestContext; seedConsent: boolean }>({
+  // Por padrão a escolha de cookies já vem gravada (recusada), para o aviso não ficar na frente dos testes de outras telas.
+  // Os testes do aviso usam `test.use({ seedConsent: false })` para a primeira visita de verdade.
+  seedConsent: [true, { option: true }],
+  page: async ({ page, seedConsent }, provide) => {
+    if (seedConsent) {
+      await page.addInitScript(
+        ([key, version]) => {
+          try {
+            if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ choice: "rejected", at: "2026-01-01T00:00:00.000Z", version }));
+          } catch {}
+        },
+        [consentStorageKey(), "1"],
+      );
+    }
     const goto = page.goto.bind(page);
     page.goto = ((url: string, options?: Parameters<Page["goto"]>[1]) => goto(inStore(url), options)) as Page["goto"];
     await provide(page);
@@ -43,6 +56,9 @@ export const test = base.extend<{ page: Page; request: APIRequestContext }>({
   },
 });
 export { expect };
+
+/** Chave do localStorage da escolha de cookies da loja deste projeto. */
+export const consentStorageKey = (preset: string = currentPreset()): string => `loja-consent-v1-${SHORT[preset]}`;
 
 /** Chave do localStorage da loja deste projeto (separada por preset). */
 export const storageKey = (preset: string = currentPreset()): string => `loja-demo-v1-${SHORT[preset]}`;

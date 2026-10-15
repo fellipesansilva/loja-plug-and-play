@@ -133,6 +133,32 @@ O primeiro segmento da URL é o preset (`shortId`): `/trama`, `/forno/produto/pi
 - **Estado de cada loja:** o `localStorage` usa uma chave por preset (`loja-demo-v1-trama`, `loja-demo-v1-forno`), então carrinho e pedidos de uma loja nunca aparecem na outra, mesmo no mesmo domínio e navegador.
 - **Adiado para a versão funcional:** a *loja de cliente* (um preset servido na raiz do domínio, sem prefixo, p.ex. `loja-do-cliente.com/`). Não está implementada; a demonstração atual é sempre `/<preset>/...`.
 
+## Conformidade (F3)
+
+Tudo o que é texto ou dado de loja vem do preset (`config.legal` e `config.policies`); o código só tem a estrutura das telas e a regra da lei (prazos mínimos, mensagens genéricas). `src/presets/validate.ts` valida cada preset ao carregar o registro: **preset incompleto derruba o build/servidor** com o preset e o campo na mensagem.
+
+| Item | Onde | O que o preset precisa informar |
+|---|---|---|
+| Identificação (H1) | rodapé de toda página da loja | `legal.name`, `legal.document` (CNPJ/CPF), `legal.address`, `legal.email`, `legal.phone` |
+| Trocas e devoluções (H2) | `/<preset>/trocas-e-devolucoes` | `policies.regretDays` (**mínimo 7**; menos derruba o build), `regretConditions`, `defect.days` + `defect.conditions`, `digital` (obrigatório se houver produto digital; só aparece quando há) |
+| Desistir da compra (H3) | `/<preset>/arrependimento` (links no rodapé e na confirmação do pedido) | usa `regretDays` e o contato de `legal` |
+| Privacidade (H4) | `/<preset>/privacidade` | `policies.privacy`: `dataCollected`, `purpose`, `retention`, `sharing`, `rights`, `controller` |
+| Cookies (H5) | aviso na primeira visita + "Preferências de cookies" no rodapé | `policies.cookies.notice` e `policies.cookies.version` |
+
+- **Desistir da compra (simulado):** número do pedido + e-mail. Pedido de até `regretDays` dias (contados da data do pedido: a demo não registra a data de recebimento) ganha protocolo `ARR-AAAAMMDD-XXXXX` e passa para `cancelado` (`Order.regret` guarda protocolo e data). Passou do prazo: informa e mostra o contato para troca por defeito. Pedido inexistente e e-mail diferente dão a **mesma** mensagem (`src/lib/regret.ts`).
+- **Cookies:** a escolha (`accepted`/`rejected`, data e versão do texto) fica em `loja-consent-v1-<preset>`; mudar `cookies.version` pergunta de novo. **Ponto de controle:** todo script ou cookie não essencial deve ser renderizado dentro de `<ConsentGate>` (`src/components/consent/ConsentProvider.tsx`), que só monta os filhos depois do "Aceitar". Hoje a loja não carrega nenhum. O aviso é fixo na base da tela; a barra de compra e o botão Demo sobem junto com ele via `transform` (que não conta como deslocamento de layout), por isso o CLS continua 0.
+- **Checkout (H6):** obrigatórios só nome, e-mail, celular (menos em pedido 100% digital), CPF (nota fiscal), endereço (só com entrega) e dados do cartão (só no cartão). "Quero receber ofertas" vem desmarcada e, marcada, grava `marketingConsentAt` no pedido.
+
+### Fontes e licenças
+
+As fontes são hospedadas em `public/fonts/<preset>/` (woff2 latin, de Google Fonts), todas sob a SIL Open Font License 1.1. O texto da licença de cada uma está ao lado do arquivo.
+
+| Fonte | Usada em | Copyright | Licença |
+|---|---|---|---|
+| Bodoni Moda | Trama (títulos) | 2020 The Bodoni Moda Project Authors | OFL 1.1 — `public/fonts/trama/OFL-bodoni-moda.txt` |
+| Bricolage Grotesque | Forno (títulos) | 2022 The Bricolage Grotesque Project Authors | OFL 1.1 — `public/fonts/forno/OFL-bricolage-grotesque.txt` |
+| Manrope | Trama e Forno (texto) | 2018 The Manrope Project Authors | OFL 1.1 — `public/fonts/trama/OFL-manrope.txt` e `public/fonts/forno/OFL-manrope.txt` |
+
 ## Estado e persistência
 
 O estado é salvo em `localStorage` (chave por preset, `loja-demo-v1-<apelido>`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). O formato é versionado (`STORAGE_VERSION`): estado salvo em versão antiga, ou de outro preset, é descartado. O carrinho (`cart`) é persistido e zerado ao resetar. O store é criado por preset (`createDemoStore`) e hidratado no cliente depois de montar; o script inline `early-theme-script.ts` reaplica antes da primeira pintura os tokens de tema salvos desta loja (a página nunca é escondida). Em tempo de execução o store fica exposto em `window.__demoStore` para testes e depuração (só fora de produção ou com `NEXT_PUBLIC_EXPOSE_STORE=1`).

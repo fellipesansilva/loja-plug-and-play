@@ -171,22 +171,54 @@ export type StoreConfig = {
   homeBlocks: HomeBlock[];
   attributeDefs: AttributeDef[];
   shipping: ShippingConfig;
+  /** Identificação da loja, exibida no rodapé (todos os campos são obrigatórios: ver validatePreset). */
   legal: {
-    /** CNPJ/CPF (fictício nos presets). */
+    /** Nome ou razão social. */
+    name: string;
+    /** CNPJ ou CPF (fictício nos presets). */
     document: string;
     address: string;
-    contact: string;
+    email: string;
+    phone: string;
   };
   theme: ThemeTokens;
   modules: Modules;
   policies: {
-    exchange: string;
-    privacy: string;
-    about: string;
     /** Aviso curto sobre arrependimento, exibido na página do produto (antes do link de Trocas e devoluções). */
     regret: string;
+    /** Direito de arrependimento (CDC, art. 49): prazo em dias a partir do recebimento. Nunca menor que `MIN_REGRET_DAYS` (validado no build). */
+    regretDays: number;
+    /** Condições para devolver o produto no arrependimento (ex.: "peça sem uso e com etiqueta"). */
+    regretConditions: string;
+    /** Troca por defeito: prazo em dias a partir do recebimento e condições. */
+    defect: { days: number; conditions: string };
+    /** Texto sobre produto digital (acesso, arrependimento). Obrigatório se o preset tiver produto digital; só aparece quando há. */
+    digital?: string;
+    about: string;
+    privacy: PrivacyPolicy;
+    /** Aviso de cookies: o texto e a versão (ao mudar a versão, a escolha é pedida de novo). */
+    cookies: { notice: string; version: string };
   };
 };
+
+/** Política de privacidade (LGPD): as seis seções da página. */
+export type PrivacyPolicy = {
+  /** Dados coletados. */
+  dataCollected: string[];
+  /** Finalidade do tratamento. */
+  purpose: string;
+  /** Prazo de guarda. */
+  retention: string;
+  /** Com quem os dados são compartilhados (pagamento, entrega...). */
+  sharing: string[];
+  /** Direitos do titular. */
+  rights: string[];
+  /** Responsável pelos dados (encarregado). */
+  controller: { name: string; email: string };
+};
+
+/** Prazo mínimo legal do direito de arrependimento (CDC, art. 49), em dias. */
+export const MIN_REGRET_DAYS = 7;
 
 export type Category = { id: string; slug: string; name: string; image: Image };
 
@@ -277,6 +309,8 @@ export type Order = {
     /** CPF mascarado (`***.***.***-12`): o número completo nunca é gravado. */
     cpf?: string;
     marketingOptIn?: boolean;
+    /** ISO 8601 do momento em que o cliente marcou "Quero receber ofertas". Só existe se marcou. */
+    marketingConsentAt?: string;
   };
   delivery:
     | { type: "entrega"; address: string; shipping: Money }
@@ -298,6 +332,8 @@ export type Order = {
   couponDiscount?: Money;
   pixDiscount?: Money;
   status: OrderStatus;
+  /** Pedido de arrependimento (simulado): protocolo e data. O status passa a "cancelado". */
+  regret?: { protocol: string; requestedAt: string };
   /** ISO 8601 */
   createdAt: string;
   total: Money;

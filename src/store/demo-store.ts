@@ -15,6 +15,7 @@ import type {
   ThemeTokens,
 } from "@/domain/types";
 import { getPreset } from "@/presets";
+import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
 import { safeStorage } from "./safe-storage";
 import { STORAGE_VERSION, storageKeyFor } from "./storage-key";
@@ -46,6 +47,8 @@ type DemoActions = {
   /** Grava o pedido e zera o carrinho e as escolhas do checkout. */
   placeOrder: (order: Order) => void;
   setOrderStatus: (orderId: string, status: OrderStatus) => void;
+  /** Pedido de arrependimento (simulado): dentro do prazo do preset, grava o protocolo e muda o status para "cancelado". */
+  requestRegret: (orderId: string, email: string, now?: Date) => RegretResult;
 };
 
 export const EMPTY_CHECKOUT: CheckoutDraft = { couponCode: null, cep: "", shippingId: null };
@@ -75,7 +78,7 @@ export function createDemoStore(presetId: string) {
   if (!preset) throw new Error(`Preset desconhecido: ${presetId}`);
   return createStore<DemoState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...dataFromPreset(preset.id),
       reset: () => set(dataFromPreset(preset.id)),
       setThemeColor: (key, value) =>
@@ -99,6 +102,17 @@ export function createDemoStore(presetId: string) {
         set((s) => ({ orders: [order, ...s.orders], cart: [], checkout: { ...EMPTY_CHECKOUT } })),
       setOrderStatus: (orderId, status) =>
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)) })),
+      requestRegret: (orderId, email, now = new Date()) => {
+        const { orders, config } = get();
+        const result = evaluateRegret(orders, orderId, email, config.policies.regretDays, now);
+        if (result.kind === "ok") {
+          const regret = { protocol: result.protocol, requestedAt: now.toISOString() };
+          set((s) => ({
+            orders: s.orders.map((o) => (o.id === result.orderId ? { ...o, status: "cancelado" as const, regret } : o)),
+          }));
+        }
+        return result;
+      },
     }),
     {
       name: storageKeyFor(preset.shortId),

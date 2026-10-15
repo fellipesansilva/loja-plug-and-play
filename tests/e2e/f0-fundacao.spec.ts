@@ -1,5 +1,5 @@
 import { type Page } from "@playwright/test";
-import { expect, test, FORNO, NAME, SHORT, TRAMA, URL_OF, currentPreset, storageKey, storeName } from "./helpers";
+import { expect, test, consentStorageKey, FORNO, NAME, SHORT, TRAMA, URL_OF, currentPreset, storageKey, storeName } from "./helpers";
 
 /** Rotas da vitrine; {produto} e {pedido} variam por loja (cada preset tem o seu catálogo e os seus pedidos). */
 const LOJA_ROUTES = [
@@ -121,7 +121,8 @@ test("F0 · o estado salvo fica na chave da própria loja", async ({ page }) => 
   await page.evaluate(() => window.__demoStore!.getState().setStoreName("Salvo aqui"));
   const keys = await page.evaluate(() => Object.keys(localStorage));
   expect(keys).toContain(storageKey());
-  expect(keys).toEqual([storageKey()]);
+  // além do estado da loja só existe a escolha de cookies (também separada por preset); nada de chave de outra loja
+  expect(keys.sort()).toEqual([consentStorageKey(), storageKey()].sort());
   expect(keys).not.toContain("loja-demo-v1");
   const other = currentPreset() === TRAMA ? FORNO : TRAMA;
   expect(keys).not.toContain(storageKey(other));
@@ -163,10 +164,10 @@ test.describe("F0 · vitrine em 360 px", () => {
     await page.goto("/");
     const toggle = page.getByRole("button", { name: "Abrir menu" });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(page.getByRole("link", { name: "Sobre", exact: true })).toBeHidden();
+    await expect(page.locator("header").getByRole("link", { name: "Sobre", exact: true })).toBeHidden();
     await toggle.click();
     await expect(page.getByRole("button", { name: "Fechar menu" })).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("link", { name: "Sobre", exact: true })).toBeVisible();
+    await expect(page.locator("header").getByRole("link", { name: "Sobre", exact: true })).toBeVisible();
   });
 });
 

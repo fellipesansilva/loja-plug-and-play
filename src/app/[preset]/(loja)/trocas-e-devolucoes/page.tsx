@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { ExchangeView } from "@/components/store/PolicyPages";
 
 export default function Page() {
-  return <PagePlaceholder title="Trocas e devoluções" />;
+  return <ExchangeView />;
 }

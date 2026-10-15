@@ -116,10 +116,10 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
   });
 
   it("policies.regret afirma o direito de arrependimento de 7 dias (CDC, art. 49)", () => {
-    const { regret, exchange } = preset.config.policies;
+    const { regret, regretDays } = preset.config.policies;
     expect(regret).toMatch(/7 dias/);
     expect(regret.toLowerCase()).toContain("arrependimento");
-    expect(exchange).toMatch(/7 dias/);
+    expect(regretDays).toBe(7);
     expect(regret.toLowerCase()).not.toMatch(/não (há|tem) (troca|direito)/);
   });
 

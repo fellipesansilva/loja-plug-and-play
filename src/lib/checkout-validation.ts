@@ -27,11 +27,13 @@ export const IDENTIFICATION_FIELDS = ["name", "email", "phone", "cpf"] as const;
 export const ADDRESS_FIELDS = ["cep", "street", "number", "district", "city", "state"] as const;
 export const CARD_FIELDS = ["cardNumber", "cardName", "cardExpiry", "cardCvv"] as const;
 
-export function validateIdentification(v: Identification): Errors {
+/** `requirePhone` é false em carrinho só de produto digital: sem entrega, o celular não é necessário. */
+export function validateIdentification(v: Identification, opts: { requirePhone?: boolean } = {}): Errors {
   const errors: Errors = {};
   if (v.name.trim().split(/\s+/).filter(Boolean).length < 2) errors.name = "Informe nome e sobrenome";
   if (!isValidEmail(v.email)) errors.email = "E-mail inválido";
-  if (!isValidPhone(v.phone)) errors.phone = "Celular inválido";
+  const requirePhone = opts.requirePhone ?? true;
+  if (requirePhone ? !isValidPhone(v.phone) : v.phone.trim() !== "" && !isValidPhone(v.phone)) errors.phone = "Celular inválido";
   if (!isValidCpf(v.cpf)) errors.cpf = "CPF inválido";
   return errors;
 }

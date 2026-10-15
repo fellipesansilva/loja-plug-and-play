@@ -230,8 +230,8 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     await expect(page.getByTestId("steps").getByRole("listitem")).toHaveText([/Identificação/, /Entrega/, /Pagamento/]);
     await expect(page.getByTestId("steps").locator('[aria-current="step"]')).toContainText("Identificação");
     await expect(page.getByText("Usado para a nota fiscal")).toBeVisible();
-    await expect(page.getByLabel(/Quero receber novidades/)).not.toBeChecked();
-    await expect(page.getByRole("link", { name: "Política de Privacidade" })).toHaveAttribute("href", inStore("/privacidade"));
+    await expect(page.getByLabel(/Quero receber ofertas/)).not.toBeChecked();
+    await expect(page.getByTestId("step-id").getByRole("link", { name: "Política de Privacidade" })).toHaveAttribute("href", inStore("/privacidade"));
     await fillIdentification(page);
     await expect(page.locator("#chk-phone")).toHaveValue("(11) 91234-5678");
     await next(page);
@@ -399,7 +399,9 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     expect(stored).not.toContain("4111 1111 1111 1111");
     expect(stored).not.toContain("5555");
     expect(stored).not.toContain("7381");
-    expect(stored.toLowerCase()).not.toContain("cvv");
+    // o texto da política de privacidade (na config salva) cita o CVV; o que não pode existir é o dado em pedidos, carrinho e checkout
+    const { orders, cart, checkout } = JSON.parse(stored).state;
+    expect(JSON.stringify({ orders, cart, checkout }).toLowerCase()).not.toContain("cvv");
     expect((await state(page)).orders[0].payment).toEqual({ method: "cartao", installments: 3, brand: "Visa", last4: "1111" });
   });
 
@@ -459,7 +461,7 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
   test("a marca de marketing desmarcada por padrão é gravada como escolhida", async ({ page }) => {
     await readyToCheckout(page, TRAMA, { productId: "ts-014" });
     await fillIdentification(page);
-    await page.getByLabel(/Quero receber novidades/).check();
+    await page.getByLabel(/Quero receber ofertas/).check();
     await next(page);
     await fillAddress(page);
     await next(page);

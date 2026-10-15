@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { AboutView } from "@/components/store/PolicyPages";
 
 export default function Page() {
-  return <PagePlaceholder title="Sobre" />;
+  return <AboutView />;
 }
