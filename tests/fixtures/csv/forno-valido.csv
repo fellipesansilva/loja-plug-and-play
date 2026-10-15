@@ -1,0 +1,4 @@
+sku,nome,preco,estoque,categoria,descricao,porcao,sabor
+FV-IMP-001,Calzone Importado,"34,90",10,pizzas,"Calzone assado, com recheio importado",300 g,Presunto e queijo
+FV-IMP-002,Pão Importado,14.90,22,paes,Pão rústico importado,400 g,Azeitona
+FV-PEP,Pizza de Pepperoni Atualizada,"59,90",14,pizzas,Pepperoni com novo molho,,

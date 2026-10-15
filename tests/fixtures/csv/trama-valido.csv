@@ -1,0 +1,4 @@
+﻿sku;nome;preco;estoque;categoria;descricao;tamanho;cor;material
+TS-IMP-001;Blusa Importada;129,90;8;feminino;Blusa importada em viscose;M;Areia;Viscose
+TS-IMP-002;Camiseta Importada;79,90;12;masculino;Camiseta importada em algodão;G;Preto;Algodão
+TS-SPL;Saia Plissada Atualizada;199,90;9;feminino;Saia plissada com novo caimento;P;Marinho;Poliéster

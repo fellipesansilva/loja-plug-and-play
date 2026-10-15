@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { ImportView } from "@/components/painel/ImportView";
 
 export default function Page() {
-  return <PagePlaceholder title="Importação" />;
+  return <ImportView />;
 }

@@ -1,0 +1,9 @@
+sku;nome;preco;estoque;categoria;descricao;tamanho;cor;material
+TS-OK-001;Peça Boa;99,90;5;feminino;Linha válida;M;Preto;Linho
+;Sem SKU;50,00;1;feminino;;;;
+TS-ERR-PRECO;Preço Ruim;abc;1;feminino;;;;
+TS-ERR-ESTOQUE;Estoque Ruim;50,00;-2;feminino;;;;
+TS-ERR-CAT;Categoria Ruim;50,00;1;inexistente;;;;
+TS-OK-001;Repetida;60,00;1;feminino;;;;
+TS-COV;Camisa Oversized Nova;249,90;12;masculino;Atualizada pela importação;G;Off-white;Algodão
+TS ERR SKU;SKU Com Espaço;50,00;1;feminino;;;;

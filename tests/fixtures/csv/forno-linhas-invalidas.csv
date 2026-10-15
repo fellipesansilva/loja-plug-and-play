@@ -1,0 +1,9 @@
+sku;nome;preco;estoque;categoria;descricao;porcao;sabor
+FV-OK-001;Item Bom;19,90;5;doces;Linha válida;100 g;Chocolate
+;Sem SKU;5,00;1;doces;;;
+FV-ERR-PRECO;Preço Ruim;abc;1;doces;;;
+FV-ERR-ESTOQUE;Estoque Ruim;5,00;-2;doces;;;
+FV-ERR-CAT;Categoria Ruim;5,00;1;inexistente;;;
+FV-OK-001;Repetido;6,00;1;doces;;;
+FV-PEP;Pizza de Pepperoni Nova;61,90;14;pizzas;Atualizada pela importação;;
+FV ERR SKU;SKU Com Espaço;5,00;1;doces;;;
