@@ -7,6 +7,7 @@ import { formatBRL } from "@/lib/money";
 import { useDemoStore } from "@/store/demo-store";
 import { CategoryChips } from "./CategoryChips";
 import { ProductGrid } from "./ProductCard";
+import { ResponsiveBanner } from "./ResponsiveBanner";
 import { QuickAddButton } from "./ProductMenuItem";
 import { ShippingProgress } from "./ShippingProgress";
 import { StoreImage } from "./StoreImage";
@@ -17,7 +18,11 @@ function BannerBlock({ block }: { block: BlockOf<"banner"> }) {
   const card = block.variant === "card";
   const content = (
     <>
-      <StoreImage image={block.image} sizes={card ? "(min-width: 1024px) 1024px, 100vw" : "100vw"} lcp />
+      {block.image.sources?.length ? (
+        <ResponsiveBanner image={block.image} />
+      ) : (
+        <StoreImage image={block.image} sizes={card ? "(min-width: 1024px) 1024px, 100vw" : "100vw"} lcp />
+      )}
       <div className="scrim-bottom absolute inset-0" />
       <div className="absolute inset-x-0 bottom-0">
         <div className={`mx-auto w-full max-w-5xl text-background ${card ? "p-md pb-lg" : "px-md pb-lg"}`}>

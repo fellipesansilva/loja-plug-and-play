@@ -104,6 +104,12 @@ O frete grátis compara o **subtotal do carrinho** (só itens físicos). O pedid
 - **LGPD:** a identificação pede só nome, e-mail, celular e CPF (para a nota fiscal); a caixa de marketing vem desmarcada. O CPF é validado com o número completo, mas só a forma mascarada (`***.***.***-12`) é gravada no pedido; o número completo não é persistido em lugar nenhum.
 - **Estoque:** na demo o pedido não baixa o estoque (a baixa fica para a versão funcional).
 
+## Banner principal responsivo
+
+O banner da home (`homeBlocks`, tipo `banner`) usa `image.sources`: um recorte de celular (3:4, `max-width: 767px`, larguras 480/640/768/960) e um de desktop (16:9, `min-width: 768px`, larguras 1280/1920), cada um em AVIF e WebP, renderizados em um `<picture>` (`ResponsiveBanner`). `sizes` descreve a largura exibida (faixa de ponta a ponta ou card com margem). O `src` do banner é só o arquivo de reserva.
+O script inline de `early-theme-script.ts` pré-carrega o AVIF do preset pedido ou salvo com o **mesmo `imagesrcset`, `imagesizes` e `media`** do `<picture>` (um preload por janela), então o navegador baixa o mesmo arquivo uma vez só. Para o preset padrão não há preload: a imagem vem do `<img fetchpriority="high">` do HTML.
+Os arquivos são gerados na curadoria de imagens (WebP/AVIF ≤ 200 KB) e creditados pelo `banner.webp` em `IMAGE_CREDITS.md`. Para trocar a foto do banner, gere de novo os recortes e preencha `sources`; o teste de presets confere que os arquivos existem.
+
 ## Estado e persistência
 
 O estado é salvo em `localStorage` (chave `loja-demo-v1`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). **Sem piscar o preset padrão:** o HTML do servidor é sempre do preset padrão e o store só lê o `localStorage` depois de montar (`skipHydration`). Por isso o script inline `early-theme-script.ts`, que roda antes da primeira pintura, aplica os tokens do preset salvo (ou de `?preset=`) e, quando esse preset não é o padrão, esconde a página (`html[data-preset-pending]`) até o `ThemeProvider` trocar o conteúdo. Se o JS não carregar, a página volta sozinha em 4 s.

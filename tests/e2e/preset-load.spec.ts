@@ -122,64 +122,76 @@ test.describe("a primeira pintura e o plano B", () => {
 });
 
 test.describe("pré-carregamento da foto principal da home", () => {
-  const FORNO_BANNER = "/images/presets/forno-da-vila/banner.webp";
-  const TRAMA_BANNER = "/images/presets/trama-studio/banner.webp";
+  type Preload = { media: string | null; type: string | null; srcset: string | null; sizes: string | null };
 
-  /** Pedidos das fotos principais e os <link rel=preload as=image> do head, sem deixar o JS do React carregar. */
+  /** Pedidos das fotos do banner e os <link rel=preload as=image> do head, sem deixar o JS do React carregar. */
   async function loadWithoutReact(page: Page, url: string) {
     const requested: string[] = [];
     page.on("request", (r) => {
       const path = new URL(r.url()).pathname;
-      if (path.endsWith("/banner.webp")) requested.push(path);
+      if (/\/banner[^/]*\.(avif|webp)$/.test(path)) requested.push(path);
     });
     await page.route("**/_next/static/**/*.js", (route) => route.abort());
     await page.goto(url);
     await page.waitForTimeout(800);
     const preloads = await page.evaluate(() =>
-      [...document.querySelectorAll('link[rel="preload"][as="image"]')].map((l) => new URL((l as HTMLLinkElement).href).pathname),
+      [...document.querySelectorAll('link[rel="preload"][as="image"]')].map((l) => ({
+        media: l.getAttribute("media"),
+        type: l.getAttribute("type"),
+        srcset: l.getAttribute("imagesrcset"),
+        sizes: l.getAttribute("imagesizes"),
+      })),
     );
-    return { requested, preloads };
+    return { requested, preloads: preloads as Preload[] };
   }
 
   test("?preset=forno: a foto do Forno é pedida antes de qualquer hidratação (o JS do React nem carregou)", async ({ page }) => {
     const { requested, preloads } = await loadWithoutReact(page, "/?preset=forno");
-    expect(preloads).toContain(FORNO_BANNER);
-    expect(requested).toContain(FORNO_BANNER);
-    expect(preloads.filter((p) => p === FORNO_BANNER)).toHaveLength(1); // sem preload duplicado
-    const link = await page.locator(`link[rel="preload"][as="image"][href="${FORNO_BANNER}"]`).getAttribute("fetchpriority");
-    expect(link).toBe("high");
+    // um preload AVIF por janela, só do Forno
+    expect(preloads.map((p) => p.media)).toEqual(["(max-width: 767px)", "(min-width: 768px)"]);
+    for (const p of preloads) {
+      expect(p.type).toBe("image/avif");
+      expect(p.srcset).toContain("/images/presets/forno-da-vila/banner-");
+      expect(p.sizes).toBeTruthy();
+    }
+    // a janela do teste é de desktop: pede só o recorte de desktop, em AVIF, e nenhum de celular
+    expect(requested.filter((r) => r.includes("forno-da-vila"))).toEqual(["/images/presets/forno-da-vila/banner-d-1280.avif"]);
+    const hi = await page.locator('link[rel="preload"][as="image"][media="(min-width: 768px)"]').getAttribute("fetchpriority");
+    expect(hi).toBe("high");
   });
 
   test("Forno salvo, sem parâmetro: também pede a foto do Forno antes da hidratação", async ({ page }) => {
     await savePreset(page, "forno-da-vila");
     const { requested, preloads } = await loadWithoutReact(page, "/");
-    expect(preloads).toContain(FORNO_BANNER);
-    expect(requested).toContain(FORNO_BANNER);
+    expect(preloads).toHaveLength(2);
+    expect(requested).toContain("/images/presets/forno-da-vila/banner-d-1280.avif");
   });
 
-  test("preset padrão (nenhum, ?preset=trama ou Trama salva): não há preload extra, só o da própria Trama", async ({ page }) => {
+  test("preset padrão (nenhum ou ?preset=trama): nenhum preload no head; a foto vem do <img> do HTML", async ({ page }) => {
     for (const url of ["/", "/?preset=trama"]) {
-      const { preloads } = await loadWithoutReact(page, url);
-      expect(preloads, url).toEqual([TRAMA_BANNER]);
+      const { preloads, requested } = await loadWithoutReact(page, url);
+      expect(preloads, url).toEqual([]);
+      expect(requested.every((r) => r.includes("trama-studio")), url).toBe(true);
+      expect(requested.length, url).toBeGreaterThan(0);
     }
   });
 
-  test("Trama salva: nenhum preload além do da Trama", async ({ page }) => {
+  test("Trama salva: nenhum preload no head", async ({ page }) => {
     await savePreset(page, "trama-studio");
     const { preloads } = await loadWithoutReact(page, "/");
-    expect(preloads).toEqual([TRAMA_BANNER]);
+    expect(preloads).toEqual([]);
   });
 
   test("rotas de produto não ganham preload do Forno nesta fatia", async ({ page }) => {
     const { preloads, requested } = await loadWithoutReact(page, "/produto/pizza-margherita?preset=forno");
-    expect(preloads).not.toContain(FORNO_BANNER);
-    expect(requested).not.toContain(FORNO_BANNER);
+    expect(preloads).toEqual([]);
+    expect(requested.filter((r) => r.includes("forno-da-vila"))).toEqual([]);
   });
 
   test("?preset=trama com o Forno salvo não baixa a foto do Forno", async ({ page }) => {
     await savePreset(page, "forno-da-vila");
     const { requested, preloads } = await loadWithoutReact(page, "/?preset=trama");
-    expect(preloads).not.toContain(FORNO_BANNER);
-    expect(requested).not.toContain(FORNO_BANNER);
+    expect(preloads).toEqual([]);
+    expect(requested.filter((r) => r.includes("forno-da-vila"))).toEqual([]);
   });
 });

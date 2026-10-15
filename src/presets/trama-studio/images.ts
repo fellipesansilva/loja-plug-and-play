@@ -4,7 +4,77 @@ import type { Image } from "@/domain/types";
  * Fotos reais (Unsplash, licença gratuita). Arquivos em public/images/presets/trama-studio/ e créditos em
  * IMAGE_CREDITS.md. O texto alternativo descreve o que a foto mostra. Gerado a partir da curadoria de imagens da F1.
  */
-export const bannerImage: Image = { src: "/images/presets/trama-studio/banner.webp", alt: "Mulher de vestido longo claro em um campo, com luz natural do fim de tarde" };
+export const bannerImage: Image = {
+  src: "/images/presets/trama-studio/banner.webp",
+  alt: "Mulher de vestido longo claro em um campo, com luz natural do fim de tarde",
+  /** Recortes responsivos (celular e desktop) em AVIF e WebP; `src` é o reserva (WebP de desktop). */
+  sources: [
+    {
+      "media": "(max-width: 767px)",
+      "sizes": "100vw",
+      "avif": [
+        {
+          "src": "/images/presets/trama-studio/banner-m-480.avif",
+          "width": 480
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-m-640.avif",
+          "width": 640
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-m-768.avif",
+          "width": 768
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-m-960.avif",
+          "width": 960
+        }
+      ],
+      "webp": [
+        {
+          "src": "/images/presets/trama-studio/banner-m-480.webp",
+          "width": 480
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-m-640.webp",
+          "width": 640
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-m-768.webp",
+          "width": 768
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-m-960.webp",
+          "width": 960
+        }
+      ]
+    },
+    {
+      "media": "(min-width: 768px)",
+      "sizes": "100vw",
+      "avif": [
+        {
+          "src": "/images/presets/trama-studio/banner-d-1280.avif",
+          "width": 1280
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-d-1920.avif",
+          "width": 1920
+        }
+      ],
+      "webp": [
+        {
+          "src": "/images/presets/trama-studio/banner-d-1280.webp",
+          "width": 1280
+        },
+        {
+          "src": "/images/presets/trama-studio/banner-d-1920.webp",
+          "width": 1920
+        }
+      ]
+    }
+  ],
+};
 
 export const categoryImages: Record<string, Image> = {
   "feminino": { src: "/images/presets/trama-studio/vestido-midi-linho-3.webp", alt: "Vestido branco leve ao vento em uma praia" },

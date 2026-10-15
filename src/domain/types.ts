@@ -56,8 +56,22 @@ export type Modules = {
   assistenteVirtual?: boolean;
 };
 
-/** Imagem com texto alternativo (vindo do preset). */
-export type Image = { src: string; alt: string };
+/** Candidatos de uma imagem responsiva (`width` em px do arquivo). */
+export type ImageCandidate = { src: string; width: number };
+
+/**
+ * Fonte responsiva de uma imagem (usada no banner principal): para a janela que casa com `media`, o navegador escolhe
+ * entre os candidatos AVIF (ou WebP, se não suportar AVIF) conforme `sizes` e a densidade da tela.
+ */
+export type ImageSource = {
+  media: string;
+  sizes: string;
+  avif: ImageCandidate[];
+  webp: ImageCandidate[];
+};
+
+/** Imagem com texto alternativo (vindo do preset). `sources` é opcional: sem ele a imagem é um arquivo único (`src`). */
+export type Image = { src: string; alt: string; sources?: ImageSource[] };
 
 /** Bloco da home. A ordem do array `homeBlocks` é a ordem na página. */
 export type HomeBlock =

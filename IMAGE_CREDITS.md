@@ -2,7 +2,7 @@
 
 Todas as fotos reais vêm do **Unsplash** (licença gratuita que permite uso comercial, sem exigir atribuição; os créditos abaixo são cortesia e registro).
 Foram escolhidas fotos de produto e ambiente, sem marca ou logo visível. Cada arquivo foi recortado na proporção do preset e convertido para WebP
-(lado maior ≤ 1600 px, ≤ 200 KB). Uma mesma foto pode ser usada por mais de um produto ou categoria (aparece uma única vez na tabela).
+(lado maior ≤ 1600 px, ≤ 200 KB). Uma mesma foto pode ser usada por mais de um produto ou categoria (aparece uma única vez na tabela). Os arquivos `banner-*.avif` e `banner-*.webp` de cada preset são recortes e tamanhos derivados do `banner.webp` (mesma foto e mesmo crédito).
 
 O teste de presets falha se uma imagem de arquivo referenciada por um preset não existir em `public/` ou não constar nesta tabela.
 Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset novo que ainda não tenha fotos.

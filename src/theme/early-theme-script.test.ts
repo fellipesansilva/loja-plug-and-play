@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getPreset } from "@/presets";
 import { STORAGE_KEY, STORAGE_VERSION } from "@/store/storage-key";
 import { EARLY_THEME_SCRIPT } from "./early-theme-script";
+import { toSrcSet } from "@/lib/image-sources";
 import { tokensToCss } from "./tokens";
 
 function run(storage: { getItem: (k: string) => string | null }) {
@@ -105,7 +106,7 @@ describe("early theme script", () => {
   });
 
   describe("preload da foto principal da home", () => {
-    type Link = { rel?: string; as?: string; href?: string; attrs: Record<string, string> };
+    type Link = { rel?: string; as?: string; href?: string; type?: string; media?: string; attrs: Record<string, string> };
     function run(opts: { search?: string; pathname?: string; saved?: string }) {
       const links: Link[] = [];
       const store = opts.saved
@@ -130,24 +131,33 @@ describe("early theme script", () => {
       });
       return links;
     }
-    const fornoBanner = () => {
+    const fornoSources = () => {
       const banner = getPreset("forno-da-vila")!.config.homeBlocks.find((b) => b.type === "banner");
-      if (banner?.type !== "banner") throw new Error("sem banner");
-      return banner.image.src;
+      if (banner?.type !== "banner" || !banner.image.sources) throw new Error("sem banner responsivo");
+      return banner.image.sources;
     };
 
-    it("?preset=forno na home injeta o preload da foto do Forno (apelido ou id)", () => {
+    it("?preset=forno na home injeta um preload AVIF por janela, com os mesmos srcset e sizes do <picture>", () => {
       for (const search of ["?preset=forno", "?preset=forno-da-vila", "?x=1&preset=FORNO"]) {
         const links = run({ search });
-        expect(links, search).toHaveLength(1);
-        expect(links[0]).toMatchObject({ rel: "preload", as: "image", href: fornoBanner() });
-        expect(links[0].attrs.fetchpriority).toBe("high");
+        const sources = fornoSources();
+        expect(links, search).toHaveLength(sources.length);
+        sources.forEach((source, i) => {
+          expect(links[i]).toMatchObject({ rel: "preload", as: "image", type: "image/avif", media: source.media });
+          expect(links[i].attrs.imagesrcset).toBe(toSrcSet(source.avif));
+          expect(links[i].attrs.imagesizes).toBe(source.sizes);
+          expect(links[i].attrs.fetchpriority).toBe("high");
+        });
       }
     });
 
+    it("as janelas dos preloads não se sobrepõem: o celular nunca baixa o preload de desktop", () => {
+      const medias = run({ search: "?preset=forno" }).map((l) => l.media);
+      expect(medias).toEqual(["(max-width: 767px)", "(min-width: 768px)"]);
+    });
+
     it("preset salvo (Forno) na home, sem parâmetro, também pré-carrega", () => {
-      const links = run({ saved: "forno-da-vila" });
-      expect(links.map((l) => l.href)).toEqual([fornoBanner()]);
+      expect(run({ saved: "forno-da-vila" }).map((l) => l.attrs.imagesrcset)).toEqual(fornoSources().map((s) => toSrcSet(s.avif)));
     });
 
     it("só na home: em rotas de produto, categoria ou carrinho não injeta nada", () => {
@@ -165,9 +175,9 @@ describe("early theme script", () => {
       expect(run({ search: "?preset=desconhecido" })).toEqual([]);
     });
 
-    it("?preset= tem prioridade sobre o salvo: Trama pedida com Forno salvo não baixa a foto do Forno", () => {
+    it("?preset= tem prioridade sobre o salvo", () => {
       expect(run({ search: "?preset=trama", saved: "forno-da-vila" })).toEqual([]);
-      expect(run({ search: "?preset=forno", saved: "trama-studio" }).map((l) => l.href)).toEqual([fornoBanner()]);
+      expect(run({ search: "?preset=forno", saved: "trama-studio" })).toHaveLength(2);
     });
   });
 });

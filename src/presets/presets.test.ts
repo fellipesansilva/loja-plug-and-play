@@ -137,6 +137,29 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
     }
   });
 
+  it("banner principal responsivo: celular e desktop, AVIF e WebP, arquivos existentes e ≤ 200 KB", () => {
+    const root = path.resolve(import.meta.dirname, "../..");
+    const banner = preset.config.homeBlocks.find((b) => b.type === "banner");
+    if (banner?.type !== "banner") throw new Error("sem banner");
+    const sources = banner.image.sources ?? [];
+    expect(sources.map((s) => s.media)).toEqual(["(max-width: 767px)", "(min-width: 768px)"]);
+    for (const source of sources) {
+      expect(source.sizes.length).toBeGreaterThan(0);
+      expect(source.avif.map((c) => c.width)).toEqual(source.webp.map((c) => c.width));
+      expect(source.avif.length).toBeGreaterThanOrEqual(2);
+      for (const c of [...source.avif, ...source.webp]) {
+        const file = path.join(root, "public", c.src);
+        expect(fs.existsSync(file), c.src).toBe(true);
+        expect(fs.statSync(file).size, c.src).toBeLessThanOrEqual(200 * 1024);
+      }
+      // o menor candidato de celular é bem menor que o arquivo único antigo
+      const sizes = source.avif.map((c) => fs.statSync(path.join(root, "public", c.src)).size);
+      expect(Math.min(...sizes)).toBeLessThan(60 * 1024);
+    }
+    // o arquivo de reserva (src) continua existindo e creditado
+    expect(fs.existsSync(path.join(root, "public", banner.image.src))).toBe(true);
+  });
+
   it("toda imagem tem texto alternativo; imagem de arquivo existe em public/ e consta em IMAGE_CREDITS.md", () => {
     const root = path.resolve(import.meta.dirname, "../..");
     const credits = fs.readFileSync(path.join(root, "IMAGE_CREDITS.md"), "utf8");

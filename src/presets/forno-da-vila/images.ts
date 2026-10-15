@@ -4,7 +4,77 @@ import type { Image } from "@/domain/types";
  * Fotos reais (Unsplash, licença gratuita). Arquivos em public/images/presets/forno-da-vila/ e créditos em
  * IMAGE_CREDITS.md. O texto alternativo descreve o que a foto mostra. Gerado a partir da curadoria de imagens da F1.
  */
-export const bannerImage: Image = { src: "/images/presets/forno-da-vila/banner.webp", alt: "Mão levantando uma fatia de pizza de pepperoni com queijo derretido esticando" };
+export const bannerImage: Image = {
+  src: "/images/presets/forno-da-vila/banner.webp",
+  alt: "Mão levantando uma fatia de pizza de pepperoni com queijo derretido esticando",
+  /** Recortes responsivos (celular e desktop) em AVIF e WebP; `src` é o reserva (WebP de desktop). */
+  sources: [
+    {
+      "media": "(max-width: 767px)",
+      "sizes": "calc(100vw - 24px)",
+      "avif": [
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-480.avif",
+          "width": 480
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-640.avif",
+          "width": 640
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-768.avif",
+          "width": 768
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-960.avif",
+          "width": 960
+        }
+      ],
+      "webp": [
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-480.webp",
+          "width": 480
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-640.webp",
+          "width": 640
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-768.webp",
+          "width": 768
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-m-960.webp",
+          "width": 960
+        }
+      ]
+    },
+    {
+      "media": "(min-width: 768px)",
+      "sizes": "(min-width: 1024px) 1000px, calc(100vw - 24px)",
+      "avif": [
+        {
+          "src": "/images/presets/forno-da-vila/banner-d-1280.avif",
+          "width": 1280
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-d-1920.avif",
+          "width": 1920
+        }
+      ],
+      "webp": [
+        {
+          "src": "/images/presets/forno-da-vila/banner-d-1280.webp",
+          "width": 1280
+        },
+        {
+          "src": "/images/presets/forno-da-vila/banner-d-1920.webp",
+          "width": 1920
+        }
+      ]
+    }
+  ],
+};
 
 export const categoryImages: Record<string, Image> = {
   "pizzas": { src: "/images/presets/forno-da-vila/categoria-pizzas.webp", alt: "Pizza de pepperoni inteira sobre tábua de madeira, vista de cima" },

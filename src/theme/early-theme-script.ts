@@ -1,3 +1,4 @@
+import { toSrcSet } from "@/lib/image-sources";
 import { DEFAULT_PRESET_ID, presets } from "@/presets";
 import { STORAGE_KEY, STORAGE_VERSION } from "@/store/storage-key";
 import { TOKEN_GROUPS, tokensToCss } from "./tokens";
@@ -11,14 +12,19 @@ const CSS_BY_PRESET: Record<string, string> = Object.fromEntries(
  * Foto principal (banner) da home de cada preset que NÃO é o padrão, por id e por apelido. O HTML do servidor só traz a
  * imagem do preset padrão, então, quando outro preset é pedido, o script pré-carrega a dele em paralelo ao JS.
  */
-const BANNER_BY_PRESET: Record<string, string> = Object.fromEntries(
+type BannerPreload = { href?: string; media?: string; type?: string; srcset?: string; sizes?: string };
+const BANNER_BY_PRESET: Record<string, BannerPreload[]> = Object.fromEntries(
   presets
     .filter((p) => p.id !== DEFAULT_PRESET_ID)
     .flatMap((p) => {
       const banner = p.config.homeBlocks.find((b) => b.enabled && b.type === "banner");
-      return banner && banner.type === "banner"
-        ? [p.id, ...(p.shortId ? [p.shortId] : [])].map((key) => [key, banner.image.src])
-        : [];
+      if (!banner || banner.type !== "banner") return [];
+      // Com recortes responsivos: um preload AVIF por janela (media), com os MESMOS srcset e sizes do <picture>, para o
+      // navegador escolher o mesmo arquivo. AVIF só: navegadores sem AVIF ignoram o preload (type) e usam o WebP.
+      const preloads: BannerPreload[] = banner.image.sources?.length
+        ? banner.image.sources.map((s) => ({ media: s.media, type: "image/avif", srcset: toSrcSet(s.avif), sizes: s.sizes }))
+        : [{ href: banner.image.src }];
+      return [p.id, ...(p.shortId ? [p.shortId] : [])].map((key) => [key, preloads]);
     }),
 );
 
@@ -35,8 +41,11 @@ const BANNER_BY_PRESET: Record<string, string> = Object.fromEntries(
  */
 export const EARLY_THEME_SCRIPT = `(function(){try{
 var B=${JSON.stringify(BANNER_BY_PRESET)};
-function pre(k){var u=B[k];if(!u||typeof location==="undefined"||location.pathname!=="/"||!document.head)return;
-var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.setAttribute("fetchpriority","high");document.head.appendChild(l);}
+function pre(k){var list=B[k];if(!list||typeof location==="undefined"||location.pathname!=="/"||!document.head)return;
+list.forEach(function(u){var l=document.createElement("link");l.rel="preload";l.as="image";
+if(u.href)l.href=u.href;if(u.type)l.type=u.type;if(u.media)l.media=u.media;
+if(u.srcset){l.setAttribute("imagesrcset",u.srcset);if(u.sizes)l.setAttribute("imagesizes",u.sizes);}
+l.setAttribute("fetchpriority","high");document.head.appendChild(l);});}
 var q=/[?&]preset=([^&#]*)/.exec(typeof location!=="undefined"?location.search:"");
 if(q){var P=${JSON.stringify(CSS_BY_PRESET)};var key=decodeURIComponent(q[1]).trim().toLowerCase();var css=P[key];
 var st=document.getElementById("theme-tokens");
