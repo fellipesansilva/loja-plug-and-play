@@ -1,14 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { consentKey, parseConsent, serializeConsent, type ConsentChoice } from "@/lib/consent";
+import { CONSENT_SET_ATTR, consentKey, earlyConsentScript, parseConsent, serializeConsent, type ConsentChoice } from "@/lib/consent";
 import { safeStorage } from "@/store/safe-storage";
 import { useDemoStore } from "@/store/demo-store";
 import { usePreset } from "@/store/PresetProvider";
 import { StoreLink } from "@/components/store/StoreLink";
 
 type Consent = {
-  /** false até a página hidratar e a escolha gravada ser lida. */
+  /** false até a página hidratar e a escolha gravada ser lida (até lá o aviso do HTML do servidor está visível). */
   ready: boolean;
   choice: ConsentChoice | null;
   accept: () => void;
@@ -43,7 +43,7 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
   const { notice, version } = useDemoStore((s) => s.config.policies.cookies);
   const key = consentKey(slug);
 
-  // Lido do armazenamento (não do estado do React) para sobreviver a recarregar; no servidor vale PENDING.
+  // Lido do armazenamento (não do estado do React) para sobreviver a recarregar; no servidor (e na hidratação) vale PENDING.
   const raw = useSyncExternalStore(
     (onChange) => {
       listeners.add(onChange);
@@ -71,15 +71,21 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
       choice: record?.choice ?? null,
       accept: () => save("accepted"),
       reject: () => save("rejected"),
-      reopen: () => setReopened(true),
+      reopen: () => {
+        document.documentElement.removeAttribute(CONSENT_SET_ATTR); // o CSS do script inline não pode esconder o aviso reaberto
+        setReopened(true);
+      },
     }),
     [ready, record?.choice, save],
   );
 
-  const visible = ready && (record === null || reopened);
+  // Sem escolha, ou antes de saber (servidor/hidratação), o aviso fica no HTML e na primeira pintura: não espera o JS.
+  // Quem já escolheu tem o aviso escondido por CSS antes da pintura (script inline) e ele sai do DOM ao hidratar.
+  const visible = !ready || record === null || reopened;
 
   return (
     <ConsentContext.Provider value={value}>
+      <script dangerouslySetInnerHTML={{ __html: earlyConsentScript(slug, version) }} />
       {children}
       {visible && <CookieBanner notice={notice} current={record?.choice ?? null} onAccept={value.accept} onReject={value.reject} />}
     </ConsentContext.Provider>
@@ -124,6 +130,7 @@ function CookieBanner({
       role="dialog"
       aria-label="Aviso de cookies"
       data-testid="cookie-banner"
+      data-cookie-banner=""
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-md py-md shadow-lg"
     >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-sm md:flex-row md:items-center md:gap-md">

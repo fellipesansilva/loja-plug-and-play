@@ -88,3 +88,8 @@
     );
   }
 }
+
+/* Aviso de cookies: o script inline põe data-consent-set em <html> quando já há escolha; o aviso do HTML some antes da pintura. */
+html[data-consent-set] [data-cookie-banner] {
+  display: none;
+}

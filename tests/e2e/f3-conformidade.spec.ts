@@ -456,3 +456,114 @@ test.describe("H6 · dados mínimos e consentimento de marketing no checkout", (
     await expect(page.locator("[aria-invalid=true]")).toHaveCount(4);
   });
 });
+
+test.describe("H5 · aviso de cookies sem atrasar a página (LCP)", () => {
+  const MOBILE = {
+    userAgent: devices["Pixel 5"].userAgent,
+    isMobile: true,
+    hasTouch: true,
+    viewport: { width: 400, height: 800 },
+    screen: { width: 400, height: 800 },
+    deviceScaleFactor: 2,
+  };
+
+  test.describe("primeira visita", () => {
+    test.use({ seedConsent: false });
+
+    test("o aviso já está no HTML do servidor, visível", async ({ request }) => {
+      const html = await (await request.get("/")).text();
+      expect(html).toContain('data-testid="cookie-banner"');
+      expect(html).toContain("Aviso de cookies");
+    });
+
+    test("sem JavaScript o aviso continua visível", async ({ browser }) => {
+      const ctx = await browser.newContext({ javaScriptEnabled: false, baseURL: undefined });
+      const page = await ctx.newPage();
+      await page.goto(`http://localhost:3411/${SHORT[currentPreset()]}`);
+      await expect(page.getByRole("dialog", { name: "Aviso de cookies" })).toBeVisible();
+      await ctx.close();
+    });
+
+    test.describe("celular 400 px", () => {
+      test.use(MOBILE);
+
+      test("o aviso aparece na primeira pintura, junto com o restante da página", async ({ page }) => {
+        await page.addInitScript(() => {
+          const w = window as unknown as { __first: { banner: boolean; hero: boolean } | null };
+          w.__first = null;
+          const loop = () => {
+            const b = document.querySelector<HTMLElement>('[data-testid="cookie-banner"]');
+            const hero = document.querySelector("main img, main picture");
+            const shown = !!b && getComputedStyle(b).display !== "none" && b.getBoundingClientRect().height > 0;
+            if (!w.__first && hero && document.body.innerText.length > 50) w.__first = { banner: shown, hero: true };
+            else if (!w.__first) requestAnimationFrame(loop);
+          };
+          requestAnimationFrame(loop);
+        });
+        await page.goto("/");
+        await page.waitForFunction(() => (window as unknown as { __first: unknown }).__first !== null);
+        // no primeiro quadro em que a página tem conteúdo, o aviso já está desenhado (não espera o JS hidratar)
+        expect(await page.evaluate(() => (window as unknown as { __first: { banner: boolean } }).__first.banner)).toBe(true);
+      });
+
+      test("o elemento de LCP é a foto da loja, não o aviso", async ({ page }) => {
+        await page.addInitScript(() => {
+          const w = window as unknown as { __lcp: string[] };
+          w.__lcp = [];
+          new PerformanceObserver((list) => {
+            for (const e of list.getEntries() as unknown as { element?: Element }[]) {
+              w.__lcp.push(e.element?.closest("[data-testid]")?.getAttribute("data-testid") ?? e.element?.tagName ?? "?");
+            }
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+        });
+        await page.goto("/");
+        await page.waitForLoadState("networkidle");
+        await page.waitForTimeout(500);
+        const list = await page.evaluate(() => (window as unknown as { __lcp: string[] }).__lcp);
+        expect(list.length).toBeGreaterThan(0);
+        expect(list).not.toContain("cookie-banner");
+      });
+    });
+  });
+
+  test.describe("escolha já feita", () => {
+    test.describe("celular 400 px", () => {
+      test.use(MOBILE);
+
+      test("recarregar nunca mostra o aviso, nem por um quadro", async ({ page }) => {
+        await page.goto("/"); // a escolha (recusada) é gravada pelo fixture antes da página
+        await page.waitForLoadState("networkidle");
+        await page.addInitScript(() => {
+          const w = window as unknown as { __seen: number; __frames: number };
+          w.__seen = 0;
+          w.__frames = 0;
+          const loop = () => {
+            w.__frames++;
+            const b = document.querySelector<HTMLElement>('[data-testid="cookie-banner"]');
+            if (b && getComputedStyle(b).display !== "none" && b.getBoundingClientRect().height > 0) w.__seen++;
+            requestAnimationFrame(loop);
+          };
+          requestAnimationFrame(loop);
+        });
+        for (const route of ["/", `/produto/${fixture().produto}`, "/carrinho"]) {
+          await page.goto(route);
+          await page.waitForLoadState("networkidle");
+          await page.waitForTimeout(400);
+          const { seen, frames } = await page.evaluate(() => {
+            const w = window as unknown as { __seen: number; __frames: number };
+            return { seen: w.__seen, frames: w.__frames };
+          });
+          expect(frames, route).toBeGreaterThan(3);
+          expect(seen, route).toBe(0);
+        }
+      });
+    });
+
+    test("Preferências de cookies ainda reabre o aviso depois do script inline", async ({ page }) => {
+      await ready(page, "/");
+      await expect(page.getByRole("dialog", { name: "Aviso de cookies" })).toHaveCount(0);
+      await page.getByTestId("store-footer").getByRole("button", { name: "Preferências de cookies" }).click();
+      await expect(page.getByRole("dialog", { name: "Aviso de cookies" })).toBeVisible();
+    });
+  });
+});
