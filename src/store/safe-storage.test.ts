@@ -57,3 +57,31 @@ describe("safe-storage", () => {
     expect(s.getItem("k")).toBe("v");
   });
 });
+
+describe("aviso de gravação recusada", () => {
+  it("marca a falha quando o navegador recusa gravar, avisa quem assina e limpa na próxima gravação que der certo", () => {
+    let full = true;
+    const backend: StorageLike = {
+      getItem: () => null,
+      setItem: () => {
+        if (full) throw new DOMException("cheio", "QuotaExceededError");
+      },
+      removeItem: () => {},
+    };
+    const s = createSafeStorage(() => backend);
+    let calls = 0;
+    const off = s.subscribeWriteFailure(() => calls++);
+    expect(s.hasWriteFailed()).toBe(false);
+    s.setItem("k", "v");
+    expect(s.hasWriteFailed()).toBe(true);
+    expect(calls).toBe(1);
+    full = false;
+    s.setItem("k", "v2");
+    expect(s.hasWriteFailed()).toBe(false);
+    expect(calls).toBe(2);
+    off();
+    full = true;
+    s.setItem("k", "v3");
+    expect(calls).toBe(2);
+  });
+});

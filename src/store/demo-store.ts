@@ -48,6 +48,12 @@ type DemoActions = {
   /** Grava o pedido e zera o carrinho e as escolhas do checkout. */
   placeOrder: (order: Order) => void;
   /** Muda o status sem checar a transição (usado pelo painel Demo: "Simular pagamento aprovado"); entra no histórico. */
+  /** Cria o produto ou, se já existe um com o mesmo id, substitui (painel: formulário de produto). */
+  saveProduct: (product: Product) => void;
+  /** Cria ou substitui vários produtos de uma vez, pelo id (painel: importação CSV). */
+  upsertProducts: (products: Product[]) => void;
+  /** Inativo some da loja, mas continua no painel. */
+  setProductActive: (productId: string, active: boolean) => void;
   setOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => void;
   /** Mudança de status do painel: só vale a próxima etapa ou o cancelamento permitido. Devolve se mudou. */
   changeOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => boolean;
@@ -104,6 +110,16 @@ export function createDemoStore(presetId: string) {
       setShipping: (cep, shippingId) => set((s) => ({ checkout: { ...s.checkout, cep, shippingId } })),
       placeOrder: (order) =>
         set((s) => ({ orders: [withHistory(order), ...s.orders], cart: [], checkout: { ...EMPTY_CHECKOUT } })),
+      saveProduct: (product) => get().upsertProducts([product]),
+      upsertProducts: (list) =>
+        set((s) => {
+          const byId = new Map(list.map((p) => [p.id, p]));
+          const replaced = s.products.map((p) => byId.get(p.id) ?? p);
+          const known = new Set(s.products.map((p) => p.id));
+          return { products: [...replaced, ...list.filter((p) => !known.has(p.id))] };
+        }),
+      setProductActive: (productId, active) =>
+        set((s) => ({ products: s.products.map((p) => (p.id === productId ? { ...p, active } : p)) })),
       setOrderStatus: (orderId, status, now = new Date()) =>
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? applyStatus(o, status, now) : o)) })),
       changeOrderStatus: (orderId, status, now = new Date()) => {

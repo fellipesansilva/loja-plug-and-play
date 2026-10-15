@@ -5,12 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { searchProducts } from "@/lib/search";
 import { useDemoStore } from "@/store/demo-store";
+import { useListedProducts } from "@/store/use-listed-products";
 import { PageTitle } from "./PageTitle";
 import { ProductGrid } from "./ProductCard";
 
 export function SearchView() {
   const term = (useSearchParams().get("q") ?? "").trim();
-  const products = useDemoStore((s) => s.products);
+  const products = useListedProducts();
   const categories = useDemoStore((s) => s.categories);
   const results = useMemo(() => searchProducts(products, term), [products, term]);
 

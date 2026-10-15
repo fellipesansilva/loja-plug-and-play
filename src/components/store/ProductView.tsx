@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/domain/types";
 import { unitPrice } from "@/lib/cart";
 import { formatBRL } from "@/lib/money";
-import { availableStock, isDigital, isSoldOut } from "@/lib/product";
+import { availableStock, isDigital, isListed, isSoldOut } from "@/lib/product";
 import {
   missingAxes,
   selectedVariant,
@@ -31,7 +31,7 @@ const MAX_QTY = 99;
 
 export function ProductView({ slug }: { slug: string }) {
   const hydrated = useHydrated();
-  const product = useDemoStore((s) => s.products.find((p) => p.slug === slug));
+  const product = useDemoStore((s) => s.products.find((p) => p.slug === slug && isListed(p)));
 
   if (!product) {
     return (

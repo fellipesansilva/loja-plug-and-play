@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { stripPresetPrefix } from "@/lib/preset-href";
 import { usePreset } from "@/store/PresetProvider";
+import { StorageFullAlert } from "@/components/painel/StorageFullAlert";
 import { PainelSidebar } from "./PainelSidebar";
 
 /** Faixa fixa em todas as telas do painel: aqui nada é real e não há login. */
@@ -25,6 +26,7 @@ export function PainelShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         <DemoBanner />
+        <StorageFullAlert />
         <main>{children}</main>
       </>
     );
@@ -32,6 +34,7 @@ export function PainelShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <DemoBanner />
+      <StorageFullAlert />
       <div className="flex min-h-screen flex-col md:flex-row">
         <PainelSidebar />
         <main className="min-w-0 flex-1">{children}</main>

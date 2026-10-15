@@ -1,5 +1,10 @@
 import type { Product } from "@/domain/types";
 
+/** Aparece na loja? Produto inativo some da lista, da busca, da home e da página do produto (continua no painel). */
+export function isListed(product: Product): boolean {
+  return product.active !== false;
+}
+
 export function isDigital(product: Product): boolean {
   return product.type === "digital";
 }

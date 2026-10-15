@@ -5,6 +5,8 @@ import type { HomeBlock } from "@/domain/types";
 import { activeHomeBlocks } from "@/lib/home-blocks";
 import { formatBRL } from "@/lib/money";
 import { useDemoStore } from "@/store/demo-store";
+import { isListed } from "@/lib/product";
+import { useListedProducts } from "@/store/use-listed-products";
 import { CategoryChips } from "./CategoryChips";
 import { ProductGrid } from "./ProductCard";
 import { ResponsiveBanner } from "./ResponsiveBanner";
@@ -116,7 +118,7 @@ function ChipsBlock({ block }: { block: BlockOf<"chips"> }) {
 }
 
 function SpotlightBlock({ block }: { block: BlockOf<"spotlight"> }) {
-  const product = useDemoStore((s) => s.products.find((p) => p.id === block.productId));
+  const product = useDemoStore((s) => s.products.find((p) => p.id === block.productId && isListed(p)));
   if (!product) return null;
   const badge = product.badges?.[0];
   const href = `/produto/${product.slug}`;
@@ -149,7 +151,7 @@ function SpotlightBlock({ block }: { block: BlockOf<"spotlight"> }) {
 }
 
 function FeaturedBlock({ block }: { block: BlockOf<"featured"> }) {
-  const products = useDemoStore((s) => s.products);
+  const products = useListedProducts();
   const items = block.productIds.flatMap((id) => products.find((p) => p.id === id) ?? []);
 
   return (

@@ -14,6 +14,7 @@ import {
   type SortOrder,
 } from "@/lib/filters";
 import { useDemoStore } from "@/store/demo-store";
+import { useListedProducts } from "@/store/use-listed-products";
 import { useHydrated } from "@/store/use-hydrated";
 import { CategoryChips } from "./CategoryChips";
 import { FilterDrawer, FilterSidebar } from "./FilterPanel";
@@ -23,7 +24,7 @@ import { ProductGrid } from "./ProductCard";
 export function CategoryView({ slug }: { slug: string }) {
   const hydrated = useHydrated();
   const category = useDemoStore((s) => s.categories.find((c) => c.slug === slug));
-  const products = useDemoStore((s) => s.products);
+  const products = useListedProducts();
   const defs = useDemoStore((s) => s.config.attributeDefs);
   const listing = useDemoStore((s) => s.config.layout.listing);
   const allCategories = useDemoStore((s) => s.categories);

@@ -12,15 +12,9 @@ import type {
 } from "@/domain/types";
 
 import { itemName, variantText } from "@/lib/item-name";
+import { slugify } from "@/lib/slug";
 
-export function slugify(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+export { slugify } from "@/lib/slug";
 
 /** Imagem de placeholder local (SVG gerado por /placeholder). `color` = hex sem "#". */
 export function placeholderUrl(label: string, color: string): string {
