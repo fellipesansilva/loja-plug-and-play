@@ -52,7 +52,7 @@ function PaymentPanel({ order }: { order: Order }) {
         <p className="font-bold text-success">Pagamento confirmado</p>
         {payment.method === "cartao" && payment.last4 && (
           <p className="text-sm text-muted">
-            {payment.brand} final {payment.last4} · {payment.installments ?? 1}x
+            {payment.brand} final {payment.last4} · {(payment.installments ?? 1) > 1 ? `${payment.installments}x` : "à vista"}
           </p>
         )}
       </div>

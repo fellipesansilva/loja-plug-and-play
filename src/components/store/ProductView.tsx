@@ -22,6 +22,7 @@ import { PageTitle } from "./PageTitle";
 import { PixLine } from "./PixLine";
 import { ProductGallery } from "./ProductGallery";
 import { ShippingCalculator } from "./ShippingCalculator";
+import { useCartWords } from "./useCartWords";
 import { VariantSelectors } from "./VariantSelectors";
 
 const LOW_STOCK = 3;
@@ -92,6 +93,7 @@ function ProductDetails({ product }: { product: Product }) {
   const sheet = useDemoStore((s) => s.config.layout.product) === "sheet";
   const cart = useDemoStore((s) => s.cart);
   const addToCart = useDemoStore((s) => s.addToCart);
+  const words = useCartWords();
 
   const [selection, setSelection] = useState<Selection>({});
   const [addonIds, setAddonIds] = useState<string[]>([]);
@@ -142,7 +144,7 @@ function ProductDetails({ product }: { product: Product }) {
       return;
     }
     if (available !== null && inCart >= available) {
-      setWarning("Você já adicionou todas as unidades disponíveis ao carrinho.");
+      setWarning(`Você já adicionou todas as unidades disponíveis ${words.to}.`);
       return;
     }
     setWarning(null);
@@ -183,9 +185,9 @@ function ProductDetails({ product }: { product: Product }) {
       role="status"
       className="fixed inset-x-md top-md z-50 mx-auto flex max-w-[28rem] items-center justify-between gap-md rounded-md border border-border bg-surface p-md shadow-lg"
     >
-      <span className="font-medium">Adicionado ao carrinho</span>
+      <span className="font-medium">{words.added}</span>
       <Link href="/carrinho" className="inline-flex min-h-11 items-center font-bold text-primary underline">
-        Ver carrinho
+        {words.view}
       </Link>
     </div>
   );
@@ -373,7 +375,7 @@ function ProductDetails({ product }: { product: Product }) {
               disabled={soldOut}
               className="min-h-12 w-full rounded-button bg-primary px-lg font-bold text-background disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {soldOut ? "Esgotado" : "Adicionar ao carrinho"}
+              {soldOut ? "Esgotado" : words.add}
             </button>
             {warningMessage}
           </div>

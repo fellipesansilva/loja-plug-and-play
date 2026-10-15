@@ -99,9 +99,10 @@ O frete grátis compara o **subtotal do carrinho** (só itens físicos). O pedid
 - **Ligar o desconto no Pix:** em `config.modules` do preset, `descontoPix: { enabled: true, percent: 5 }`. A linha "No Pix: R$ X" aparece no card, na página do produto, no carrinho e no pagamento.
 - **Criar cupons:** em `src/presets/<preset>/coupons.ts`: `{ code, type: "percent" | "fixed", value, minValue?, active, expiresAt? }`. `percent` usa o número (10 = 10%); `fixed` e `minValue` em centavos. O código não diferencia maiúsculas; o campo só aparece com `modules.cupom: true`.
 - **Produto digital:** `type: "digital"` no produto. Sem estoque (sempre disponível), sem calculadora de frete na página, não conta para o frete grátis; carrinho só com digitais pula a etapa de entrega e a confirmação diz "O acesso será enviado para {e-mail}". Nenhum preset tem produto digital ainda (os testes usam fixture).
-- **Nomes do preset:** `cartLabel` ("Carrinho" ou "Sacola") e `orderPrefix` ("TS" gera TS-1009).
-- **Cartão (simulado):** só `4111 1111 1111 1111` é aprovado. O pedido guarda apenas bandeira e últimos 4 dígitos; número completo e CVV nunca são gravados. Formas de pagamento disponíveis: Pix sempre; cartão com `parcelamento` ligado; boleto com `boleto` ligado.
-- **LGPD:** a identificação pede só nome, e-mail, celular e CPF (para a nota fiscal); a caixa de marketing vem desmarcada.
+- **Nomes do preset:** `cartLabel` ("Carrinho" ou "Sacola") com `cartGender` (`"m"` ou `"f"`, para "ao carrinho" / "à sacola") e `orderPrefix` ("TS" gera TS-1009). Todo texto do carrinho sai de `cartWords` (`src/lib/cart-words.ts`): não escreva "carrinho" ou "sacola" direto nos componentes (um teste E2E confere as telas dos dois presets).
+- **Cartão (simulado):** só `4111 1111 1111 1111` é aprovado. O pedido guarda apenas bandeira e últimos 4 dígitos; número completo e CVV nunca são gravados. Formas de pagamento: Pix sempre; cartão com `modules.cartao: { enabled: true }`; boleto com `boleto` ligado. As parcelas só aparecem com `parcelamento` ligado; sem ele o cartão é à vista (1x).
+- **LGPD:** a identificação pede só nome, e-mail, celular e CPF (para a nota fiscal); a caixa de marketing vem desmarcada. O CPF é validado com o número completo, mas só a forma mascarada (`***.***.***-12`) é gravada no pedido; o número completo não é persistido em lugar nenhum.
+- **Estoque:** na demo o pedido não baixa o estoque (a baixa fica para a versão funcional).
 
 ## Estado e persistência
 

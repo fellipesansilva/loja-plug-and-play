@@ -10,6 +10,7 @@ import { useDemoStore } from "@/store/demo-store";
 import { CheckIcon, PlusIcon } from "./Icons";
 import { PixLine } from "./PixLine";
 import { StoreImage } from "./StoreImage";
+import { useCartWords } from "./useCartWords";
 
 const THUMB_SIZES = "100px";
 const FEEDBACK_MS = 1400;
@@ -20,6 +21,7 @@ const FEEDBACK_MS = 1400;
  */
 export function QuickAddButton({ product, className = "size-10" }: { product: Product; className?: string }) {
   const addToCart = useDemoStore((s) => s.addToCart);
+  const words = useCartWords();
   const [added, setAdded] = useState(false);
   const soldOut = isSoldOut(product);
   const needsChoice = product.variants.length > 0;
@@ -43,7 +45,7 @@ export function QuickAddButton({ product, className = "size-10" }: { product: Pr
     <button
       type="button"
       disabled={soldOut}
-      aria-label={soldOut ? `${product.name} esgotado` : `Adicionar ${product.name} ao carrinho`}
+      aria-label={soldOut ? `${product.name} esgotado` : `Adicionar ${product.name} ${words.to}`}
       onClick={() => {
         addToCart({ productId: product.id, qty: 1 });
         setAdded(true);

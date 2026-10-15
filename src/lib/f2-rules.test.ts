@@ -27,6 +27,7 @@ import { computeTotals } from "./totals";
 import {
   isValidCpf,
   isValidExpiry,
+  maskCpfForStorage,
   isValidPhone,
   maskCardNumber,
   maskCpf,
@@ -34,6 +35,7 @@ import {
   maskPhone,
   simulateCepLookup,
 } from "./validation";
+import { cartWords } from "./cart-words";
 import { getPreset, resolvePresetParam } from "@/presets";
 
 const trama = getPreset("trama-studio")!;
@@ -328,5 +330,38 @@ describe("link direto ?preset=", () => {
     expect(resolvePresetParam("?preset=")).toBeNull();
     expect(resolvePresetParam("?preset=orbita")).toBeNull();
     expect(resolvePresetParam("?outro=forno")).toBeNull();
+  });
+});
+
+describe("CPF mascarado para gravar", () => {
+  it("guarda só os 2 últimos dígitos", () => {
+    expect(maskCpfForStorage("529.982.247-25")).toBe("***.***.***-25");
+    expect(maskCpfForStorage("52998224725")).toBe("***.***.***-25");
+    expect(maskCpfForStorage("111.444.777-35")).toBe("***.***.***-35");
+    for (const cpf of ["529.982.247-25", "111.444.777-35"]) {
+      expect(maskCpfForStorage(cpf)).not.toMatch(/[0-9]{3}[.][0-9]{3}[.][0-9]{3}/);
+      expect(maskCpfForStorage(cpf).replace(/[^0-9]/g, "")).toHaveLength(2);
+    }
+  });
+});
+
+describe("rótulo do carrinho vem do preset", () => {
+  it("Carrinho (masculino) e Sacola (feminino)", () => {
+    expect(cartWords()).toMatchObject({ name: "Carrinho", to: "ao carrinho", add: "Adicionar ao carrinho", added: "Adicionado ao carrinho", view: "Ver carrinho", back: "Voltar para o carrinho", empty: "Seu carrinho está vazio" });
+    expect(cartWords("Sacola", "f")).toMatchObject({ name: "Sacola", to: "à sacola", add: "Adicionar à sacola", added: "Adicionado à sacola", view: "Ver sacola", back: "Voltar para a sacola", empty: "Sua sacola está vazia" });
+  });
+
+  it("os presets declaram rótulo e gênero", () => {
+    expect([trama.config.cartLabel, trama.config.cartGender ?? "m"]).toEqual(["Carrinho", "m"]);
+    expect([forno.config.cartLabel, forno.config.cartGender]).toEqual(["Sacola", "f"]);
+  });
+});
+
+describe("cartão como módulo próprio", () => {
+  it("Trama: cartão + parcelamento; Forno: cartão à vista (sem parcelamento)", () => {
+    expect(trama.config.modules.cartao?.enabled).toBe(true);
+    expect(trama.config.modules.parcelamento?.enabled).toBe(true);
+    expect(forno.config.modules.cartao?.enabled).toBe(true);
+    expect(forno.config.modules.parcelamento?.enabled).toBeFalsy();
   });
 });

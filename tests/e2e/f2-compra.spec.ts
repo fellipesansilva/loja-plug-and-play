@@ -339,7 +339,11 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     const s = await state(page);
     expect(s.orders[0]).toMatchObject({ id: "TS-1009", status: "aguardando_pagamento", total: 39321, couponCode: "BEMVINDA10", couponDiscount: 4599, pixDiscount: 2070 });
     expect(s.orders[0].items[0]).toMatchObject({ lineId: "ts-014|", quantity: 1, unitPrice: 45990 });
-    expect(s.orders[0].customer).toMatchObject({ name: "Ana Souza", cpf: "52998224725", marketingOptIn: false });
+    expect(s.orders[0].customer).toMatchObject({ name: "Ana Souza", cpf: "***.***.***-25", marketingOptIn: false });
+    const stored = await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? "");
+    expect(stored).not.toContain("52998224725");
+    expect(stored).not.toContain("529.982.247-25");
+    expect(stored).not.toContain("529.982");
     expect(s.cart).toEqual([]);
     expect(s.checkout).toEqual({ couponCode: null, cep: "", shippingId: null });
     await expect(page.getByTestId("cart-count")).toHaveCount(0);
@@ -372,7 +376,7 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     await fillAddress(page);
     await next(page);
     await expect(page.getByRole("radio", { name: /^Pix/ })).toBeChecked();
-    await expect(page.getByRole("radio", { name: /Cartão/ })).toHaveCount(0); // sem parcelamento
+    await expect(page.getByRole("radio", { name: "Cartão de crédito" })).toBeVisible(); // cartão à vista
     await expect(page.getByRole("radio", { name: /Boleto/ })).toHaveCount(0);
     await expect(page.getByTestId("finish")).toHaveText(/56,56/);
     await finish(page);
@@ -546,6 +550,191 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     await page.getByRole("radio", { name: "Cartão de crédito" }).check();
     await expect(summary).not.toContainText("Desconto no Pix");
     await expect(page.getByTestId("summary-total")).toContainText("459,90");
+  });
+});
+
+test.describe("F2 · ajustes de revisão", () => {
+  test("Forno paga com o cartão de teste à vista (sem parcelas)", async ({ page }) => {
+    await readyToCheckout(page, FORNO, { productId: "fv-001", variantId: "fv-mar-med" }); // R$ 54,90 + frete R$ 9,90
+    await fillIdentification(page);
+    await next(page);
+    await fillAddress(page);
+    await next(page);
+    await page.getByRole("radio", { name: "Cartão de crédito" }).check();
+    await expect(page.getByTestId("card-warning")).toBeVisible();
+    await expect(page.locator("#chk-installments")).toHaveCount(0); // sem o módulo de parcelamento
+    await expect(page.getByTestId("card-cash")).toContainText("à vista");
+    await expect(page.getByTestId("card-cash")).toContainText("64,80");
+    await page.locator("#chk-cardNumber").fill("4111111111111111");
+    await page.locator("#chk-cardName").fill("ANA SOUZA");
+    await page.locator("#chk-cardExpiry").fill("1230");
+    await page.locator("#chk-cardCvv").fill("4417");
+    await expect(page.getByTestId("finish")).toHaveText(/64,80/);
+    await finish(page);
+
+    await expect(page).toHaveURL(/\/pedido\/FV-2009$/);
+    await expect(page.getByTestId("order-status")).toHaveText("Pago");
+    await expect(page.getByTestId("order-payment")).toHaveText("Cartão de crédito · Visa final 1111");
+    await expect(page.getByTestId("payment-confirmed")).toContainText("à vista");
+    expect((await state(page)).orders[0].payment).toEqual({ method: "cartao", installments: 1, brand: "Visa", last4: "1111" });
+    const stored = await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? "");
+    expect(stored).not.toContain("4111111111111111");
+    expect(stored).not.toContain("4417");
+  });
+
+  test("Forno recusa outro número de cartão à vista", async ({ page }) => {
+    await readyToCheckout(page, FORNO, { productId: "fv-013" });
+    await fillIdentification(page);
+    await next(page);
+    await fillAddress(page);
+    await next(page);
+    await page.getByRole("radio", { name: "Cartão de crédito" }).check();
+    await page.locator("#chk-cardNumber").fill("5555555555554444");
+    await page.locator("#chk-cardName").fill("ANA SOUZA");
+    await page.locator("#chk-cardExpiry").fill("1230");
+    await page.locator("#chk-cardCvv").fill("123");
+    await finish(page);
+    await expect(page.getByText("Cartão recusado (demonstração)")).toBeVisible();
+    await expect(page).toHaveURL(/\/checkout$/);
+  });
+
+  test("Trama continua com parcelas no cartão", async ({ page }) => {
+    await readyToCheckout(page, TRAMA, { productId: "ts-014" });
+    await fillIdentification(page);
+    await next(page);
+    await fillAddress(page);
+    await next(page);
+    await page.getByRole("radio", { name: "Cartão de crédito" }).check();
+    await expect(page.locator("#chk-installments option")).toHaveCount(6);
+    await expect(page.getByTestId("card-cash")).toHaveCount(0);
+  });
+
+  test("CPF: nenhum CPF completo em store.orders nem no localStorage, em qualquer forma de pagamento", async ({ page }) => {
+    await readyToCheckout(page, FORNO, { productId: "fv-013" });
+    await fillIdentification(page, { cpf: "111.444.777-35" });
+    await next(page);
+    await fillAddress(page);
+    await next(page);
+    await finish(page);
+    await expect(page.getByTestId("order-status")).toBeVisible();
+    const s = await state(page);
+    expect(s.orders[0].customer.cpf).toBe("***.***.***-35");
+    const everything = JSON.stringify(s.orders) + (await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? ""));
+    expect(everything).not.toContain("11144477735");
+    expect(everything).not.toContain("111.444.777");
+    expect(everything).not.toMatch(/\d{3}\.\d{3}\.\d{3}-\d{2}/); // nenhum CPF completo, formatado
+    expect(everything).not.toMatch(/"cpf":"\d{11}"/);
+  });
+
+  /** Todo texto que a pessoa vê ou ouve: texto da página + aria-label, alt, title e placeholder. */
+  const visibleWords = (page: Page) =>
+    page.evaluate(() => {
+      const attrs = [...document.querySelectorAll("[aria-label],[alt],[title],[placeholder]")].flatMap((el) =>
+        ["aria-label", "alt", "title", "placeholder"].map((a) => el.getAttribute(a) ?? ""),
+      );
+      return [document.title, document.body.innerText, ...attrs].join("\n");
+    });
+
+  test("Forno: a palavra 'carrinho' não aparece em nenhuma tela; sempre 'sacola'", async ({ page }) => {
+    await openAs(page, FORNO);
+    const screens: string[] = [];
+    const expected = (await page.getByTestId("store-name").getAttribute("aria-label")) ?? "";
+    const collect = async () => {
+      // depois de um goto o HTML inicial é do preset padrão: espera hidratar no preset da loja
+      await page.waitForLoadState("networkidle");
+      await expect(page.getByTestId("store-name")).toHaveAccessibleName(expected);
+      screens.push(await visibleWords(page));
+    };
+
+    await collect(); // home
+    await page.goto("/categoria/pizzas");
+    await collect();
+    await page.goto("/busca?q=pizza");
+    await collect();
+    await page.goto("/carrinho"); // vazio
+    await collect();
+    await page.goto("/checkout"); // vazio
+    await collect();
+    for (const route of ["/sobre", "/trocas-e-devolucoes", "/privacidade"]) {
+      await page.goto(route);
+      await collect();
+    }
+
+    // produto: adicionar (aviso e link), estoque máximo e barra de frete
+    await page.goto("/produto/pizza-margherita");
+    await page.getByRole("button", { name: /Média/ }).click();
+    await page.getByRole("button", { name: /^Adicionar R\$/ }).click();
+    await expect(page.getByRole("status")).toContainText("Adicionado à sacola");
+    await expect(page.getByRole("status").getByRole("link", { name: "Ver sacola" })).toBeVisible();
+    await collect();
+    await page.goto("/produto/bolo-vulcao-de-chocolate");
+    await page.getByRole("button", { name: /Inteiro/ }).click();
+    for (let i = 0; i < 4; i++) await page.getByRole("button", { name: /^Adicionar R\$/ }).click();
+    await page.getByRole("button", { name: /^Adicionar R\$/ }).click(); // além do estoque: aviso
+    await expect(page.locator("p[role=alert]")).toHaveText("Você já adicionou todas as unidades disponíveis à sacola.");
+    await collect();
+
+    // home com barra de frete, "+" do cardápio, sacola cheia e checkout
+    await page.goto("/");
+    await expect(page.getByTestId("shipping-progress")).toContainText("Ver sacola");
+    await collect();
+    await page.goto("/carrinho");
+    await page.getByLabel("CEP").fill("01310100");
+    await page.getByRole("button", { name: "Calcular" }).click();
+    await page.getByTestId("shipping-options").getByLabel(/Econômico/).check();
+    await collect();
+    await page.getByRole("link", { name: "Continuar" }).click();
+    await collect();
+    await fillIdentification(page);
+    await next(page);
+    await collect();
+    await fillAddress(page);
+    await next(page);
+    await collect();
+    await finish(page);
+    await expect(page.getByTestId("order-status")).toBeVisible();
+    await collect();
+
+    screens.forEach((text, i) => expect(text, `tela ${i + 1}`).not.toMatch(/carrinho/i));
+    expect(screens.join("\n")).toMatch(/sacola/i);
+  });
+
+  test("Trama: a palavra 'sacola' não aparece em nenhuma tela; sempre 'carrinho'", async ({ page }) => {
+    await openAs(page, TRAMA);
+    const screens: string[] = [];
+    const expected = (await page.getByTestId("store-name").getAttribute("aria-label")) ?? "";
+    const collect = async () => {
+      // depois de um goto o HTML inicial é do preset padrão: espera hidratar no preset da loja
+      await page.waitForLoadState("networkidle");
+      await expect(page.getByTestId("store-name")).toHaveAccessibleName(expected);
+      screens.push(await visibleWords(page));
+    };
+
+    await collect();
+    for (const route of ["/categoria/feminino", "/busca?q=linho", "/carrinho", "/checkout", "/sobre", "/trocas-e-devolucoes", "/privacidade"]) {
+      await page.goto(route);
+      await collect();
+    }
+    await page.goto("/produto/bolsa-tote-couro");
+    await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
+    await expect(page.getByRole("status")).toContainText("Adicionado ao carrinho");
+    await collect();
+    for (let i = 0; i < 6; i++) await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
+    await expect(page.locator("p[role=alert]")).toHaveText("Você já adicionou todas as unidades disponíveis ao carrinho.");
+    await collect();
+    await page.goto("/");
+    await expect(page.getByTestId("shipping-progress")).toContainText("Ver carrinho");
+    await collect();
+    await page.goto("/carrinho");
+    await collect();
+    await page.getByLabel("CEP").fill("01310100");
+    await page.getByRole("button", { name: "Calcular" }).click();
+    await page.getByTestId("shipping-options").getByLabel(/Econômico/).check();
+    await page.getByRole("link", { name: "Continuar" }).click();
+    await collect();
+
+    screens.forEach((text, i) => expect(text, `tela ${i + 1}`).not.toMatch(/sacola/i));
+    expect(screens.join("\n")).toMatch(/carrinho/i);
   });
 });
 

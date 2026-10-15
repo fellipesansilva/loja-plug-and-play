@@ -4,12 +4,14 @@ import Link from "next/link";
 import { cartCount, cartSubtotal, freeShippingProgress } from "@/lib/cart";
 import { formatBRL } from "@/lib/money";
 import { useDemoStore } from "@/store/demo-store";
+import { useCartWords } from "./useCartWords";
 
 /** Barra de frete grátis: só aparece com itens no carrinho e o módulo de frete grátis ligado. */
 export function ShippingProgress() {
   const cart = useDemoStore((s) => s.cart);
   const products = useDemoStore((s) => s.products);
   const freteGratis = useDemoStore((s) => s.config.modules.freteGratis);
+  const words = useCartWords();
 
   const subtotal = cartSubtotal(cart, products);
   const progress = freeShippingProgress(subtotal, cartCount(cart), freteGratis);
@@ -38,7 +40,7 @@ export function ShippingProgress() {
             href="/carrinho"
             className="inline-flex min-h-11 items-center rounded-button bg-primary px-md text-sm font-bold text-background"
           >
-            Ver sacola · {formatBRL(progress.subtotal)}
+            {words.view} · {formatBRL(progress.subtotal)}
           </Link>
         </div>
         <div

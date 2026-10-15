@@ -4,6 +4,7 @@ import { bannerImage } from "./images";
 export const config: StoreConfig = {
   name: "Forno da Vila",
   cartLabel: "Sacola",
+  cartGender: "f",
   orderPrefix: "FV",
   logo: "/placeholder?l=Forno%20da%20Vila&c=cf3512",
   wordmark: { text: "forno.da vila", accent: "." },
@@ -111,6 +112,7 @@ export const config: StoreConfig = {
     freteGratis: { enabled: true, minValue: 8000 },
     parcelamento: { enabled: false, maxInstallments: 1 },
     boleto: false,
+    cartao: { enabled: true },
     descontoPix: { enabled: false, percent: 5 },
     cupom: true,
     assistenteVirtual: false,

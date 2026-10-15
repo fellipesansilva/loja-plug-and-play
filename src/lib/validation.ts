@@ -70,3 +70,8 @@ export function simulateCepLookup(cep: string): { city: string; state: string } 
   if (d.length !== 8) return null;
   return /^0[1-5]/.test(d) ? { city: "São Paulo", state: "SP" } : null;
 }
+
+/** CPF para guardar no pedido: só os 2 últimos dígitos (`***.***.***-12`). O número completo nunca é persistido. */
+export function maskCpfForStorage(input: string): string {
+  return `***.***.***-${onlyDigits(input).slice(-2)}`;
+}

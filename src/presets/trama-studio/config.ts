@@ -112,6 +112,7 @@ export const config: StoreConfig = {
     freteGratis: { enabled: true, minValue: 19900 },
     parcelamento: { enabled: true, maxInstallments: 6, minInstallment: 2000 },
     boleto: true,
+    cartao: { enabled: true },
     descontoPix: { enabled: true, percent: 5 },
     cupom: true,
     assistenteVirtual: false,

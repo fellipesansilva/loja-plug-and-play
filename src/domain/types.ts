@@ -48,6 +48,8 @@ export type Modules = {
   /** `minInstallment` = valor mínimo da parcela em centavos (padrão 2000). */
   parcelamento?: { enabled: boolean; maxInstallments: number; minInstallment?: Money };
   boleto?: boolean;
+  /** Cartão de crédito. Parcelas só aparecem com `parcelamento` ligado; sem ele o cartão é à vista. */
+  cartao?: { enabled: boolean };
   /** Desconto no Pix: `percent` (ex.: 5 = 5%) sobre o valor após o cupom, nunca sobre o frete. */
   descontoPix?: { enabled: boolean; percent: number };
   cupom?: boolean;
@@ -131,6 +133,8 @@ export type StoreConfig = {
   name: string;
   /** Como a loja chama o carrinho ("Carrinho", "Sacola"). Padrão: "Carrinho". */
   cartLabel?: string;
+  /** Gênero gramatical de `cartLabel` ("m": o carrinho, "f": a sacola). Padrão: "m". */
+  cartGender?: "m" | "f";
   /** Prefixo do número dos pedidos (ex.: "TS" → TS-1009). Padrão: "PD". */
   orderPrefix?: string;
   logo: string;
@@ -256,7 +260,7 @@ export type Order = {
     name: string;
     email: string;
     phone: string;
-    /** Só dígitos; usado para a nota fiscal. */
+    /** CPF mascarado (`***.***.***-12`): o número completo nunca é gravado. */
     cpf?: string;
     marketingOptIn?: boolean;
   };

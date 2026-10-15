@@ -33,12 +33,13 @@ import {
 import { pixPricing } from "@/lib/pix";
 import { maskCep } from "@/lib/shipping";
 import type { PaymentMethod } from "@/lib/totals";
-import { maskCardNumber, maskCpf, maskExpiry, maskPhone, onlyDigits, simulateCepLookup } from "@/lib/validation";
+import { maskCardNumber, maskCpf, maskCpfForStorage, maskExpiry, maskPhone, onlyDigits, simulateCepLookup } from "@/lib/validation";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { FormField } from "./FormField";
 import { PageTitle } from "./PageTitle";
 import { useCartPricing } from "./useCartPricing";
+import { useCartWords } from "./useCartWords";
 
 type Step = "id" | "delivery" | "payment";
 const STEP_LABEL: Record<Step, string> = { id: "Identificação", delivery: "Entrega", payment: "Pagamento" };
@@ -125,7 +126,7 @@ function OrderSummary({ pricing, method }: { pricing: ReturnType<typeof useCartP
 export function CheckoutView() {
   const hydrated = useHydrated();
   const pricing = useCartPricing();
-  const label = pricing.config.cartLabel ?? "Carrinho";
+  const words = useCartWords();
   const [placing, setPlacing] = useState(false);
 
   if (placing) {
@@ -145,13 +146,13 @@ export function CheckoutView() {
         {hydrated ? (
           <div className="mt-md rounded-lg border border-border bg-surface p-lg text-center">
             <p className="font-medium" data-testid="checkout-blocked">
-              {empty ? (label === "Sacola" ? "Sua sacola está vazia" : "Seu carrinho está vazio") : "Escolha a forma de entrega antes de continuar"}
+              {empty ? words.empty : "Escolha a forma de entrega antes de continuar"}
             </p>
             <Link
               href={empty ? "/" : "/carrinho"}
               className="mt-md inline-flex min-h-11 items-center rounded-button bg-primary px-lg font-bold text-background"
             >
-              {empty ? "Ir para a home" : `Voltar para ${label === "Sacola" ? "a sacola" : "o carrinho"}`}
+              {empty ? "Ir para a home" : words.back}
             </Link>
           </div>
         ) : (
@@ -192,14 +193,16 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
   const modules = config.modules;
   const methods: { id: PaymentMethod; label: string }[] = [
     { id: "pix", label: "Pix" },
-    ...(modules.parcelamento?.enabled ? [{ id: "cartao" as const, label: "Cartão de crédito" }] : []),
+    ...(modules.cartao?.enabled ? [{ id: "cartao" as const, label: "Cartão de crédito" }] : []),
     ...(modules.boleto ? [{ id: "boleto" as const, label: "Boleto" }] : []),
   ];
 
   const totals = pricing.totalsFor(method);
   const cardTotals = pricing.totalsFor("cartao");
+  // Parcelas só com o módulo de parcelamento ligado; sem ele o cartão é à vista.
   const plan = installmentPlan(cardTotals.total, modules.parcelamento);
   const installmentOptions = Array.from({ length: plan?.count ?? 1 }, (_, i) => i + 1);
+  const showInstallments = !!modules.parcelamento?.enabled && installmentOptions.length > 1;
   const pix = pixPricing(pricing.totalsFor("boleto").afterCoupon, modules.descontoPix);
 
   function fail(next: Errors, order: readonly string[]) {
@@ -243,7 +246,8 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
     if (method === "cartao") {
       const errs = validateCard(card);
       if (Object.keys(errs).length) return fail(errs, CARD_FIELDS);
-      const result = processCard({ number: card.number, cvv: card.cvv, installments: card.installments });
+      const installments = showInstallments ? card.installments : 1;
+      const result = processCard({ number: card.number, cvv: card.cvv, installments });
       if (!result.ok) return fail({ cardNumber: result.error }, CARD_FIELDS);
       payment = result.payment;
       setCard({ number: "", name: "", expiry: "", cvv: "", installments: 1 }); // descarta os dados do cartão
@@ -266,7 +270,7 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
         name: ident.name.trim(),
         email: ident.email.trim(),
         phone: ident.phone,
-        cpf: onlyDigits(ident.cpf),
+        cpf: maskCpfForStorage(ident.cpf), // o CPF completo nunca é gravado
         marketingOptIn: ident.marketing,
       },
       delivery,
@@ -421,23 +425,29 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
                   <FormField name="cardExpiry" label="Validade" inputMode="numeric" autoComplete="off" placeholder="MM/AA" value={card.expiry} error={errors.cardExpiry} onChange={(e) => setCard({ ...card, expiry: maskExpiry(e.target.value) })} />
                   <FormField name="cardCvv" label="CVV" inputMode="numeric" autoComplete="off" maxLength={4} value={card.cvv} error={errors.cardCvv} onChange={(e) => setCard({ ...card, cvv: onlyDigits(e.target.value).slice(0, 4) })} />
                 </div>
-                <div>
-                  <label htmlFor="chk-installments" className="text-sm font-bold">
-                    Parcelas
-                  </label>
-                  <select
-                    id="chk-installments"
-                    value={card.installments}
-                    onChange={(e) => setCard({ ...card, installments: Number(e.target.value) })}
-                    className="mt-xs h-11 w-full rounded-md border border-border bg-surface px-sm text-base"
-                  >
-                    {installmentOptions.map((n) => (
-                      <option key={n} value={n}>
-                        {n === 1 ? `1x de ${formatBRL(cardTotals.total)} (à vista)` : `${n}x de ${formatBRL(Math.round(cardTotals.total / n))} sem juros`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {showInstallments ? (
+                  <div>
+                    <label htmlFor="chk-installments" className="text-sm font-bold">
+                      Parcelas
+                    </label>
+                    <select
+                      id="chk-installments"
+                      value={card.installments}
+                      onChange={(e) => setCard({ ...card, installments: Number(e.target.value) })}
+                      className="mt-xs h-11 w-full rounded-md border border-border bg-surface px-sm text-base"
+                    >
+                      {installmentOptions.map((n) => (
+                        <option key={n} value={n}>
+                          {n === 1 ? `1x de ${formatBRL(cardTotals.total)} (à vista)` : `${n}x de ${formatBRL(Math.round(cardTotals.total / n))} sem juros`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <p className="text-sm" data-testid="card-cash">
+                    Pagamento à vista no cartão: 1x de {formatBRL(cardTotals.total)}
+                  </p>
+                )}
               </div>
             )}
 

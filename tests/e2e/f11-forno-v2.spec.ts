@@ -118,7 +118,7 @@ test.describe("F11-02 · listagem em cardápio", () => {
     await expect(item).toContainText("Massa folhada de manteiga");
     await expect(item).toContainText("R$ 12,90");
     await expect(item).toContainText("Vegetariano");
-    await expect(item.getByRole("button", { name: "Adicionar Croissant de Manteiga ao carrinho" })).toBeVisible();
+    await expect(item.getByRole("button", { name: "Adicionar Croissant de Manteiga à sacola" })).toBeVisible();
   });
 });
 
@@ -127,7 +127,7 @@ test.describe("F11-02/06 · adicionar pelo '+' e barra de frete grátis", () => 
     await openAs(page, FORNO);
     await expect(page.getByTestId("shipping-progress")).toHaveCount(0); // carrinho vazio
 
-    await page.getByRole("button", { name: "Adicionar Brownie com Calda de Chocolate ao carrinho" }).click();
+    await page.getByRole("button", { name: "Adicionar Brownie com Calda de Chocolate à sacola" }).click();
     await expect(page.getByTestId("cart-count")).toHaveText("1");
     const bar = page.getByTestId("shipping-progress");
     await expect(bar).toContainText("Faltam R$ 65,10 para o frete grátis");
@@ -139,7 +139,7 @@ test.describe("F11-02/06 · adicionar pelo '+' e barra de frete grátis", () => 
 
   test("a barra chega a 'Você ganhou frete grátis' ao passar de R$ 80", async ({ page }) => {
     await openAs(page, FORNO);
-    const brownie = page.getByRole("button", { name: "Adicionar Brownie com Calda de Chocolate ao carrinho" });
+    const brownie = page.getByRole("button", { name: "Adicionar Brownie com Calda de Chocolate à sacola" });
     for (let i = 0; i < 5; i++) await brownie.click(); // 5 × R$ 14,90 = R$ 74,50
     await expect(page.getByTestId("shipping-progress")).toContainText("Faltam R$ 5,50 para o frete grátis");
     await brownie.click(); // R$ 89,40
@@ -194,7 +194,7 @@ test.describe("F11-04/05 · produto em folha, adicionais e carrinho", () => {
 
     await addButton.click();
     await expect(page.getByTestId("cart-count")).toHaveText("2");
-    await expect(page.getByRole("status")).toContainText("Adicionado ao carrinho");
+    await expect(page.getByRole("status")).toContainText("Adicionado à sacola");
     await expect(page.getByTestId("qty")).toHaveText("1"); // volta a 1 depois de adicionar
 
     const lines = await cart(page);
@@ -304,7 +304,7 @@ test.describe("F11 · Forno em 360 px sem rolagem horizontal", () => {
 
   test("com itens no carrinho a home (barra de frete) também cabe", async ({ page }) => {
     await openAs(page, FORNO);
-    await page.getByRole("button", { name: "Adicionar Brownie com Calda de Chocolate ao carrinho" }).click();
+    await page.getByRole("button", { name: "Adicionar Brownie com Calda de Chocolate à sacola" }).click();
     await expect(page.getByTestId("shipping-progress")).toBeVisible();
     expect(await overflowOf(page)).toBeLessThanOrEqual(0);
   });
@@ -316,7 +316,7 @@ test.describe("F11 · Forno em 360 px sem rolagem horizontal", () => {
     expect(add!.height).toBeGreaterThanOrEqual(44);
 
     await page.goto("/categoria/pizzas");
-    const plus = await page.getByRole("button", { name: "Adicionar Pizza de Pepperoni ao carrinho" }).boundingBox();
+    const plus = await page.getByRole("button", { name: "Adicionar Pizza de Pepperoni à sacola" }).boundingBox();
     expect(plus!.width).toBeGreaterThanOrEqual(40);
     expect(plus!.height).toBeGreaterThanOrEqual(40);
   });

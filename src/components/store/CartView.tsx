@@ -10,6 +10,7 @@ import { useHydrated } from "@/store/use-hydrated";
 import { MinusIcon, PlusIcon } from "./Icons";
 import { PageTitle } from "./PageTitle";
 import { StoreImage } from "./StoreImage";
+import { useCartWords } from "./useCartWords";
 import { useCartPricing } from "./useCartPricing";
 
 const stepper =
@@ -190,7 +191,8 @@ export function CartView() {
   const pricing = useCartPricing();
   const setLineQty = useDemoStore((s) => s.setLineQty);
   const removeLine = useDemoStore((s) => s.removeLine);
-  const label = pricing.config.cartLabel ?? "Carrinho";
+  const words = useCartWords();
+  const label = words.name;
   const { lines } = pricing;
 
   if (lines.length === 0) {
@@ -201,7 +203,7 @@ export function CartView() {
         {hydrated ? (
           <div className="mt-md rounded-lg border border-border bg-surface p-lg text-center">
             <p className="font-medium" data-testid="cart-empty">
-              {label === "Sacola" ? "Sua sacola está vazia" : "Seu carrinho está vazio"}
+              {words.empty}
             </p>
             <p className="mt-xs text-sm text-muted">Adicione produtos para continuar a compra.</p>
             <Link
