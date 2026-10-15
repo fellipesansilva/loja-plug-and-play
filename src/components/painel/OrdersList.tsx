@@ -8,6 +8,7 @@ import { PageTitle } from "@/components/store/PageTitle";
 import { formatDateTime } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
 import { filterOrders } from "@/lib/orders-list";
+import { statusLabel } from "@/lib/order-status";
 import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL } from "@/lib/payment";
 import { useDemoStore } from "@/store/demo-store";
 
@@ -22,6 +23,7 @@ const control = "mt-xs h-11 w-full rounded-md border border-border bg-surface px
 /** Pedidos do preset (exemplos e feitos na demo), do mais recente ao mais antigo, com filtro por status e busca. */
 export function OrdersList() {
   const orders = useDemoStore((s) => s.orders);
+  const config = useDemoStore((s) => s.config);
   const [status, setStatus] = useState<OrderStatus | "todos">("todos");
   const [term, setTerm] = useState("");
   const shown = filterOrders(orders, status, term);
@@ -70,7 +72,7 @@ export function OrdersList() {
                   {o.id}
                 </StoreLink>
                 <span className="rounded-button border border-border px-sm py-xs text-sm font-bold" data-testid="order-row-status">
-                  {ORDER_STATUS_LABEL[o.status]}
+                  {statusLabel(o, o.status, config)}
                 </span>
               </div>
               <dl className="mt-sm grid grid-cols-2 gap-x-md gap-y-xs text-sm md:grid-cols-5">

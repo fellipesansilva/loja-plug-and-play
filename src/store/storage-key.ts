@@ -7,4 +7,4 @@ export function storageKeyFor(slug: string): string {
 }
 
 /** Versão do formato persistido. Subir ao mudar o formato (estado antigo é descartado). */
-export const STORAGE_VERSION = 5;
+export const STORAGE_VERSION = 6;

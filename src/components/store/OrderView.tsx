@@ -4,7 +4,8 @@ import { StoreLink as Link } from "@/components/store/StoreLink";
 import { useEffect, useState } from "react";
 import type { Order } from "@/domain/types";
 import { formatBRL } from "@/lib/money";
-import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, PIX_EXPIRES_MINUTES } from "@/lib/payment";
+import { statusLabel } from "@/lib/order-status";
+import { PAYMENT_METHOD_LABEL, PIX_EXPIRES_MINUTES } from "@/lib/payment";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { CopyButton } from "./CopyButton";
@@ -106,6 +107,7 @@ function PaymentPanel({ order }: { order: Order }) {
 export function OrderView({ id }: { id: string }) {
   const hydrated = useHydrated();
   const order = useDemoStore((s) => s.orders.find((o) => o.id === id));
+  const config = useDemoStore((s) => s.config);
 
   if (!order) {
     return (
@@ -132,7 +134,7 @@ export function OrderView({ id }: { id: string }) {
       <p className="mt-sm">
         Status:{" "}
         <strong data-testid="order-status" className={order.status === "pago" ? "text-success" : ""}>
-          {ORDER_STATUS_LABEL[order.status]}
+          {statusLabel(order, order.status, config)}
         </strong>
       </p>
       <p className="mt-xs text-sm text-muted">

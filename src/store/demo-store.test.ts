@@ -16,7 +16,9 @@ describe("demo-store (um store por preset)", () => {
     expect(s.presetId).toBe(trama.id);
     expect(s.config).toEqual(trama.config);
     expect(s.products).toEqual(trama.products);
-    expect(s.orders).toEqual(trama.orders);
+    // os pedidos de exemplo ganham só o histórico de status (status atual na data do pedido)
+    expect(s.orders.map((o) => ({ ...o, history: undefined }))).toEqual(trama.orders.map((o) => ({ ...o, history: undefined })));
+    expect(s.orders.every((o) => o.history?.length === 1)).toBe(true);
     expect(s.categories).toEqual(trama.categories);
     expect(s.coupons).toEqual(trama.coupons);
     expect(s.cart).toEqual([]);

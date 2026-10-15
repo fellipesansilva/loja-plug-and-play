@@ -129,3 +129,113 @@ test.describe("H1 · lista de pedidos", () => {
     });
   });
 });
+
+const VALID_CPF = "529.982.247-25";
+
+/** Compra de verdade pela loja (carrinho → checkout → cartão de teste), com adicionais no Forno. Devolve o número do pedido. */
+async function buyThroughStore(page: Page, opts: { marketing?: boolean } = {}) {
+  await ready(page, "/carrinho");
+  const forno = currentPreset() === FORNO;
+  await page.evaluate((isForno) => {
+    const st = window.__demoStore!.getState();
+    if (isForno) st.addToCart({ productId: "fv-001", variantId: "fv-mar-gra", addonIds: ["azeitonas", "borda-catupiry"], qty: 2 });
+    else st.addToCart({ productId: "ts-014", qty: 1 });
+    st.setShipping("01310100", "economico");
+  }, forno);
+  await page.goto("/checkout");
+  await page.waitForLoadState("networkidle");
+  await page.locator("#chk-name").fill("Ana Souza");
+  await page.locator("#chk-email").fill("ana@example.com");
+  await page.locator("#chk-phone").fill("11912345678");
+  await page.locator("#chk-cpf").fill(VALID_CPF);
+  if (opts.marketing) await page.getByLabel("Quero receber ofertas").check();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.locator("#chk-street").fill("Av. Paulista");
+  await page.locator("#chk-number").fill("1000");
+  await page.locator("#chk-district").fill("Bela Vista");
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("radio", { name: "Cartão de crédito" }).check();
+  await page.locator("#chk-cardNumber").fill("4111111111111111");
+  await page.locator("#chk-cardName").fill("ANA SOUZA");
+  await page.locator("#chk-cardExpiry").fill("1230");
+  await page.locator("#chk-cardCvv").fill("7381");
+  await page.getByTestId("finish").click();
+  await expect(page.getByTestId("order-status")).toBeVisible();
+  return page.evaluate(() => window.__demoStore!.getState().orders[0].id);
+}
+
+test.describe("H2 · detalhe do pedido", () => {
+  test("pedido real com adicionais: itens, valores, endereço, pagamento, cliente, histórico — sem CPF nem cartão completos", async ({ page }) => {
+    const id = await buyThroughStore(page, { marketing: true });
+    const order = await page.evaluate(() => window.__demoStore!.getState().orders[0]);
+
+    await page.goto("/painel/pedidos");
+    await page.getByTestId("order-row").first().getByTestId("order-link").click();
+    await expect(page).toHaveURL(new RegExp(`/painel/pedidos/${id}$`));
+    await expect(page.getByTestId("detail-id")).toHaveText(`Pedido ${id}`);
+    await expect(page.getByTestId("detail-status")).toHaveText("Pago");
+
+    // itens (com variação) e adicionais
+    await expect(page.getByTestId("detail-item")).toHaveCount(order.items.length);
+    await expect(page.getByTestId("detail-item").first()).toContainText(order.items[0].name);
+    if (currentPreset() === FORNO) {
+      await expect(page.getByTestId("detail-item").first()).toContainText("2×");
+      await expect(page.getByTestId("detail-addons")).toContainText("Azeitonas");
+      await expect(page.getByTestId("detail-addons")).toContainText("Borda recheada de catupiry");
+    }
+    // valores
+    const brl = (c: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(c / 100).replace(/\s/g, " ");
+    const norm = (t: string | null) => (t ?? "").replace(/\s/g, " ");
+    expect(norm(await page.getByTestId("detail-total").textContent())).toBe(brl(order.total));
+    expect(norm(await page.getByTestId("detail-subtotal").textContent())).toBe(brl(order.subtotal!));
+    await expect(page.getByTestId("detail-shipping-row")).toContainText("Frete");
+    // entrega e pagamento
+    await expect(page.getByTestId("detail-address")).toContainText("Av. Paulista, 1000");
+    await expect(page.getByTestId("detail-payment-text")).toContainText("Cartão de crédito · Visa final 1111");
+    // cliente
+    await expect(page.getByTestId("detail-customer-name")).toHaveText("Ana Souza");
+    await expect(page.getByTestId("detail-cpf")).toHaveText("CPF ***.***.***-25");
+    await expect(page.getByTestId("detail-marketing")).toContainText(/Aceitou receber ofertas em \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/);
+    // histórico
+    await expect(page.getByTestId("history-entry")).toHaveCount(1);
+    await expect(page.getByTestId("history-entry").first()).toContainText("Pago");
+
+    // nada sensível no DOM
+    const html = await page.content();
+    for (const secret of [VALID_CPF, "52998224725", "529.982", "4111111111111111", "4111 1111 1111", "7381"]) expect(html, secret).not.toContain(secret);
+  });
+
+  test("pedido sem consentimento de marketing diz que não aceitou", async ({ page }) => {
+    const id = await buyThroughStore(page);
+    await page.goto(`/painel/pedidos/${id}`);
+    await expect(page.getByTestId("detail-marketing")).toHaveText("Não aceitou receber ofertas.");
+  });
+
+  test("pedido de exemplo abre (histórico com o status inicial) e mostra o arrependimento quando houver", async ({ page }) => {
+    await ready(page, "/");
+    await placeOrder(page, { id: "XX-8101", email: "ana@example.com", status: "pago" });
+    await page.goto("/arrependimento");
+    await page.locator("#chk-regretOrder").fill("XX-8101");
+    await page.locator("#chk-regretEmail").fill("ana@example.com");
+    await page.getByRole("button", { name: "Desistir da compra" }).click();
+    const protocol = await page.getByTestId("regret-protocol").textContent();
+    await page.goto("/painel/pedidos/XX-8101");
+    await expect(page.getByTestId("detail-status")).toHaveText("Cancelado");
+    await expect(page.getByTestId("detail-regret-protocol")).toHaveText(protocol!);
+    await expect(page.getByTestId("history-entry")).toHaveCount(2);
+
+    await page.goto("/painel/pedidos/nao-existe");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedido não encontrado");
+  });
+
+  test.describe("celular 400 px", () => {
+    test.use(MOBILE);
+    test("detalhe sem rolagem horizontal", async ({ page }) => {
+      await ready(page, "/");
+      await placeOrder(page, { id: "XX-8102" });
+      await page.goto("/painel/pedidos/XX-8102");
+      await expect(page.getByTestId("detail-id")).toBeVisible();
+      expect(await overflowOf(page)).toBeLessThanOrEqual(0);
+    });
+  });
+});

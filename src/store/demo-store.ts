@@ -15,6 +15,7 @@ import type {
   ThemeTokens,
 } from "@/domain/types";
 import { getPreset } from "@/presets";
+import { applyStatus, isValidTransition, withHistory } from "@/lib/order-status";
 import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
 import { safeStorage } from "./safe-storage";
@@ -46,7 +47,10 @@ type DemoActions = {
   setShipping: (cep: string, shippingId: string | null) => void;
   /** Grava o pedido e zera o carrinho e as escolhas do checkout. */
   placeOrder: (order: Order) => void;
-  setOrderStatus: (orderId: string, status: OrderStatus) => void;
+  /** Muda o status sem checar a transição (usado pelo painel Demo: "Simular pagamento aprovado"); entra no histórico. */
+  setOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => void;
+  /** Mudança de status do painel: só vale a próxima etapa ou o cancelamento permitido. Devolve se mudou. */
+  changeOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => boolean;
   /** Pedido de arrependimento (simulado): dentro do prazo do preset, grava o protocolo e muda o status para "cancelado". */
   requestRegret: (orderId: string, email: string, now?: Date) => RegretResult;
 };
@@ -66,7 +70,7 @@ function dataFromPreset(id: string): DemoData {
     orders: preset.orders,
     coupons: preset.coupons,
   });
-  return { presetId: preset.id, ...clone, cart: [], checkout: { ...EMPTY_CHECKOUT } };
+  return { presetId: preset.id, ...clone, orders: clone.orders.map(withHistory), cart: [], checkout: { ...EMPTY_CHECKOUT } };
 }
 
 /**
@@ -99,16 +103,22 @@ export function createDemoStore(presetId: string) {
       setCoupon: (code) => set((s) => ({ checkout: { ...s.checkout, couponCode: code } })),
       setShipping: (cep, shippingId) => set((s) => ({ checkout: { ...s.checkout, cep, shippingId } })),
       placeOrder: (order) =>
-        set((s) => ({ orders: [order, ...s.orders], cart: [], checkout: { ...EMPTY_CHECKOUT } })),
-      setOrderStatus: (orderId, status) =>
-        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)) })),
+        set((s) => ({ orders: [withHistory(order), ...s.orders], cart: [], checkout: { ...EMPTY_CHECKOUT } })),
+      setOrderStatus: (orderId, status, now = new Date()) =>
+        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? applyStatus(o, status, now) : o)) })),
+      changeOrderStatus: (orderId, status, now = new Date()) => {
+        const order = get().orders.find((o) => o.id === orderId);
+        if (!order || !isValidTransition(order, status)) return false;
+        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? applyStatus(o, status, now) : o)) }));
+        return true;
+      },
       requestRegret: (orderId, email, now = new Date()) => {
         const { orders, config } = get();
         const result = evaluateRegret(orders, orderId, email, config.policies.regretDays, now);
         if (result.kind === "ok") {
           const regret = { protocol: result.protocol, requestedAt: now.toISOString() };
           set((s) => ({
-            orders: s.orders.map((o) => (o.id === result.orderId ? { ...o, status: "cancelado" as const, regret } : o)),
+            orders: s.orders.map((o) => (o.id === result.orderId ? { ...applyStatus(o, "cancelado", now), regret } : o)),
           }));
         }
         return result;
@@ -117,8 +127,10 @@ export function createDemoStore(presetId: string) {
     {
       name: storageKeyFor(preset.shortId),
       version: STORAGE_VERSION,
-      // Formato antigo é descartado (cai no preset padrão) em vez de quebrar a vitrine.
-      migrate: () => ({}) as DemoState,
+      // v5 → v6 (histórico de status, produto ativo/inativo, rótulo de retirada): pedidos, catálogo, carrinho e cupons são
+      // mantidos; a config volta a ser a do preset (que ganhou campos), preservando o nome e o tema editados.
+      // Qualquer outro formato antigo é descartado (cai no preset padrão) em vez de quebrar a vitrine.
+      migrate: (persisted, version) => migrateState(persisted, version, preset.id) as DemoState,
       storage: createJSONStorage(() => safeStorage),
       // Hidratação manual (no cliente, após montar) para evitar mismatch com o SSR.
       skipHydration: true,
@@ -162,4 +174,16 @@ export function useDemoStoreApi(): DemoStore {
 /** Seleciona uma parte do estado da loja atual. */
 export function useDemoStore<T>(selector: (state: DemoState) => T): T {
   return useStore(useDemoStoreApi(), selector);
+}
+
+/** Migração do estado salvo (exportada para teste). Devolve {} para formatos que não dá para aproveitar. */
+export function migrateState(persisted: unknown, version: number, presetId: string): Partial<DemoData> {
+  const saved = persisted as Partial<DemoData> | undefined;
+  if (version !== 5 || !saved || saved.presetId !== presetId || !saved.config) return {};
+  const fresh = getPreset(presetId)!;
+  return {
+    ...saved,
+    config: { ...structuredClone(fresh.config), name: saved.config.name, theme: saved.config.theme },
+    orders: (saved.orders ?? []).map(withHistory),
+  };
 }
