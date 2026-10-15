@@ -1,4 +1,4 @@
-import { presets } from "@/presets";
+import { DEFAULT_PRESET_ID, presets } from "@/presets";
 import { STORAGE_KEY, STORAGE_VERSION } from "@/store/storage-key";
 import { TOKEN_GROUPS, tokensToCss } from "./tokens";
 
@@ -12,7 +12,10 @@ const CSS_BY_PRESET: Record<string, string> = Object.fromEntries(
  * lê o preset salvo e reescreve o <style id="theme-tokens"> com os tokens salvos.
  * Tolerante a localStorage indisponível; ignora estado salvo em versão antiga do formato.
  * Com `?preset=<id|apelido>` válido, usa os tokens desse preset e esconde a página (data-preset-pending) até a vitrine
- * trocar o conteúdo, para a Trama padrão do HTML inicial nunca aparecer. O mapeamento de grupos vem de TOKEN_GROUPS.
+ * trocar o conteúdo, para a Trama padrão do HTML inicial nunca aparecer. O mesmo vale quando o preset SALVO é diferente do
+ * padrão: o HTML do servidor é sempre do preset padrão e o store só lê o localStorage depois de montar (skipHydration),
+ * então sem isso o preset padrão apareceria por instantes. O ThemeProvider tira o atributo depois de aplicar o preset.
+ * O mapeamento de grupos vem de TOKEN_GROUPS.
  */
 export const EARLY_THEME_SCRIPT = `(function(){try{
 var q=/[?&]preset=([^&#]*)/.exec(typeof location!=="undefined"?location.search:"");
@@ -26,4 +29,7 @@ var t=p.state.config.theme;var el=document.getElementById("theme-tokens");if(!t|
 var m=${JSON.stringify(TOKEN_GROUPS)};var out=[];
 for(var g in m){var o=t[g];for(var k in o){out.push("--t-"+m[g]+"-"+k+":"+o[k]);}}
 el.textContent=":root{"+out.join(";")+"}";
+if(p.state.presetId&&p.state.presetId!==${JSON.stringify(DEFAULT_PRESET_ID)}&&document.documentElement){
+document.documentElement.setAttribute("data-preset-pending","");
+setTimeout(function(){document.documentElement.removeAttribute("data-preset-pending")},4000);}
 }catch(e){}})();`;

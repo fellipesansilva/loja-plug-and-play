@@ -106,7 +106,9 @@ O frete grátis compara o **subtotal do carrinho** (só itens físicos). O pedid
 
 ## Estado e persistência
 
-O estado é salvo em `localStorage` (chave `loja-demo-v1`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). O formato é versionado (`STORAGE_VERSION`): estado salvo em versão antiga é descartado. O carrinho (`cart`) é persistido e zerado ao resetar ou trocar de preset. Em tempo de execução o store fica exposto em `window.__demoStore` para testes e depuração.
+O estado é salvo em `localStorage` (chave `loja-demo-v1`). Se o storage estiver indisponível ou lançar exceção, a demo funciona normalmente, só sem persistir (fallback em memória). **Sem piscar o preset padrão:** o HTML do servidor é sempre do preset padrão e o store só lê o `localStorage` depois de montar (`skipHydration`). Por isso o script inline `early-theme-script.ts`, que roda antes da primeira pintura, aplica os tokens do preset salvo (ou de `?preset=`) e, quando esse preset não é o padrão, esconde a página (`html[data-preset-pending]`) até o `ThemeProvider` trocar o conteúdo. Se o JS não carregar, a página volta sozinha em 4 s.
+
+O formato é versionado (`STORAGE_VERSION`): estado salvo em versão antiga é descartado. O carrinho (`cart`) é persistido e zerado ao resetar ou trocar de preset. Em tempo de execução o store fica exposto em `window.__demoStore` para testes e depuração.
 
 ## Publicação (Vercel)
 

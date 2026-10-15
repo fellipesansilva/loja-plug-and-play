@@ -638,6 +638,7 @@ test.describe("F2 · ajustes de revisão", () => {
     });
 
   test("Forno: a palavra 'carrinho' não aparece em nenhuma tela; sempre 'sacola'", async ({ page }) => {
+    test.setTimeout(90_000); // percorre muitas telas; com a máquina carregada pode passar de 30 s
     await openAs(page, FORNO);
     const screens: string[] = [];
     const expected = (await page.getByTestId("store-name").getAttribute("aria-label")) ?? "";
@@ -702,6 +703,7 @@ test.describe("F2 · ajustes de revisão", () => {
   });
 
   test("Trama: a palavra 'sacola' não aparece em nenhuma tela; sempre 'carrinho'", async ({ page }) => {
+    test.setTimeout(90_000); // percorre muitas telas; com a máquina carregada pode passar de 30 s
     await openAs(page, TRAMA);
     const screens: string[] = [];
     const expected = (await page.getByTestId("store-name").getAttribute("aria-label")) ?? "";

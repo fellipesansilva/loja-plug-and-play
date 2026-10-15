@@ -69,4 +69,38 @@ describe("early theme script", () => {
       expect(runWith("?preset=orbita").css).toBe("original");
     });
   });
+
+  describe("preset salvo diferente do padrão", () => {
+    function runSaved(presetId: string, search = "") {
+      const theme = getPreset(presetId)!.config.theme;
+      const saved = JSON.stringify({ state: { presetId, config: { theme } }, version: STORAGE_VERSION });
+      const el = { textContent: "original" };
+      const attrs: Record<string, string> = {};
+      vm.runInNewContext(EARLY_THEME_SCRIPT, {
+        location: { search },
+        localStorage: { getItem: (k: string) => (k === STORAGE_KEY ? saved : null) },
+        setTimeout: () => 0,
+        document: {
+          getElementById: (id: string) => (id === "theme-tokens" ? el : null),
+          documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v), removeAttribute: (k: string) => delete attrs[k] },
+        },
+      });
+      return { css: el.textContent, attrs };
+    }
+
+    it("Forno salvo: tokens do Forno e página escondida até a vitrine aplicar o preset", () => {
+      const { css, attrs } = runSaved("forno-da-vila");
+      expect(css).toBe(tokensToCss(getPreset("forno-da-vila")!.config.theme));
+      expect(attrs).toHaveProperty("data-preset-pending");
+    });
+
+    it("preset padrão salvo (ou nada salvo): nada é escondido", () => {
+      expect(runSaved("trama-studio").attrs).not.toHaveProperty("data-preset-pending");
+    });
+
+    it("?preset= continua mandando mais do que o salvo", () => {
+      const { css } = runSaved("trama-studio", "?preset=forno");
+      expect(css).toBe(tokensToCss(getPreset("forno-da-vila")!.config.theme));
+    });
+  });
 });
