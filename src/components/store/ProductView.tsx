@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { StoreLink as Link } from "@/components/store/StoreLink";
+import { usePresetRouter } from "@/components/store/StoreLink";
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/domain/types";
 import { unitPrice } from "@/lib/cart";
@@ -86,7 +86,7 @@ function AddonsSection({
 }
 
 function ProductDetails({ product }: { product: Product }) {
-  const router = useRouter();
+  const router = usePresetRouter();
   const category = useDemoStore((s) => s.categories.find((c) => c.id === product.categoryId));
   const defs = useDemoStore((s) => s.config.attributeDefs);
   const regret = useDemoStore((s) => s.config.policies.regret);

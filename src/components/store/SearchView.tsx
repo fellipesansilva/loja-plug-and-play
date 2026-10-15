@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { searchProducts } from "@/lib/search";

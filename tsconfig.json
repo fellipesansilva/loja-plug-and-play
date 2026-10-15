@@ -25,9 +25,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@active-fonts": [
-        "./src/fonts/trama.ts"
       ]
     }
   },
@@ -37,13 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts",
-    ".next-prod/types/**/*.ts",
-    ".next-prod/dev/types/**/*.ts",
-    ".next-trama/types/**/*.ts",
-    ".next-trama/dev/types/**/*.ts",
-    ".next-forno/types/**/*.ts",
-    ".next-forno/dev/types/**/*.ts"
+    "**/*.mts"
   ],
   "exclude": [
     "node_modules"

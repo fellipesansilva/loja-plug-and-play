@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import { cartCount, cartSubtotal, freeShippingProgress } from "@/lib/cart";
 import { formatBRL } from "@/lib/money";
 import { useDemoStore } from "@/store/demo-store";

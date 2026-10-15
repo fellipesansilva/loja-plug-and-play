@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {

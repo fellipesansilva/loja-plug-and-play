@@ -1,32 +1,58 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test as base, type APIRequestContext, type Page } from "@playwright/test";
 
-/** Ids dos presets. Cada preset é um build (e um projeto do Playwright) próprio: ver playwright.config.ts. */
+/** Ids dos presets. Os dois projetos do Playwright apontam para o MESMO servidor; cada um testa o seu prefixo (/trama, /forno). */
 export const TRAMA = "trama-studio";
 export const FORNO = "forno-da-vila";
 
 export const NAME: Record<string, string> = { [TRAMA]: "Trama Studio", [FORNO]: "Forno da Vila" };
 export const SHORT: Record<string, string> = { [TRAMA]: "trama", [FORNO]: "forno" };
-/** Portas dos builds de teste (3000 é de outro projeto; nunca usar). */
-export const PORT: Record<string, number> = { [TRAMA]: 3411, [FORNO]: 3412 };
-export const URL_OF: Record<string, string> = {
-  [TRAMA]: `http://localhost:${PORT[TRAMA]}`,
-  [FORNO]: `http://localhost:${PORT[FORNO]}`,
-};
+/** Porta do servidor de teste (3000 é de outro projeto; nunca usar). */
+export const PORT = 3411;
+export const ORIGIN = `http://localhost:${PORT}`;
+/** Endereço da home de cada loja. */
+export const URL_OF: Record<string, string> = { [TRAMA]: `${ORIGIN}/trama`, [FORNO]: `${ORIGIN}/forno` };
 
-/** Preset do build contra o qual o teste está rodando (metadata do projeto do Playwright). */
+/** Preset contra o qual o teste está rodando (metadata do projeto do Playwright). */
 export function currentPreset(): string {
-  return test.info().project.metadata.preset as string;
+  return base.info().project.metadata.preset as string;
 }
 
-/** Chave do localStorage da loja deste build (separada por preset). */
+/** Prefixa caminhos da loja com o preset do projeto: "/carrinho" → "/forno/carrinho". Endereços completos não mudam. */
+export function inStore(url: string, preset: string = currentPreset()): string {
+  if (!url.startsWith("/")) return url;
+  const slug = SHORT[preset];
+  if (url === "/") return `/${slug}`;
+  if (url === `/${slug}` || url.startsWith(`/${slug}/`) || url.startsWith(`/${slug}?`)) return url;
+  return `/${slug}${url}`;
+}
+
+/**
+ * `test` com page.goto e request.get que já entram na loja do projeto: os specs escrevem "/carrinho" e a requisição
+ * vai para "/<preset>/carrinho". Para testar o endereço cru (redirecionamentos, 404) use `raw(page)` / `rawRequest`.
+ */
+export const test = base.extend<{ page: Page; request: APIRequestContext }>({
+  page: async ({ page }, provide) => {
+    const goto = page.goto.bind(page);
+    page.goto = ((url: string, options?: Parameters<Page["goto"]>[1]) => goto(inStore(url), options)) as Page["goto"];
+    await provide(page);
+  },
+  request: async ({ request }, provide) => {
+    const get = request.get.bind(request);
+    request.get = ((url: string, options?: Parameters<APIRequestContext["get"]>[1]) => get(inStore(url), options)) as APIRequestContext["get"];
+    await provide(request);
+  },
+});
+export { expect };
+
+/** Chave do localStorage da loja deste projeto (separada por preset). */
 export const storageKey = (preset: string = currentPreset()): string => `loja-demo-v1-${SHORT[preset]}`;
 
 /**
- * Abre uma rota da loja deste build e espera a hidratação. O teste é escrito para um preset: nos outros builds ele é
- * pulado (cada preset é uma loja própria, não dá para "trocar" de preset dentro da mesma loja).
+ * Abre uma rota da loja e espera a hidratação. O teste é escrito para um preset: no outro projeto ele é pulado
+ * (cada preset é uma loja própria; o teste de uma não roda na outra).
  */
 export async function openAs(page: Page, preset: string, route = "/") {
-  test.skip(currentPreset() !== preset, `só roda no build ${SHORT[preset]}`);
+  base.skip(currentPreset() !== preset, `só roda na loja ${SHORT[preset]}`);
   await page.goto(route);
   // espera a hidratação terminar (cliques em links logo após o carregamento podem ser perdidos)
   await page.waitForLoadState("networkidle");
@@ -34,5 +60,5 @@ export async function openAs(page: Page, preset: string, route = "/") {
   await expect(page.getByTestId("store-name")).toHaveAccessibleName(NAME[preset]);
 }
 
-/** Nome da loja deste build (para testes que valem para qualquer preset). */
+/** Nome da loja deste projeto (para testes que valem para qualquer preset). */
 export const storeName = (): string => NAME[currentPreset()];

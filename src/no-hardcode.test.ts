@@ -3,8 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const SRC = path.resolve(__dirname);
-/** Cores, fontes e raios só podem existir em src/theme e src/presets. */
-const ALLOWED = [path.join(SRC, "theme"), path.join(SRC, "presets")];
+/** Cores, fontes e raios só podem existir em src/theme, src/presets e src/fonts (arquivos das fontes de cada preset). */
+const ALLOWED = [path.join(SRC, "theme"), path.join(SRC, "presets"), path.join(SRC, "fonts")];
 
 const PATTERNS: [string, RegExp][] = [
   ["cor hexadecimal", /#[0-9a-fA-F]{3,8}\b/],

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { StoreLink as Link } from "@/components/store/StoreLink";
+import { usePresetRouter } from "@/components/store/StoreLink";
 import { useState, type FormEvent } from "react";
 import type { Order } from "@/domain/types";
 import { buildOrder } from "@/lib/checkout";
@@ -168,7 +168,7 @@ export function CheckoutView() {
 }
 
 function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCartPricing>; onPlacing: () => void }) {
-  const router = useRouter();
+  const router = usePresetRouter();
   const orders = useDemoStore((s) => s.orders);
   const placeOrder = useDemoStore((s) => s.placeOrder);
   const { config, allDigital, selected, checkout } = pricing;

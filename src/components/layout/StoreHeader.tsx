@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { StoreLink as Link } from "@/components/store/StoreLink";
+import { usePresetRouter } from "@/components/store/StoreLink";
 import { useState, type FormEvent } from "react";
 import { AnnouncementBar } from "@/components/store/AnnouncementBar";
 import { CartIcon, CloseIcon, MenuIcon, SearchIcon } from "@/components/store/Icons";
@@ -32,7 +32,7 @@ function Wordmark({ text, accent }: { text: string; accent: string }) {
 }
 
 function SearchForm({ pill, autoFocus = false }: { pill: boolean; autoFocus?: boolean }) {
-  const router = useRouter();
+  const router = usePresetRouter();
   const [term, setTerm] = useState("");
 
   function submit(e: FormEvent) {

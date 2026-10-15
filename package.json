@@ -3,16 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/next.mjs dev -p 3410",
-    "build": "node scripts/next.mjs build",
-    "start": "node scripts/next.mjs start -p 3410",
+    "dev": "next dev -p 3410",
+    "build": "next build",
+    "start": "next start -p 3410",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/test-presets.mjs",
+    "test": "vitest run",
     "test:e2e": "playwright test",
-    "build:trama": "node scripts/next.mjs build --preset=trama",
-    "build:forno": "node scripts/next.mjs build --preset=forno",
-    "dev:forno": "node scripts/next.mjs dev -p 3410 --preset=forno",
     "test:unit": "vitest run"
   },
   "dependencies": {

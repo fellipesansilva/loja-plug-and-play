@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { FORNO, TRAMA, openAs } from "./helpers";
+import { type Page } from "@playwright/test";
+import { expect, test, inStore, FORNO, TRAMA, openAs } from "./helpers";
 
 const overflowOf = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -295,7 +295,7 @@ test.describe("F1-04 · produto", () => {
     await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
     const toast = page.getByRole("status");
     await expect(toast).toContainText("Adicionado ao carrinho");
-    await expect(toast.getByRole("link", { name: "Ver carrinho" })).toHaveAttribute("href", "/carrinho");
+    await expect(toast.getByRole("link", { name: "Ver carrinho" })).toHaveAttribute("href", inStore("/carrinho"));
     await expect(page.getByTestId("cart-count")).toHaveText("1");
 
     await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();

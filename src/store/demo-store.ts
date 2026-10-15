@@ -1,4 +1,7 @@
-import { create } from "zustand";
+"use client";
+
+import { createContext, useContext } from "react";
+import { createStore, useStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type {
   CartLine,
@@ -11,10 +14,10 @@ import type {
   StoreConfig,
   ThemeTokens,
 } from "@/domain/types";
-import { ACTIVE_PRESET_ID, getPreset } from "@/presets";
+import { getPreset } from "@/presets";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
 import { safeStorage } from "./safe-storage";
-import { STORAGE_KEY, STORAGE_VERSION } from "./storage-key";
+import { STORAGE_VERSION, storageKeyFor } from "./storage-key";
 
 type DemoData = {
   presetId: string;
@@ -29,7 +32,7 @@ type DemoData = {
 };
 
 type DemoActions = {
-  /** Restaura tudo ao original do preset desta loja (o preset é definido no build, não troca em tempo de execução). */
+  /** Restaura tudo ao original do preset desta loja. */
   reset: () => void;
   setThemeColor: (key: keyof ThemeTokens["colors"], value: string) => void;
   setStoreName: (name: string) => void;
@@ -51,7 +54,8 @@ export type DemoState = DemoData & DemoActions;
 
 /** Cópia profunda do preset: o estado nunca compartilha referência com os dados-fonte. */
 function dataFromPreset(id: string): DemoData {
-  const preset = getPreset(id) ?? getPreset(ACTIVE_PRESET_ID)!;
+  const preset = getPreset(id);
+  if (!preset) throw new Error(`Preset desconhecido: ${id}`);
   const clone = structuredClone({
     config: preset.config,
     categories: preset.categories,
@@ -62,11 +66,18 @@ function dataFromPreset(id: string): DemoData {
   return { presetId: preset.id, ...clone, cart: [], checkout: { ...EMPTY_CHECKOUT } };
 }
 
-export const useDemoStore = create<DemoState>()(
+/**
+ * Um store por preset: cada loja (/trama, /forno…) tem o seu, com os dados do preset e o estado salvo na chave dela.
+ * O preset chega aos componentes por um único ponto, o PresetProvider do layout da rota.
+ */
+export function createDemoStore(presetId: string) {
+  const preset = getPreset(presetId);
+  if (!preset) throw new Error(`Preset desconhecido: ${presetId}`);
+  return createStore<DemoState>()(
   persist(
     (set) => ({
-      ...dataFromPreset(ACTIVE_PRESET_ID),
-      reset: () => set(dataFromPreset(ACTIVE_PRESET_ID)),
+      ...dataFromPreset(preset.id),
+      reset: () => set(dataFromPreset(preset.id)),
       setThemeColor: (key, value) =>
         set((s) => ({
           config: {
@@ -90,7 +101,7 @@ export const useDemoStore = create<DemoState>()(
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)) })),
     }),
     {
-      name: STORAGE_KEY,
+      name: storageKeyFor(preset.shortId),
       version: STORAGE_VERSION,
       // Formato antigo é descartado (cai no preset padrão) em vez de quebrar a vitrine.
       migrate: () => ({}) as DemoState,
@@ -103,9 +114,38 @@ export const useDemoStore = create<DemoState>()(
       merge: (persisted, current) => {
         const saved = persisted as Partial<DemoData> | undefined;
         // Estado salvo de outro preset (não deveria existir: a chave é por loja) é ignorado.
-        if (saved?.presetId !== ACTIVE_PRESET_ID || !saved.config) return current;
+        if (saved?.presetId !== preset.id || !saved.config) return current;
         return { ...current, ...saved };
       },
     },
   ),
-);
+  );
+}
+
+export type DemoStore = ReturnType<typeof createDemoStore>;
+
+const stores = new Map<string, DemoStore>();
+
+/** Store do preset (criado uma vez por preset e reaproveitado; no servidor serve só para renderizar a página estática). */
+export function getDemoStore(presetId: string): DemoStore {
+  let store = stores.get(presetId);
+  if (!store) {
+    store = createDemoStore(presetId);
+    stores.set(presetId, store);
+  }
+  return store;
+}
+
+export const StoreContext = createContext<DemoStore | null>(null);
+
+/** Store da loja que está na tela (a do preset da rota). */
+export function useDemoStoreApi(): DemoStore {
+  const store = useContext(StoreContext);
+  if (!store) throw new Error("useDemoStore precisa estar dentro do PresetProvider (layout /[preset]).");
+  return store;
+}
+
+/** Seleciona uma parte do estado da loja atual. */
+export function useDemoStore<T>(selector: (state: DemoState) => T): T {
+  return useStore(useDemoStoreApi(), selector);
+}

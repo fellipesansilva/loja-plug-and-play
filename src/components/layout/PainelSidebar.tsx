@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import { usePathname } from "next/navigation";
+import { stripPresetPrefix } from "@/lib/preset-href";
 import { useDemoStore } from "@/store/demo-store";
+import { usePreset } from "@/store/PresetProvider";
 
 const items = [
   { href: "/painel/produtos", label: "Produtos" },
@@ -19,7 +21,8 @@ const settings = [
 ];
 
 export function PainelSidebar() {
-  const pathname = usePathname();
+  const { slug } = usePreset();
+  const pathname = stripPresetPrefix(slug, usePathname());
   const name = useDemoStore((s) => s.config.name);
   const inSettings = pathname.startsWith("/painel/configuracoes");
 

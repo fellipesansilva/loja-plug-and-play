@@ -1,5 +1,5 @@
-import { devices, expect, test, type Page } from "@playwright/test";
-import { FORNO, currentPreset } from "./helpers";
+import { devices, type Page } from "@playwright/test";
+import { expect, test, FORNO, currentPreset } from "./helpers";
 
 const BASE = "/images/presets";
 const MOBILE_WIDTHS = [480, 640, 768, 960];

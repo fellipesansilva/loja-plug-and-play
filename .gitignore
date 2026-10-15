@@ -44,5 +44,3 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /.next-prod/
-/.next-trama/
-/.next-forno/

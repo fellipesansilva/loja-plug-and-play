@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import type { HomeBlock } from "@/domain/types";
 import { activeHomeBlocks } from "@/lib/home-blocks";
 import { formatBRL } from "@/lib/money";

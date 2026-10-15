@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 
 type Chip = { label: string; href: string; active?: boolean };
 

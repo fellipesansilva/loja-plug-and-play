@@ -324,8 +324,8 @@ export type CheckoutDraft = {
 
 export type Preset = {
   id: string;
-  /** Apelido curto para o link direto (`?preset=forno`). O id completo também funciona. */
-  shortId?: string;
+  /** Segmento da URL do preset (`/forno/...`): apelido curto, único e sem espaços. */
+  shortId: string;
   config: StoreConfig;
   categories: Category[];
   products: Product[];

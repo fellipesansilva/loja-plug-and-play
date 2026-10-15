@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import { useEffect, useState } from "react";
 import type { Order } from "@/domain/types";
 import { formatBRL } from "@/lib/money";

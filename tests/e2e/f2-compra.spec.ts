@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { FORNO, TRAMA, openAs, storageKey } from "./helpers";
+import { type Page } from "@playwright/test";
+import { expect, test, inStore, FORNO, TRAMA, openAs, storageKey } from "./helpers";
 
 const VALID_CPF = "529.982.247-25";
 
@@ -48,7 +48,7 @@ test.describe("F2-01 · carrinho", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Carrinho");
     await expect(page.getByTestId("cart-empty")).toHaveText("Seu carrinho está vazio");
     await page.getByRole("link", { name: "Ir para a home" }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/(trama|forno)$/);
   });
 
   test("Forno: o carrinho se chama Sacola", async ({ page }) => {
@@ -154,7 +154,7 @@ test.describe("F2-01 · carrinho", () => {
     await expect(page.getByLabel(/Econômico/)).toHaveCount(0);
 
     await page.getByLabel(/Retirar na loja/).check();
-    await expect(page.getByRole("link", { name: "Continuar" })).toHaveAttribute("href", "/checkout");
+    await expect(page.getByRole("link", { name: "Continuar" })).toHaveAttribute("href", inStore("/checkout"));
     await expect(page.getByTestId("sum-shipping-row")).toContainText("Retirada no local");
     await expect(page.getByTestId("sum-shipping")).toHaveText(/^R\$\s0,00$/);
     await expect(page.getByTestId("sum-shipping-row")).not.toContainText("Grátis");
@@ -231,7 +231,7 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     await expect(page.getByTestId("steps").locator('[aria-current="step"]')).toContainText("Identificação");
     await expect(page.getByText("Usado para a nota fiscal")).toBeVisible();
     await expect(page.getByLabel(/Quero receber novidades/)).not.toBeChecked();
-    await expect(page.getByRole("link", { name: "Política de Privacidade" })).toHaveAttribute("href", "/privacidade");
+    await expect(page.getByRole("link", { name: "Política de Privacidade" })).toHaveAttribute("href", inStore("/privacidade"));
     await fillIdentification(page);
     await expect(page.locator("#chk-phone")).toHaveValue("(11) 91234-5678");
     await next(page);

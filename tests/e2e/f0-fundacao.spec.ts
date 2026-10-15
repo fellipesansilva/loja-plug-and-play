@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { FORNO, NAME, SHORT, TRAMA, URL_OF, currentPreset, storageKey, storeName } from "./helpers";
+import { type Page } from "@playwright/test";
+import { expect, test, FORNO, NAME, SHORT, TRAMA, URL_OF, currentPreset, storageKey, storeName } from "./helpers";
 
 /** Rotas da vitrine; {produto} e {pedido} variam por loja (cada preset tem o seu catálogo e os seus pedidos). */
 const LOJA_ROUTES = [
@@ -77,7 +77,7 @@ test("F0 · painel Demo: a loja atual vem marcada e a outra é um link para a UR
 
   const otherPreset = currentPreset() === TRAMA ? FORNO : TRAMA;
   const link = list.getByRole("link", { name: NAME[otherPreset] });
-  await expect(link).toHaveAttribute("href", URL_OF[otherPreset]);
+  await expect(link).toHaveAttribute("href", "/" + SHORT[otherPreset]);
   // a loja atual não é link (já está nela)
   await expect(list.getByRole("link", { name: storeName() })).toHaveCount(0);
 });
@@ -185,7 +185,7 @@ test.describe("F0 · painel", () => {
     await page.goto("/painel/produtos");
     await openDemo(page);
     await page.getByRole("link", { name: "Ir para a vitrine" }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/(trama|forno)$/);
     await openDemo(page);
     await expect(page.getByRole("button", { name: "Resetar dados" })).toBeVisible();
     await page.getByRole("link", { name: "Ir para o painel" }).click();

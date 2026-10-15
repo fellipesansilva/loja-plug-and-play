@@ -1,54 +1,60 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { ACTIVE_PRESET, ACTIVE_PRESET_ID } from "@/presets";
-import { useDemoStore } from "./demo-store";
+import { presets } from "@/presets";
+import { createDemoStore } from "./demo-store";
+
+const [trama, forno] = presets;
+let store: ReturnType<typeof createDemoStore>;
 
 beforeEach(() => {
-  useDemoStore.getState().reset();
+  store = createDemoStore(trama.id);
+  store.getState().reset();
 });
 
-describe("demo-store (cada build é de um preset só)", () => {
-  it("nasce no preset do build: config, catálogo, pedidos e cupons", () => {
-    const s = useDemoStore.getState();
-    expect(s.presetId).toBe(ACTIVE_PRESET_ID);
-    expect(s.config).toEqual(ACTIVE_PRESET.config);
-    expect(s.products).toEqual(ACTIVE_PRESET.products);
-    expect(s.orders).toEqual(ACTIVE_PRESET.orders);
-    expect(s.categories).toEqual(ACTIVE_PRESET.categories);
-    expect(s.coupons).toEqual(ACTIVE_PRESET.coupons);
+describe("demo-store (um store por preset)", () => {
+  it("nasce no preset recebido: config, catálogo, pedidos e cupons", () => {
+    const s = store.getState();
+    expect(s.presetId).toBe(trama.id);
+    expect(s.config).toEqual(trama.config);
+    expect(s.products).toEqual(trama.products);
+    expect(s.orders).toEqual(trama.orders);
+    expect(s.categories).toEqual(trama.categories);
+    expect(s.coupons).toEqual(trama.coupons);
     expect(s.cart).toEqual([]);
   });
 
+  it("o store do Forno não carrega nada da Trama", () => {
+    const s = createDemoStore(forno.id).getState();
+    expect(s.presetId).toBe(forno.id);
+    expect(s.config.name).toBe(forno.config.name);
+    expect(s.products.map((p) => p.id)).toEqual(forno.products.map((p) => p.id));
+  });
+
   it("não existe troca de preset em tempo de execução", () => {
-    expect("applyPreset" in useDemoStore.getState()).toBe(false);
+    expect("applyPreset" in store.getState()).toBe(false);
   });
 
   it("reset restaura o original do preset desta loja", () => {
-    const st = useDemoStore.getState();
-    st.setStoreName("Outro nome");
-    st.setThemeColor("primary", "#123456");
-    expect(useDemoStore.getState().config.name).toBe("Outro nome");
-
-    useDemoStore.getState().reset();
-    const s = useDemoStore.getState();
-    expect(s.presetId).toBe(ACTIVE_PRESET_ID);
-    expect(s.config).toEqual(ACTIVE_PRESET.config);
-    expect(s.products).toEqual(ACTIVE_PRESET.products);
+    store.getState().setStoreName("Outro nome");
+    store.getState().setThemeColor("primary", "#123456");
+    expect(store.getState().config.name).toBe("Outro nome");
+    store.getState().reset();
+    expect(store.getState().config).toEqual(trama.config);
+    expect(store.getState().products).toEqual(trama.products);
   });
 
   it("alterar o token no store não muta os dados-fonte do preset", () => {
-    useDemoStore.getState().setThemeColor("primary", "#123456");
-    expect(useDemoStore.getState().config.theme.colors.primary).toBe("#123456");
-    expect(ACTIVE_PRESET.config.theme.colors.primary).not.toBe("#123456");
+    store.getState().setThemeColor("primary", "#123456");
+    expect(store.getState().config.theme.colors.primary).toBe("#123456");
+    expect(trama.config.theme.colors.primary).not.toBe("#123456");
   });
 
   it("reset zera o carrinho e as escolhas do checkout", () => {
-    const product = ACTIVE_PRESET.products.find((p) => p.stock > 0 && p.variants.length === 0)!;
-    const st = useDemoStore.getState();
-    st.addToCart({ productId: product.id, qty: 1 });
-    st.setCoupon("QUALQUER");
-    expect(useDemoStore.getState().cart).toHaveLength(1);
-    useDemoStore.getState().reset();
-    expect(useDemoStore.getState().cart).toEqual([]);
-    expect(useDemoStore.getState().checkout.couponCode).toBeNull();
+    const product = trama.products.find((p) => p.stock > 0 && p.variants.length === 0)!;
+    store.getState().addToCart({ productId: product.id, qty: 1 });
+    store.getState().setCoupon("QUALQUER");
+    expect(store.getState().cart).toHaveLength(1);
+    store.getState().reset();
+    expect(store.getState().cart).toEqual([]);
+    expect(store.getState().checkout.couponCode).toBeNull();
   });
 });

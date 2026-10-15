@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import { useState, type FormEvent } from "react";
 import { formatBRL } from "@/lib/money";
 import { pixPricing } from "@/lib/pix";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/store/StoreLink";
 import type { Product } from "@/domain/types";
 import { formatBRL } from "@/lib/money";
 import { isSoldOut } from "@/lib/product";

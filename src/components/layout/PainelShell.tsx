@@ -1,10 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { stripPresetPrefix } from "@/lib/preset-href";
+import { usePreset } from "@/store/PresetProvider";
 import { PainelSidebar } from "./PainelSidebar";
 
 export function PainelShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const { slug } = usePreset();
+  const pathname = stripPresetPrefix(slug, usePathname());
   // A tela de login não exibe o menu lateral.
   if (pathname === "/painel/login") return <main>{children}</main>;
   return (

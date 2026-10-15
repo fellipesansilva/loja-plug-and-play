@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { FORNO, TRAMA, openAs } from "./helpers";
+import { type Page } from "@playwright/test";
+import { expect, test, inStore, FORNO, TRAMA, openAs } from "./helpers";
 
 const cards = (page: Page) => page.getByTestId("product-card");
 const cart = (page: Page) => page.evaluate(() => window.__demoStore!.getState().cart);
@@ -116,7 +116,7 @@ test.describe("F11-02/06 · adicionar pelo '+' e barra de frete grátis", () => 
     await expect(page.getByTestId("cart-count")).toHaveText("1");
     const bar = page.getByTestId("shipping-progress");
     await expect(bar).toContainText("Faltam R$ 65,10 para o frete grátis");
-    await expect(bar.getByRole("link", { name: /Ver sacola · R\$\s14,90/ })).toHaveAttribute("href", "/carrinho");
+    await expect(bar.getByRole("link", { name: /Ver sacola · R\$\s14,90/ })).toHaveAttribute("href", inStore("/carrinho"));
 
     await page.getByRole("link", { name: "Escolher opções de Pizza Margherita" }).click();
     await expect(page).toHaveURL(/\/produto\/pizza-margherita$/);

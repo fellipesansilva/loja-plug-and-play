@@ -3,20 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { DEMO_URLS } from "@/lib/demo-urls";
-import { ACTIVE_PRESET_ID, presets } from "@/presets";
+import { StoreLink } from "@/components/store/StoreLink";
+import { stripPresetPrefix } from "@/lib/preset-href";
+import { presets } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
+import { usePreset } from "@/store/PresetProvider";
 
 export function DemoControls() {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+  const { id: currentId, slug } = usePreset();
+  const path = stripPresetPrefix(slug, usePathname());
   const reset = useDemoStore((s) => s.reset);
   const setOrderStatus = useDemoStore((s) => s.setOrderStatus);
-  const orderId = /^\/pedido\/([^/]+)$/.exec(pathname)?.[1];
+  const orderId = /^\/pedido\/([^/]+)$/.exec(path)?.[1];
   const awaitingPayment = useDemoStore((s) => s.orders.some((o) => o.id === orderId && o.status === "aguardando_pagamento"));
-  const inPainel = pathname.startsWith("/painel");
+  const inPainel = path.startsWith("/painel");
   // Páginas de produto podem ter barra fixa de compra no rodapé: o botão sobe para não cobri-la.
-  const aboveBuyBar = pathname.startsWith("/produto/");
+  const aboveBuyBar = path.startsWith("/produto/");
 
   const presetRow = "rounded-md border px-md py-sm text-left text-sm";
 
@@ -30,36 +33,22 @@ export function DemoControls() {
         >
           <p className="text-xs font-bold uppercase text-muted">Loja</p>
           <ul className="mt-xs flex flex-col gap-xs" aria-label="Lojas da demonstração">
-            {presets.map((p) => {
-              const url = DEMO_URLS[p.id];
-              if (p.id === ACTIVE_PRESET_ID) {
-                return (
-                  <li key={p.id}>
-                    <span aria-current="true" className={`${presetRow} block border-primary bg-primary text-background`}>
-                      {p.config.name}
-                    </span>
-                  </li>
-                );
-              }
-              // Cada preset é uma loja (build) própria: a troca é um link para a URL dela, vinda da configuração.
-              return (
+            {presets.map((p) =>
+              p.id === currentId ? (
                 <li key={p.id}>
-                  {url ? (
-                    <a href={url} className={`${presetRow} block border-border text-text`}>
-                      {p.config.name}
-                    </a>
-                  ) : (
-                    <span
-                      aria-disabled="true"
-                      title="URL desta loja não configurada (NEXT_PUBLIC_DEMO_URLS)"
-                      className={`${presetRow} block border-border text-muted opacity-60`}
-                    >
-                      {p.config.name}
-                    </span>
-                  )}
+                  <span aria-current="true" className={`${presetRow} block border-primary bg-primary text-background`}>
+                    {p.config.name}
+                  </span>
                 </li>
-              );
-            })}
+              ) : (
+                // Cada preset é uma loja em /<preset>: a troca é um link interno para a home da outra loja.
+                <li key={p.id}>
+                  <Link href={`/${p.shortId}`} className={`${presetRow} block border-border text-text`}>
+                    {p.config.name}
+                  </Link>
+                </li>
+              ),
+            )}
           </ul>
           {orderId && awaitingPayment && (
             <button
@@ -80,13 +69,13 @@ export function DemoControls() {
           >
             Resetar dados
           </button>
-          <Link
+          <StoreLink
             href={inPainel ? "/" : "/painel/produtos"}
             onClick={() => setOpen(false)}
             className="mt-sm block rounded-md border border-border px-md py-sm text-center text-sm text-text"
           >
             {inPainel ? "Ir para a vitrine" : "Ir para o painel"}
-          </Link>
+          </StoreLink>
         </div>
       )}
       <button
