@@ -52,7 +52,7 @@ export const productImages: Record<string, Image[]> = {
     { src: "/images/presets/trama-studio/camisa-linho-manga-longa-3.webp", alt: "Camisa de linho clara pendurada em varal" },
   ],
   "ts-010": [
-    { src: "/images/presets/trama-studio/calca-alfaiataria-3.webp", alt: "Calça chino verde-oliva, vista da cintura para baixo" },
+    { src: "/images/presets/trama-studio/calca-chino-1.webp", alt: "Calça chino bege, vista da cintura para baixo" },
   ],
   "ts-011": [
     { src: "/images/presets/trama-studio/bermuda-sarja-1.webp", alt: "Homem caminhando na praia de bermuda cinza-claro e camiseta branca" },

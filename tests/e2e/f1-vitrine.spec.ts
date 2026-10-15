@@ -9,6 +9,8 @@ async function openAs(page: Page, preset: string, route = "/") {
   await page.waitForFunction(() => !!window.__demoStore);
   await page.evaluate((id) => window.__demoStore!.getState().applyPreset(id), preset);
   await page.goto(route);
+  // espera a hidratação terminar (cliques em links logo após o carregamento podem ser perdidos)
+  await page.waitForLoadState("networkidle");
   await page.waitForFunction(() => !!window.__demoStore);
   const name = preset === TRAMA ? "Trama Studio" : "Forno da Vila";
   await expect(page.getByTestId("store-name")).toHaveAccessibleName(name);

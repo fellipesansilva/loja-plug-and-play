@@ -69,8 +69,8 @@ const catalog: Product[] = [
     attributes: attrs({ porcao: ["Porção", "Média (6 fatias)"], sabor: ["Sabor", "Calabresa e cogumelos"], validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten, lactose e carne suína") }),
   }),
   product({
-    id: "fv-005", name: "Pizza de Salame", price: 5590, sku: "FV-SAL", categoryId: "pizzas", color: C, stock: 9,
-    description: "Salame italiano em fatias finas, presunto e mussarela derretida.",
+    id: "fv-005", name: "Pizza de Salame com Presunto", price: 5590, sku: "FV-SAL", categoryId: "pizzas", color: C, stock: 9,
+    description: "Salame italiano em fatias finas e presunto sobre mussarela derretida, direto do forno.",
     attributes: attrs({ porcao: ["Porção", "Média (6 fatias)"], sabor: ["Sabor", "Salame e presunto"], validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten, lactose e carne suína") }),
   }),
   // ——— Pães
@@ -129,9 +129,9 @@ const catalog: Product[] = [
     attributes: attrs({ porcao: ["Porção", "1 unidade (110 g)"], sabor: ["Sabor", "Chocolate meio amargo"], dieta: dieta("Vegetariano"), validade: validade("5 dias"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
   }),
   product({
-    id: "fv-014", name: "Rolinho de Canela", price: 1390, sku: "FV-ROL", categoryId: "doces", color: C, stock: 16,
-    description: "Massa macia enrolada com canela e açúcar mascavo, coberta com glacê.",
-    attributes: attrs({ porcao: ["Porção", "1 unidade (120 g)"], sabor: ["Sabor", "Canela"], dieta: dieta("Vegetariano"), validade: validade("2 dias"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
+    id: "fv-014", name: "Rolinhos de Canela (assadeira com 6)", price: 7490, sku: "FV-ROL", categoryId: "doces", color: C, stock: 8,
+    description: "Seis rolinhos de massa macia com canela e açúcar mascavo, cobertos com glacê, direto da assadeira.",
+    attributes: attrs({ porcao: ["Porção", "Assadeira com 6 unidades (720 g)"], sabor: ["Sabor", "Canela"], dieta: dieta("Vegetariano"), validade: validade("2 dias"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
   }),
   product({
     id: "fv-015", name: "Cheesecake de Frutas Vermelhas", price: 1890, sku: "FV-CHE", categoryId: "doces", color: C, stock: 10,

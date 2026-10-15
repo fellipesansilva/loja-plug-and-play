@@ -32,7 +32,7 @@ export const productImages: Record<string, Image[]> = {
     { src: "/images/presets/forno-da-vila/pizza-mista-1.webp", alt: "Pizza com calabresa, cogumelos, pimentão e azeitonas, vista de cima" },
   ],
   "fv-005": [
-    { src: "/images/presets/forno-da-vila/pizza-de-salame-1.webp", alt: "Pizza de salame e presunto sobre mesa de madeira escura, vista de cima" },
+    { src: "/images/presets/forno-da-vila/pizza-de-salame-com-presunto-1.webp", alt: "Pizza de salame e presunto sobre mesa de madeira escura, vista de cima" },
   ],
   "fv-006": [
     { src: "/images/presets/forno-da-vila/pao-de-fermentacao-natural-1.webp", alt: "Pão de fermentação natural fatiado, com miolo aerado" },
@@ -57,13 +57,12 @@ export const productImages: Record<string, Image[]> = {
   "fv-012": [
     { src: "/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-1.webp", alt: "Bolo vulcão de chocolate com o centro derretido e uma bola de sorvete" },
     { src: "/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-2.webp", alt: "Bolo de chocolate inteiro com calda escorrendo e cerejas" },
-    { src: "/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-3.webp", alt: "Fatias empilhadas de bolo de chocolate denso em um prato" },
   ],
   "fv-013": [
     { src: "/images/presets/forno-da-vila/brownie-com-calda-1.webp", alt: "Calda de chocolate escorrendo sobre brownies empilhados" },
   ],
   "fv-014": [
-    { src: "/images/presets/forno-da-vila/rolinho-de-canela-1.webp", alt: "Rolinhos de canela com glacê em uma assadeira" },
+    { src: "/images/presets/forno-da-vila/rolinhos-de-canela-assadeira-1.webp", alt: "Assadeira com rolinhos de canela cobertos de glacê" },
   ],
   "fv-015": [
     { src: "/images/presets/forno-da-vila/cheesecake-frutas-vermelhas-1.webp", alt: "Fatia de cheesecake com calda de frutas vermelhas sendo servida com uma colher" },

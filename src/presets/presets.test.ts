@@ -104,10 +104,14 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
     }
   });
 
-  it("nenhuma foto se repete entre os produtos da mesma categoria", () => {
-    for (const c of preset.categories) {
-      const srcs = preset.products.filter((p) => p.categoryId === c.id).flatMap((p) => p.images.map((i) => i.src));
-      expect(new Set(srcs).size, c.id).toBe(srcs.length);
+  it("nenhuma foto se repete entre os produtos do mesmo preset", () => {
+    const owner = new Map<string, string>();
+    for (const p of preset.products) {
+      for (const img of p.images) {
+        const other = owner.get(img.src);
+        expect(other === undefined || other === p.id, `${img.src} usada por ${other} e ${p.id}`).toBe(true);
+        owner.set(img.src, p.id);
+      }
     }
   });
 
@@ -127,9 +131,9 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
     }
   });
 
-  it("tem pelo menos 1 produto com variações de 3 fotos e demais com 1 foto", () => {
+  it("todo produto tem foto; os que têm variações têm ao menos 2 (a foto sempre mostra o produto)", () => {
     for (const p of preset.products) {
-      expect(p.images.length).toBeGreaterThanOrEqual(p.variants.length > 0 ? 3 : 1);
+      expect(p.images.length).toBeGreaterThanOrEqual(p.variants.length > 0 ? 2 : 1);
     }
   });
 

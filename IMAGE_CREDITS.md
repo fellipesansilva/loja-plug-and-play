@@ -28,6 +28,7 @@ Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset 
 | `public/images/presets/trama-studio/camisa-linho-manga-longa-1.webp` | https://unsplash.com/photos/vcTKFYNZop4 | Robert Richman | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/trama-studio/camisa-linho-manga-longa-2.webp` | https://unsplash.com/photos/lZP5PveKcyA | Henri Lajarrige Lombard | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/trama-studio/camisa-linho-manga-longa-3.webp` | https://unsplash.com/photos/S4f4apZd-hA | tian dayong | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/trama-studio/calca-chino-1.webp` | https://unsplash.com/photos/O2g79zAqJX8 | MOHAMMAD AL JANNAT RAKIN | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/trama-studio/bermuda-sarja-1.webp` | https://unsplash.com/photos/eexdeq3NleQ | Brandon Atchison | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/trama-studio/jaqueta-jeans-1.webp` | https://unsplash.com/photos/_BDBEP0ePQc | kemal alkan | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/trama-studio/polo-piquet-1.webp` | https://unsplash.com/photos/F5i3PZXYkvY | Mediamodifier | [Unsplash License](https://unsplash.com/license) |
@@ -46,7 +47,7 @@ Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset 
 | `public/images/presets/forno-da-vila/pizza-quatro-queijos-3.webp` | https://unsplash.com/photos/22Vt7JIf7ZI | Brenna Huff | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/pizza-de-pepperoni-1.webp` | https://unsplash.com/photos/SU1LFoeEUkk | Alan Hardman | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/pizza-mista-1.webp` | https://unsplash.com/photos/a66sGfOnnqQ | Shourav Sheikh | [Unsplash License](https://unsplash.com/license) |
-| `public/images/presets/forno-da-vila/pizza-de-salame-1.webp` | https://unsplash.com/photos/_P76trHTWDE | Fernando Andrade | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/forno-da-vila/pizza-de-salame-com-presunto-1.webp` | https://unsplash.com/photos/_P76trHTWDE | Fernando Andrade | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/pao-de-fermentacao-natural-1.webp` | https://unsplash.com/photos/WHJTaLqonkU | Louise Lyshøj | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/pao-de-fermentacao-natural-2.webp` | https://unsplash.com/photos/JlwXPO7DStM | Vicky Ng | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/pao-de-fermentacao-natural-3.webp` | https://unsplash.com/photos/kU7TkW9FIJY | Maria Orlova | [Unsplash License](https://unsplash.com/license) |
@@ -57,9 +58,8 @@ Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset 
 | `public/images/presets/forno-da-vila/pao-de-alho-cremoso-1.webp` | https://unsplash.com/photos/nMWrV29cg6c | Jay Gajjar | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-1.webp` | https://unsplash.com/photos/8lPKzLSWNgM | American Heritage Chocolate | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-2.webp` | https://unsplash.com/photos/LDnmyOaA-ew | Umesh Soni | [Unsplash License](https://unsplash.com/license) |
-| `public/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-3.webp` | https://unsplash.com/photos/wIaYi63cmis | Arantxa Aniorte | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/brownie-com-calda-1.webp` | https://unsplash.com/photos/2UeBOL7UD34 | Pushpak Dsilva | [Unsplash License](https://unsplash.com/license) |
-| `public/images/presets/forno-da-vila/rolinho-de-canela-1.webp` | https://unsplash.com/photos/c07YNJmNfaE | Anisa Cakesandbakes | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/forno-da-vila/rolinhos-de-canela-assadeira-1.webp` | https://unsplash.com/photos/c07YNJmNfaE | Anisa Cakesandbakes | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/cheesecake-frutas-vermelhas-1.webp` | https://unsplash.com/photos/FDYbS43jUrU | Yulia Khlebnikova | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/torta-de-limao-1.webp` | https://unsplash.com/photos/aX_ljOOyWJY | Alex Lvrs | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/suco-de-laranja-natural-1.webp` | https://unsplash.com/photos/kkrXVKK-jhg | ABHISHEK HAJARE | [Unsplash License](https://unsplash.com/license) |
