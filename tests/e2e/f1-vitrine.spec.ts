@@ -1,20 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-
-const TRAMA = "trama-studio";
-const FORNO = "forno-da-vila";
-
-/** Abre a vitrine já no preset pedido (o preset escolhido persiste no localStorage). */
-async function openAs(page: Page, preset: string, route = "/") {
-  await page.goto("/");
-  await page.waitForFunction(() => !!window.__demoStore);
-  await page.evaluate((id) => window.__demoStore!.getState().applyPreset(id), preset);
-  await page.goto(route);
-  // espera a hidratação terminar (cliques em links logo após o carregamento podem ser perdidos)
-  await page.waitForLoadState("networkidle");
-  await page.waitForFunction(() => !!window.__demoStore);
-  const name = preset === TRAMA ? "Trama Studio" : "Forno da Vila";
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName(name);
-}
+import { FORNO, TRAMA, openAs } from "./helpers";
 
 const overflowOf = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -87,22 +72,20 @@ test.describe("F1-01 · home", () => {
 });
 
 test.describe("F1-00 · título e descrição", () => {
-  test("título por página, troca de preset sem recarregar e sem 'mockup/demonstração'", async ({ page }) => {
+  test("Trama: título e descrição do preset, sem 'mockup/demonstração'", async ({ page }) => {
     await openAs(page, TRAMA);
     await expect(page).toHaveTitle("Início · Trama Studio");
-    const description = () => page.locator('meta[name="description"]').getAttribute("content");
-    expect(await description()).toContain("Moda atemporal");
+    const description = await page.locator('meta[name="description"]').getAttribute("content");
+    expect(description).toContain("Moda atemporal");
+    for (const text of [await page.title(), description ?? ""]) expect(text.toLowerCase()).not.toMatch(/mockup|demonstra/);
+  });
 
-    await page.evaluate(() => ((window as unknown as { __marker: string }).__marker = "sem-reload"));
-    await page.getByRole("button", { name: "Demo", exact: true }).click();
-    await page.getByRole("button", { name: "Forno da Vila" }).click();
+  test("Forno: título e descrição do preset, sem 'mockup/demonstração'", async ({ page }) => {
+    await openAs(page, FORNO);
     await expect(page).toHaveTitle("Início · Forno da Vila");
-    expect(await description()).toContain("Pizzas, pães e doces");
-    expect(await page.evaluate(() => (window as unknown as { __marker: string }).__marker)).toBe("sem-reload");
-
-    for (const text of [await page.title(), (await description()) ?? ""]) {
-      expect(text.toLowerCase()).not.toMatch(/mockup|demonstra/);
-    }
+    const description = await page.locator('meta[name="description"]').getAttribute("content");
+    expect(description).toContain("Pizzas, pães e doces");
+    for (const text of [await page.title(), description ?? ""]) expect(text.toLowerCase()).not.toMatch(/mockup|demonstra/);
   });
 
   test("navegação pelo cliente atualiza o título para a página aberta", async ({ page }) => {
@@ -276,7 +259,7 @@ test.describe("F1-03 · busca", () => {
 });
 
 test.describe("F1-04 · produto", () => {
-  test("variação atualiza preço e SKU; combinação sem estoque fica desabilitada", async ({ page }) => {
+  test("Forno: variação atualiza preço e SKU", async ({ page }) => {
     await openAs(page, FORNO, "/produto/pizza-margherita");
     await expect(page.getByTestId("product-price")).toContainText("39,90");
     await page.getByRole("button", { name: /Média/ }).click();
@@ -284,7 +267,9 @@ test.describe("F1-04 · produto", () => {
     await expect(page.getByTestId("product-sku")).toHaveText("SKU: FV-MAR-MED");
     await expect(page.getByRole("button", { name: /Média/ })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("installments")).toHaveCount(0);
+  });
 
+  test("Trama: combinação sem estoque fica desabilitada", async ({ page }) => {
     await openAs(page, TRAMA, "/produto/vestido-midi-linho");
     await page.getByRole("button", { name: "G", exact: true }).click();
     await expect(page.getByRole("button", { name: "Areia (indisponível)" })).toBeDisabled();
@@ -322,17 +307,6 @@ test.describe("F1-04 · produto", () => {
     // reset zera o carrinho
     await page.getByRole("button", { name: "Demo", exact: true }).click();
     await page.getByRole("button", { name: "Resetar dados" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveCount(0);
-  });
-
-  test("trocar de preset zera o carrinho", async ({ page }) => {
-    await openAs(page, TRAMA, "/produto/camiseta-basica-pima");
-    await page.getByRole("button", { name: "P", exact: true }).click();
-    await page.getByRole("button", { name: "Preto", exact: true }).click();
-    await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
-    await page.getByRole("button", { name: "Demo", exact: true }).click();
-    await page.getByRole("button", { name: "Forno da Vila" }).click();
     await expect(page.getByTestId("cart-count")).toHaveCount(0);
   });
 

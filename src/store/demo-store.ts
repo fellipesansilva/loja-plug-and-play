@@ -11,7 +11,7 @@ import type {
   StoreConfig,
   ThemeTokens,
 } from "@/domain/types";
-import { DEFAULT_PRESET_ID, getPreset } from "@/presets";
+import { ACTIVE_PRESET_ID, getPreset } from "@/presets";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
 import { safeStorage } from "./safe-storage";
 import { STORAGE_KEY, STORAGE_VERSION } from "./storage-key";
@@ -29,9 +29,7 @@ type DemoData = {
 };
 
 type DemoActions = {
-  /** Troca nome, tema, módulos, catálogo e pedidos de uma vez. */
-  applyPreset: (id: string) => void;
-  /** Restaura tudo ao original do preset ativo. */
+  /** Restaura tudo ao original do preset desta loja (o preset é definido no build, não troca em tempo de execução). */
   reset: () => void;
   setThemeColor: (key: keyof ThemeTokens["colors"], value: string) => void;
   setStoreName: (name: string) => void;
@@ -53,7 +51,7 @@ export type DemoState = DemoData & DemoActions;
 
 /** Cópia profunda do preset: o estado nunca compartilha referência com os dados-fonte. */
 function dataFromPreset(id: string): DemoData {
-  const preset = getPreset(id) ?? getPreset(DEFAULT_PRESET_ID)!;
+  const preset = getPreset(id) ?? getPreset(ACTIVE_PRESET_ID)!;
   const clone = structuredClone({
     config: preset.config,
     categories: preset.categories,
@@ -66,10 +64,9 @@ function dataFromPreset(id: string): DemoData {
 
 export const useDemoStore = create<DemoState>()(
   persist(
-    (set, get) => ({
-      ...dataFromPreset(DEFAULT_PRESET_ID),
-      applyPreset: (id) => set(dataFromPreset(id)),
-      reset: () => set(dataFromPreset(get().presetId)),
+    (set) => ({
+      ...dataFromPreset(ACTIVE_PRESET_ID),
+      reset: () => set(dataFromPreset(ACTIVE_PRESET_ID)),
       setThemeColor: (key, value) =>
         set((s) => ({
           config: {
@@ -105,7 +102,8 @@ export const useDemoStore = create<DemoState>()(
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<DemoData> | undefined;
-        if (!saved?.presetId || !getPreset(saved.presetId) || !saved.config) return current;
+        // Estado salvo de outro preset (não deveria existir: a chave é por loja) é ignorado.
+        if (saved?.presetId !== ACTIVE_PRESET_ID || !saved.config) return current;
         return { ...current, ...saved };
       },
     },

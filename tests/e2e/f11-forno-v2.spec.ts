@@ -1,20 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-
-const TRAMA = "trama-studio";
-const FORNO = "forno-da-vila";
-
-/** Abre a vitrine já no preset pedido (o preset escolhido persiste no localStorage). */
-async function openAs(page: Page, preset: string, route = "/") {
-  await page.goto("/");
-  await page.waitForFunction(() => !!window.__demoStore);
-  await page.evaluate((id) => window.__demoStore!.getState().applyPreset(id), preset);
-  await page.goto(route);
-  // espera a hidratação terminar (cliques em links logo após o carregamento podem ser perdidos)
-  await page.waitForLoadState("networkidle");
-  await page.waitForFunction(() => !!window.__demoStore);
-  const name = preset === TRAMA ? "Trama Studio" : "Forno da Vila";
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName(name);
-}
+import { FORNO, TRAMA, openAs } from "./helpers";
 
 const cards = (page: Page) => page.getByTestId("product-card");
 const cart = (page: Page) => page.evaluate(() => window.__demoStore!.getState().cart);

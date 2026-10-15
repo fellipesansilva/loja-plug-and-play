@@ -1,20 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
+import { FORNO, TRAMA, openAs, storageKey } from "./helpers";
 
-const TRAMA = "trama-studio";
-const FORNO = "forno-da-vila";
 const VALID_CPF = "529.982.247-25";
-
-/** Abre a vitrine já no preset pedido (o preset escolhido persiste no localStorage). */
-async function openAs(page: Page, preset: string, route = "/") {
-  await page.goto("/");
-  await page.waitForFunction(() => !!window.__demoStore);
-  await page.evaluate((id) => window.__demoStore!.getState().applyPreset(id), preset);
-  await page.goto(route);
-  await page.waitForLoadState("networkidle");
-  await page.waitForFunction(() => !!window.__demoStore);
-  const name = preset === TRAMA ? "Trama Studio" : "Forno da Vila";
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName(name);
-}
 
 type Seed = { productId: string; variantId?: string; addonIds?: string[]; qty?: number };
 async function seedCart(page: Page, ...items: Seed[]) {
@@ -55,76 +42,16 @@ async function readyToCheckout(page: Page, preset: string, seed: Seed) {
   await page.waitForLoadState("networkidle");
 }
 
-test.describe("F2-00 · link direto por preset", () => {
-  test("/?preset=forno abre já no Forno, sem piscar a Trama, e o parâmetro some da URL", async ({ page }) => {
-    await page.addInitScript(() => {
-      const w = window as unknown as { __frames: { v: string; n: string | null }[] };
-      w.__frames = [];
-      const loop = () => {
-        const el = document.querySelector('[data-testid="store-name"]');
-        w.__frames.push({ v: getComputedStyle(document.documentElement).visibility, n: el?.getAttribute("aria-label") ?? null });
-        requestAnimationFrame(loop);
-      };
-      requestAnimationFrame(loop);
-    });
-    await page.goto("/?preset=forno");
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-    await expect(page).not.toHaveURL(/preset=/);
-    await expect(page.locator("html")).not.toHaveAttribute("data-preset-pending", "");
-    await page.waitForTimeout(300);
-    const frames = await page.evaluate(() => (window as unknown as { __frames: { v: string; n: string | null }[] }).__frames);
-    expect(frames.some((f) => f.v === "visible" && f.n === "Forno da Vila")).toBe(true);
-    expect(frames.filter((f) => f.v !== "hidden" && f.n === "Trama Studio")).toEqual([]);
-  });
-
-  test("a primeira pintura já usa os tokens do preset pedido (sem JS do React)", async ({ page }) => {
-    await page.route("**/_next/static/**/*.js", (route) => route.abort());
-    await page.goto("/?preset=forno");
-    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--t-color-primary").trim())).toBe("#cf3512");
-    await expect(page.locator("html")).toHaveAttribute("data-preset-pending", "");
-  });
-
-  test("persiste como a troca pelo Demo, funciona em qualquer rota e preserva o resto da URL", async ({ page }) => {
-    await page.goto("/busca?q=pizza&preset=forno");
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-    await expect(page).toHaveURL(/\/busca\?q=pizza$/);
-    await page.reload();
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-
-    await page.goto("/?preset=trama-studio");
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
-    await page.goto("/");
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
-  });
-
-  test("id desconhecido é ignorado e mantém o preset atual; o preset já ativo não perde o carrinho", async ({ page }) => {
-    await openAs(page, FORNO);
-    await seedCart(page, { productId: "fv-013", qty: 2 });
-    await page.goto("/?preset=orbita");
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-    await page.goto("/?preset=forno");
-    await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-    await expect(page.getByTestId("cart-count")).toHaveText("2");
-  });
-
-  test("com o preset aplicado pelo link, o reset do Demo volta ao original do preset", async ({ page }) => {
-    await page.goto("/?preset=forno");
-    await page.waitForFunction(() => !!window.__demoStore);
-    await page.evaluate(() => window.__demoStore!.getState().setStoreName("Editado"));
-    await page.getByRole("button", { name: "Demo", exact: true }).click();
-    await page.getByRole("button", { name: "Resetar dados" }).click();
-    expect(await page.evaluate(() => window.__demoStore!.getState().config.name)).toBe("Forno da Vila");
-  });
-});
-
 test.describe("F2-01 · carrinho", () => {
-  test("carrinho vazio: mensagem e botão para a home; o Forno chama de Sacola", async ({ page }) => {
+  test("Trama: carrinho vazio com mensagem e botão para a home", async ({ page }) => {
     await openAs(page, TRAMA, "/carrinho");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Carrinho");
     await expect(page.getByTestId("cart-empty")).toHaveText("Seu carrinho está vazio");
     await page.getByRole("link", { name: "Ir para a home" }).click();
     await expect(page).toHaveURL(/\/$/);
+  });
 
+  test("Forno: o carrinho se chama Sacola", async ({ page }) => {
     await openAs(page, FORNO, "/carrinho");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sacola");
     await expect(page.getByTestId("cart-empty")).toHaveText("Sua sacola está vazia");
@@ -342,7 +269,7 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     expect(s.orders[0]).toMatchObject({ id: "TS-1009", status: "aguardando_pagamento", total: 39321, couponCode: "BEMVINDA10", couponDiscount: 4599, pixDiscount: 2070 });
     expect(s.orders[0].items[0]).toMatchObject({ lineId: "ts-014|", quantity: 1, unitPrice: 45990 });
     expect(s.orders[0].customer).toMatchObject({ name: "Ana Souza", cpf: "***.***.***-25", marketingOptIn: false });
-    const stored = await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? "");
+    const stored = await page.evaluate((key) => localStorage.getItem(key) ?? "", storageKey());
     expect(stored).not.toContain("52998224725");
     expect(stored).not.toContain("529.982.247-25");
     expect(stored).not.toContain("529.982");
@@ -467,7 +394,7 @@ test.describe("F2-02/03 · checkout e confirmação", () => {
     await expect(page.getByTestId("order-payment")).toHaveText("Cartão de crédito · Visa final 1111");
     await expect(page.getByTestId("payment-confirmed")).toContainText("3x");
 
-    const stored = await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? "");
+    const stored = await page.evaluate((key) => localStorage.getItem(key) ?? "", storageKey());
     expect(stored).not.toContain("4111111111111111");
     expect(stored).not.toContain("4111 1111 1111 1111");
     expect(stored).not.toContain("5555");
@@ -579,7 +506,7 @@ test.describe("F2 · ajustes de revisão", () => {
     await expect(page.getByTestId("order-payment")).toHaveText("Cartão de crédito · Visa final 1111");
     await expect(page.getByTestId("payment-confirmed")).toContainText("à vista");
     expect((await state(page)).orders[0].payment).toEqual({ method: "cartao", installments: 1, brand: "Visa", last4: "1111" });
-    const stored = await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? "");
+    const stored = await page.evaluate((key) => localStorage.getItem(key) ?? "", storageKey());
     expect(stored).not.toContain("4111111111111111");
     expect(stored).not.toContain("4417");
   });
@@ -621,7 +548,7 @@ test.describe("F2 · ajustes de revisão", () => {
     await expect(page.getByTestId("order-status")).toBeVisible();
     const s = await state(page);
     expect(s.orders[0].customer.cpf).toBe("***.***.***-35");
-    const everything = JSON.stringify(s.orders) + (await page.evaluate(() => localStorage.getItem("loja-demo-v1") ?? ""));
+    const everything = JSON.stringify(s.orders) + (await page.evaluate((key) => localStorage.getItem(key) ?? "", storageKey()));
     expect(everything).not.toContain("11144477735");
     expect(everything).not.toContain("111.444.777");
     expect(everything).not.toMatch(/\d{3}\.\d{3}\.\d{3}-\d{2}/); // nenhum CPF completo, formatado

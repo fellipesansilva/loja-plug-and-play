@@ -38,7 +38,7 @@ import {
 import { cartWords } from "./cart-words";
 import { itemName, variantText } from "./item-name";
 import { shippingRow } from "./shipping-row";
-import { getPreset, presets, resolvePresetParam } from "@/presets";
+import { getPreset, presets } from "@/presets";
 
 const trama = getPreset("trama-studio")!;
 const forno = getPreset("forno-da-vila")!;
@@ -315,23 +315,6 @@ describe("produto digital (fixture)", () => {
     const bumped = setLineQty(cart, products, makeLineId("ts-014", undefined, []), 50);
     expect(bumped.find((l) => l.productId === "ts-014")!.qty).toBe(6);
     expect(setLineQty(cart, products, makeLineId("ts-014", undefined, []), 0).find((l) => l.productId === "ts-014")!.qty).toBe(1);
-  });
-});
-
-describe("link direto ?preset=", () => {
-  it("id completo e apelido válidos aplicam o preset", () => {
-    expect(resolvePresetParam("?preset=forno")).toBe("forno-da-vila");
-    expect(resolvePresetParam("?preset=trama")).toBe("trama-studio");
-    expect(resolvePresetParam("?preset=forno-da-vila")).toBe("forno-da-vila");
-    expect(resolvePresetParam("?x=1&preset=FORNO&y=2")).toBe("forno-da-vila");
-    expect(resolvePresetParam("preset=trama")).toBe("trama-studio");
-  });
-
-  it("id desconhecido ou ausente é ignorado", () => {
-    expect(resolvePresetParam("")).toBeNull();
-    expect(resolvePresetParam("?preset=")).toBeNull();
-    expect(resolvePresetParam("?preset=orbita")).toBeNull();
-    expect(resolvePresetParam("?outro=forno")).toBeNull();
   });
 });
 

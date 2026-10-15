@@ -1,22 +1,34 @@
 import { devices, expect, test, type Page } from "@playwright/test";
+import { FORNO, currentPreset } from "./helpers";
 
 const BASE = "/images/presets";
+const MOBILE_WIDTHS = [480, 640, 768, 960];
+const DESKTOP_WIDTHS = [1280, 1920];
+
+/** Candidato que o navegador escolhe: o menor que cobre largura exibida × densidade; se nenhum cobre, o maior. */
+const pick = (widths: number[], needed: number) => widths.find((w) => w >= needed) ?? widths[widths.length - 1];
+
+/** Largura exibida do banner (px CSS) no preset deste build: faixa de ponta a ponta (Trama) ou card com margem (Forno). */
+const shownWidth = (viewport: number) => {
+  if (currentPreset() === FORNO) return viewport >= 1024 ? 1000 : viewport - 24;
+  return viewport;
+};
+const presetDir = () => (currentPreset() === FORNO ? "forno-da-vila" : "trama-studio");
 
 type Probe = {
-  /** pedidos de arquivos de banner (caminho) e o content-type da resposta */
+  /** Pedidos de arquivos de banner, com o content-type da resposta. */
   requests: { path: string; contentType: string | null }[];
   currentSrc: string | null;
   fetchPriority: string | null;
   loading: string | null;
-  preloads: { media: string | null; type: string | null; srcset: string | null; sizes: string | null }[];
-  /** <source> do <picture> do banner */
-  sources: { media: string | null; type: string | null; srcset: string | null; sizes: string | null }[];
+  preloads: number;
   naturalWidth: number;
+  alt: string | null;
+  sources: { media: string | null; type: string | null; srcset: string | null; sizes: string | null }[];
 };
 
 /** Abre a home e coleta o que o navegador pediu e escolheu para o banner principal. */
-async function probe(page: Page, url: string, prepare?: () => Promise<void>): Promise<Probe> {
-  if (prepare) await prepare();
+async function probe(page: Page): Promise<Probe> {
   const requests: Probe["requests"] = [];
   page.on("response", (r) => {
     const path = new URL(r.url()).pathname;
@@ -24,118 +36,97 @@ async function probe(page: Page, url: string, prepare?: () => Promise<void>): Pr
       requests.push({ path: path.startsWith("/_next/image") ? r.url() : path, contentType: r.headers()["content-type"] ?? null });
     }
   });
-  await page.goto(url);
+  await page.goto("/");
   await page.waitForLoadState("networkidle");
   const dom = await page.evaluate(() => {
     const img = document.querySelector("main picture img") as HTMLImageElement | null;
-    const attrs = (el: Element) => ({
-      media: el.getAttribute("media"),
-      type: el.getAttribute("type"),
-      srcset: el.getAttribute("srcset") ?? el.getAttribute("imagesrcset"),
-      sizes: el.getAttribute("sizes") ?? el.getAttribute("imagesizes"),
-    });
     return {
       currentSrc: img ? new URL(img.currentSrc).pathname : null,
       fetchPriority: img?.getAttribute("fetchpriority") ?? null,
       loading: img?.getAttribute("loading") ?? null,
       naturalWidth: img?.naturalWidth ?? 0,
-      preloads: [...document.querySelectorAll('link[rel="preload"][as="image"]')].map(attrs),
-      sources: [...document.querySelectorAll("main picture source")].map(attrs),
+      alt: img?.getAttribute("alt") ?? null,
+      preloads: document.querySelectorAll('link[rel="preload"][as="image"]').length,
+      sources: [...document.querySelectorAll("main picture source")].map((s) => ({
+        media: s.getAttribute("media"),
+        type: s.getAttribute("type"),
+        srcset: s.getAttribute("srcset"),
+        sizes: s.getAttribute("sizes"),
+      })),
     };
   });
   return { requests, ...dom };
 }
 
-async function openForno(page: Page) {
-  await page.goto("/?preset=forno");
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-}
-const bannerOf = (p: Probe, preset: string) => p.requests.filter((r) => r.path.includes(preset));
-
-test.describe("celular (360 px, tela 2x): o banner chega no tamanho de celular, em formato moderno", () => {
+test.describe("celular: o banner chega no tamanho de celular, em formato moderno, uma única vez", () => {
   // User-Agent de celular de verdade: com UA de desktop + emulação, o Chrome ignora o <meta viewport> ao escanear o HTML
   // e pede o recorte de desktop antes de corrigir o layout (artefato de teste que não acontece num celular).
-  test.use({ userAgent: devices["Pixel 5"].userAgent, isMobile: true, hasTouch: true, viewport: { width: 360, height: 740 }, screen: { width: 360, height: 740 }, deviceScaleFactor: 2 });
-
-  test("Forno (?preset=forno): AVIF de 768 px, sem a versão de desktop, sem WebP e sem arquivo antigo", async ({ page }) => {
-    const p = await probe(page, "/?preset=forno");
-    const forno = bannerOf(p, "forno-da-vila");
-    expect(forno.map((r) => r.path)).toEqual([`${BASE}/forno-da-vila/banner-m-768.avif`]);
-    expect(forno[0].contentType).toBe("image/avif");
-    expect(p.currentSrc).toBe(`${BASE}/forno-da-vila/banner-m-768.avif`);
-    expect(p.requests.some((r) => /banner-d-|banner\.webp|\/_next\/image/.test(r.path))).toBe(false);
-    expect(p.fetchPriority).toBe("high");
-    expect(p.loading).toBe("eager");
-    expect(Math.abs(p.naturalWidth - 336)).toBeLessThanOrEqual(2); // arredondamento do navegador; 768 px de arquivo exibidos em 336 px de CSS (calc(100vw - 24px)): o sizes foi respeitado
+  const mobile = (dpr: number) => ({
+    userAgent: devices["Pixel 5"].userAgent,
+    isMobile: true,
+    hasTouch: true,
+    viewport: { width: 400, height: 800 },
+    screen: { width: 400, height: 800 },
+    deviceScaleFactor: dpr,
   });
 
-  test("Forno salvo (sem parâmetro): o mesmo arquivo", async ({ page }) => {
-    await openForno(page);
-    const p = await probe(page, "/");
-    expect(p.currentSrc).toBe(`${BASE}/forno-da-vila/banner-m-768.avif`);
-    expect(bannerOf(p, "forno-da-vila").map((r) => r.path)).toEqual([`${BASE}/forno-da-vila/banner-m-768.avif`]);
-  });
+  for (const dpr of [1.75, 2]) {
+    test.describe(`400 px, tela ${dpr}x`, () => {
+      test.use(mobile(dpr));
 
-  test("Trama (padrão): AVIF de 768 px, direto do <img> do HTML (sem preload no head)", async ({ page }) => {
-    const p = await probe(page, "/");
-    expect(p.preloads).toEqual([]);
-    expect(p.currentSrc).toBe(`${BASE}/trama-studio/banner-m-768.avif`);
-    expect(p.requests.map((r) => r.path)).toEqual([`${BASE}/trama-studio/banner-m-768.avif`]);
-    expect(p.requests[0].contentType).toBe("image/avif");
-    expect(p.fetchPriority).toBe("high");
-    expect(p.loading).toBe("eager");
-  });
+      test("um único download do banner, o recorte de celular em AVIF, igual ao img.currentSrc", async ({ page }) => {
+        const p = await probe(page);
+        const width = pick(MOBILE_WIDTHS, shownWidth(400) * dpr);
+        const file = `${BASE}/${presetDir()}/banner-m-${width}.avif`;
 
-  test("o preload é exatamente o que o <img> usa: mesmos srcset/sizes/media e uma única requisição por arquivo", async ({ page }) => {
-    const p = await probe(page, "/?preset=forno");
-    // 2 preloads (janela de celular e de desktop), AVIF, iguais aos <source> AVIF do <picture> do Forno
-    const fornoSources = p.sources.filter((s) => s.type === "image/avif" && s.srcset?.includes("forno-da-vila"));
-    expect(fornoSources).toHaveLength(2);
-    const fornoPreloads = p.preloads.filter((l) => l.srcset?.includes("forno-da-vila"));
-    expect(fornoPreloads).toHaveLength(2);
-    for (const pre of fornoPreloads) {
-      const source = fornoSources.find((s) => s.media === pre.media);
-      expect(source, pre.media ?? "").toBeTruthy();
-      expect(pre.srcset).toBe(source!.srcset);
-      expect(pre.sizes).toBe(source!.sizes);
-      expect(pre.type).toBe("image/avif");
-    }
-    // a janela do celular casa com o preload do celular: o arquivo pedido é o mesmo do <img>, pedido uma vez só
-    const forno = bannerOf(p, "forno-da-vila");
-    expect(new Set(forno.map((r) => r.path)).size).toBe(1);
-    expect(forno).toHaveLength(1);
-    expect(forno[0].path).toBe(p.currentSrc);
-  });
+        expect(p.requests.map((r) => r.path)).toEqual([file]); // o único arquivo de banner da rede, uma vez só
+        expect(p.requests[0].contentType).toBe("image/avif");
+        expect(p.currentSrc).toBe(file);
+        // nada de recorte de desktop, WebP, arquivo antigo ou otimizador de imagens
+        expect(p.requests.some((r) => /banner-d-|\.webp|banner\.webp|\/_next\/image/.test(r.path))).toBe(false);
+      });
+
+      test("a imagem é só o <picture> do HTML: eager, prioridade alta e nenhum preload no head", async ({ page }) => {
+        const p = await probe(page);
+        expect(p.preloads).toBe(0);
+        expect(p.fetchPriority).toBe("high");
+        expect(p.loading).toBe("eager");
+        // o sizes é respeitado: a imagem ocupa a largura exibida do preset
+        expect(Math.abs(p.naturalWidth - shownWidth(400))).toBeLessThanOrEqual(2);
+      });
+    });
+  }
 });
 
-test.describe("desktop (1280 px): recorte de desktop em AVIF", () => {
-  test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+test.describe("desktop: recorte de desktop em AVIF", () => {
+  test.describe("1280 px, tela 1x", () => {
+    test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
 
-  test("Forno: AVIF de 1280 px (card de até 1000 px)", async ({ page }) => {
-    const p = await probe(page, "/?preset=forno");
-    expect(p.currentSrc).toBe(`${BASE}/forno-da-vila/banner-d-1280.avif`);
-    expect(bannerOf(p, "forno-da-vila").map((r) => r.path)).toEqual([`${BASE}/forno-da-vila/banner-d-1280.avif`]);
-    expect(p.requests.some((r) => /banner-m-/.test(r.path) && r.path.includes("forno-da-vila"))).toBe(false);
+    test("AVIF de 1280 px, um único download", async ({ page }) => {
+      const p = await probe(page);
+      const file = `${BASE}/${presetDir()}/banner-d-${pick(DESKTOP_WIDTHS, shownWidth(1280))}.avif`;
+      expect(p.requests.map((r) => r.path)).toEqual([file]);
+      expect(p.currentSrc).toBe(file);
+      expect(p.requests.some((r) => /banner-m-/.test(r.path))).toBe(false);
+    });
   });
 
-  test("Trama: AVIF de 1280 px", async ({ page }) => {
-    const p = await probe(page, "/");
-    expect(p.currentSrc).toBe(`${BASE}/trama-studio/banner-d-1280.avif`);
-    expect(p.requests.map((r) => r.path)).toEqual([`${BASE}/trama-studio/banner-d-1280.avif`]);
-  });
+  test.describe("1280 px, tela 2x", () => {
+    test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 2 });
 
-  test("tela larga de 2x (2560 px reais): sobe para o candidato de 1920 px", async ({ browser }) => {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 2 });
-    const page = await ctx.newPage();
-    const p = await probe(page, "/");
-    expect(p.currentSrc).toBe(`${BASE}/trama-studio/banner-d-1920.avif`);
-    await ctx.close();
+    test("sobe para o candidato de 1920 px", async ({ page }) => {
+      const p = await probe(page);
+      const file = `${BASE}/${presetDir()}/banner-d-${pick(DESKTOP_WIDTHS, shownWidth(1280) * 2)}.avif`;
+      expect(file.endsWith("banner-d-1920.avif")).toBe(true);
+      expect(p.currentSrc).toBe(file);
+      expect(p.requests.map((r) => r.path)).toEqual([file]);
+    });
   });
 });
 
 test.describe("formato reserva e acessibilidade", () => {
   test("cada janela tem fonte AVIF e WebP com os mesmos tamanhos; o <img> traz o texto alternativo do preset", async ({ page }) => {
-    const p = await probe(page, "/");
+    const p = await probe(page);
     expect(p.sources.map((s) => [s.media, s.type])).toEqual([
       ["(max-width: 767px)", "image/avif"],
       ["(max-width: 767px)", "image/webp"],
@@ -143,58 +134,7 @@ test.describe("formato reserva e acessibilidade", () => {
       ["(min-width: 768px)", "image/webp"],
     ]);
     expect(p.sources[0].sizes).toBe(p.sources[1].sizes);
-    const alt = await page.locator("main picture img").getAttribute("alt");
-    expect(alt).toMatch(/vestido|luz natural/i);
-    await openForno(page);
-    await expect(page.locator("main picture img")).toHaveAttribute("alt", /pizza/i);
+    expect(p.sources[0].srcset).toContain(`${BASE}/${presetDir()}/banner-m-480.avif 480w`);
+    expect(p.alt).toMatch(currentPreset() === FORNO ? /pizza/i : /vestido|luz natural/i);
   });
 });
-
-/**
- * Celular de 400 px (o caso do relato): o preload e o <img> do Forno escolhem o MESMO arquivo, baixado uma vez só.
- * O outro download de banner que aparece na rede é o <img> do HTML do servidor, que é sempre do preset padrão (Trama):
- * ele é pedido pelo navegador antes de qualquer script rodar e escolhe o arquivo pelo `sizes` da própria Trama
- * (100vw), por isso pode ser maior (960 px a partir de DPR ~1,93). Só o servidor saber o preset eliminaria esse pedido.
- */
-for (const dpr of [1.75, 2]) {
-  test.describe(`celular de 400 px, tela ${dpr}x`, () => {
-    test.use({
-      userAgent: devices["Pixel 5"].userAgent,
-      isMobile: true,
-      hasTouch: true,
-      viewport: { width: 400, height: 800 },
-      screen: { width: 400, height: 800 },
-      deviceScaleFactor: dpr,
-    });
-    // 376 px de card × DPR: 658 px (1,75x) ou 752 px (2x) → o menor candidato que cobre é o de 768 px
-    const FORNO_FILE = `${BASE}/forno-da-vila/banner-m-768.avif`;
-
-    test("Forno: preload == <source> == img.currentSrc, e o banner do Forno é baixado uma única vez", async ({ page }) => {
-      const p = await probe(page, "/?preset=forno");
-      const source = p.sources.find((s) => s.type === "image/avif" && s.media === "(max-width: 767px)" && s.srcset?.includes("forno-da-vila"));
-      const preload = p.preloads.find((l) => l.media === "(max-width: 767px)" && l.srcset?.includes("forno-da-vila"));
-      expect(source && preload).toBeTruthy();
-      expect(preload!.srcset).toBe(source!.srcset);
-      expect(preload!.sizes).toBe(source!.sizes);
-
-      expect(p.currentSrc).toBe(FORNO_FILE);
-      const forno = bannerOf(p, "forno-da-vila");
-      expect(forno.map((r) => r.path)).toEqual([FORNO_FILE]); // um download só, o mesmo do <img>
-      expect(new Set(forno.map((r) => r.path)).size).toBe(1);
-    });
-
-    test("o único outro banner na rede é o <img> do HTML do preset padrão (Trama), nunca um segundo do Forno", async ({ page }) => {
-      const p = await probe(page, "/?preset=forno");
-      const others = p.requests.filter((r) => !r.path.includes("forno-da-vila"));
-      expect(others).toHaveLength(1);
-      expect(others[0].path).toMatch(/^\/images\/presets\/trama-studio\/banner-m-(768|960)\.avif$/);
-    });
-
-    test("Forno salvo (sem parâmetro): o mesmo único arquivo do Forno", async ({ page }) => {
-      await openForno(page);
-      const p = await probe(page, "/");
-      expect(bannerOf(p, "forno-da-vila").map((r) => r.path)).toEqual([FORNO_FILE]);
-      expect(p.currentSrc).toBe(FORNO_FILE);
-    });
-  });
-}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { resolvePresetParam } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
 import { EARLY_THEME_SCRIPT } from "./early-theme-script";
 import { tokensToCss } from "./tokens";
@@ -18,30 +17,17 @@ const EXPOSE_STORE =
 
 /**
  * Aplica os ThemeTokens do store como CSS variables em :root.
- * O SSR emite os tokens do preset padrão; um script inline logo após o <style>
- * troca pelos tokens salvos antes da primeira pintura (sem flash). Depois da
- * hidratação, o <style> acompanha o store reativamente.
+ * Cada build é de um preset só: o store, o tema e o HTML do servidor já nascem nele. O script inline logo
+ * após o <style> reaplica antes da primeira pintura os tokens salvos desta loja (se houver edição) e trata o
+ * link antigo `?preset=`. Depois da hidratação, o <style> acompanha o store reativamente.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useDemoStore((s) => s.config.theme);
 
   useEffect(() => {
     if (EXPOSE_STORE) window.__demoStore = useDemoStore;
-    // Link direto (?preset=): aplica o preset (sem resetar se já for o ativo), tira o parâmetro da URL e mostra a página.
-    const requested = resolvePresetParam(window.location.search);
-    void Promise.resolve(useDemoStore.persist.rehydrate()).then(() => {
-      const state = useDemoStore.getState();
-      if (requested && state.presetId !== requested) state.applyPreset(requested);
-      if (requested) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("preset");
-        window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
-      }
-      // Dois quadros depois: o React já trocou o conteúdo para o preset pedido.
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => document.documentElement.removeAttribute("data-preset-pending")),
-      );
-    });
+    // Hidratação manual (no cliente, após montar) do estado salvo desta loja (carrinho, pedidos, edições).
+    void useDemoStore.persist.rehydrate();
   }, []);
 
   return (

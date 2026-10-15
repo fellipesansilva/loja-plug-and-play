@@ -1,13 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
+import { FORNO, NAME, SHORT, TRAMA, URL_OF, currentPreset, storageKey, storeName } from "./helpers";
 
+/** Rotas da vitrine; {produto} e {pedido} variam por loja (cada preset tem o seu catálogo e os seus pedidos). */
 const LOJA_ROUTES = [
   "/",
-  "/categoria/feminino",
+  "/categoria/{categoria}",
   "/busca",
-  "/produto/vestido-midi-linho",
+  "/produto/{produto}",
   "/carrinho",
   "/checkout",
-  "/pedido/TS-1001",
+  "/pedido/{pedido}",
   "/sobre",
   "/trocas-e-devolucoes",
   "/privacidade",
@@ -16,15 +18,25 @@ const LOJA_ROUTES = [
 const PAINEL_ROUTES = [
   "/painel/login",
   "/painel/produtos",
-  "/painel/produtos/ts-001",
+  "/painel/produtos/{idProduto}",
   "/painel/importacao",
   "/painel/pedidos",
-  "/painel/pedidos/TS-1001",
+  "/painel/pedidos/{pedido}",
   "/painel/configuracoes/loja",
   "/painel/configuracoes/tema",
   "/painel/configuracoes/modulos",
   "/painel/configuracoes/preset",
 ];
+
+const FIXTURE = {
+  [TRAMA]: { categoria: "feminino", produto: "vestido-midi-linho", pedido: "TS-1001", idProduto: "ts-001" },
+  [FORNO]: { categoria: "pizzas", produto: "pizza-margherita", pedido: "FV-2001", idProduto: "fv-001" },
+} as const;
+
+const resolve = (template: string) => {
+  const f = FIXTURE[currentPreset() as keyof typeof FIXTURE];
+  return template.replace(/\{(\w+)\}/g, (_, k: keyof typeof f) => f[k]);
+};
 
 const primary = (page: Page) =>
   page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--t-color-primary").trim());
@@ -40,7 +52,7 @@ test.describe("F0 · rotas", () => {
       const errors: string[] = [];
       page.on("pageerror", (e) => errors.push(e.message));
       page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-      const response = await page.goto(route);
+      const response = await page.goto(resolve(route));
       expect(response?.status()).toBe(200);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       expect(errors).toEqual([]);
@@ -48,20 +60,35 @@ test.describe("F0 · rotas", () => {
   }
 });
 
-test("F0 · trocar preset pelo DemoControls muda nome e cor primária sem reload", async ({ page }) => {
+test("F0 · cada loja é o seu preset: nome, cor primária e título vêm do build", async ({ page }) => {
   await page.goto("/");
-  await page.waitForFunction(() => !!window.__demoStore);
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
-  const before = await primary(page);
-  await page.evaluate(() => (window as unknown as { __marker: string }).__marker = "sem-reload");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName(storeName());
+  const expected = currentPreset() === TRAMA ? "#4b5340" : "#cf3512";
+  expect(await primary(page)).toBe(expected);
+  await expect(page).toHaveTitle(new RegExp(`${storeName()}$`));
+});
 
+test("F0 · painel Demo: a loja atual vem marcada e a outra é um link para a URL dela", async ({ page }) => {
+  await page.goto("/");
   await openDemo(page);
-  await page.getByRole("button", { name: "Forno da Vila" }).click();
+  const list = page.getByRole("list", { name: "Lojas da demonstração" });
+  const current = list.locator('[aria-current="true"]');
+  await expect(current).toHaveText(storeName());
 
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
-  const after = await primary(page);
-  expect(after).not.toBe(before);
-  expect(await page.evaluate(() => (window as unknown as { __marker: string }).__marker)).toBe("sem-reload");
+  const otherPreset = currentPreset() === TRAMA ? FORNO : TRAMA;
+  const link = list.getByRole("link", { name: NAME[otherPreset] });
+  await expect(link).toHaveAttribute("href", URL_OF[otherPreset]);
+  // a loja atual não é link (já está nela)
+  await expect(list.getByRole("link", { name: storeName() })).toHaveCount(0);
+});
+
+test("F0 · clicar na outra loja do painel Demo leva à URL dela", async ({ page }) => {
+  await page.goto("/");
+  await openDemo(page);
+  const otherPreset = currentPreset() === TRAMA ? FORNO : TRAMA;
+  await page.getByRole("link", { name: NAME[otherPreset] }).click();
+  await expect(page).toHaveURL(new RegExp(`^${URL_OF[otherPreset]}/?$`));
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName(NAME[otherPreset]);
 });
 
 test("F0 · alterar token no store reflete na vitrine sem recarregar", async ({ page }) => {
@@ -82,19 +109,23 @@ test("F0 · alterar estado → recarregar → persiste → resetar → volta ao 
 
   await openDemo(page);
   await page.getByRole("button", { name: "Resetar dados" }).click();
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName(storeName());
 
   await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName(storeName());
 });
 
-test("F0 · preset escolhido persiste após recarregar", async ({ page }) => {
+test("F0 · o estado salvo fica na chave da própria loja", async ({ page }) => {
   await page.goto("/");
   await page.waitForFunction(() => !!window.__demoStore);
-  await openDemo(page);
-  await page.getByRole("button", { name: "Forno da Vila" }).click();
-  await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
+  await page.evaluate(() => window.__demoStore!.getState().setStoreName("Salvo aqui"));
+  const keys = await page.evaluate(() => Object.keys(localStorage));
+  expect(keys).toContain(storageKey());
+  expect(keys).toEqual([storageKey()]);
+  expect(keys).not.toContain("loja-demo-v1");
+  const other = currentPreset() === TRAMA ? FORNO : TRAMA;
+  expect(keys).not.toContain(storageKey(other));
+  expect(SHORT[currentPreset()]).toBeTruthy();
 });
 
 test("F0 · funciona com localStorage indisponível", async ({ page }) => {
@@ -108,10 +139,9 @@ test("F0 · funciona com localStorage indisponível", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName(storeName());
   await openDemo(page);
-  await page.getByRole("button", { name: "Forno da Vila" }).click();
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
+  await expect(page.getByRole("button", { name: "Resetar dados" })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -120,7 +150,7 @@ test.describe("F0 · vitrine em 360 px", () => {
 
   for (const route of LOJA_ROUTES) {
     test(`sem rolagem horizontal: ${route}`, async ({ page }) => {
-      await page.goto(route);
+      await page.goto(resolve(route));
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -163,23 +193,7 @@ test.describe("F0 · painel", () => {
   });
 });
 
-test("F0 · sem flash: com Forno da Vila salvo, a primeira pintura já usa a cor dele", async ({ page }) => {
-  await page.goto("/");
-  await page.waitForFunction(() => !!window.__demoStore);
-  const tramaPrimary = await primary(page);
-  await openDemo(page);
-  await page.getByRole("button", { name: "Forno da Vila" }).click();
-  const fornoPrimary = await primary(page);
-  expect(fornoPrimary).not.toBe(tramaPrimary);
-
-  // Impede o JS do React de carregar: só o script inline do HTML pode ter aplicado o tema.
-  await page.route("**/_next/static/**/*.js", (route) => route.abort());
-  await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio"); // sem hidratação: SSR padrão
-  expect(await primary(page)).toBe(fornoPrimary);
-});
-
-test("F0 · tema padrão no primeiro carregamento com localStorage indisponível", async ({ page }) => {
+test("F0 · tema do build no primeiro carregamento com localStorage indisponível", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, "localStorage", {
       get() {
