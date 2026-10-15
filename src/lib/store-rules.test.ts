@@ -173,9 +173,9 @@ describe("busca", () => {
     expect(normalizeText("Açaí")).toBe("acai");
   });
 
-  it('"pao" e "PÃO" encontram "Pão de Mel"', () => {
+  it('"pao" e "PÃO" encontram "Pão de Queijo"', () => {
     for (const term of ["pao", "PÃO", "Pão", "pAo"]) {
-      expect(searchProducts(forno.products, term).map((p) => p.name)).toContain("Pão de Mel");
+      expect(searchProducts(forno.products, term).map((p) => p.name)).toContain("Pão de Queijo (12 unidades)");
     }
   });
 
@@ -188,7 +188,7 @@ describe("busca", () => {
   it("busca por SKU de variante", () => {
     const hit = searchProducts(trama.products, "TS-CBP-M-PT");
     expect(hit.map((p) => p.name)).toEqual(["Camiseta Básica Pima"]);
-    expect(searchProducts(forno.products, "fv-las-800").map((p) => p.name)).toEqual(["Lasanha à Bolonhesa"]);
+    expect(searchProducts(forno.products, "fv-mar-med").map((p) => p.name)).toEqual(["Pizza Margherita"]);
   });
 
   it("termo vazio ou sem correspondência não retorna nada", () => {
@@ -223,7 +223,7 @@ describe("filtros dinâmicos", () => {
   it("Forno: filtro vem do atributo 'dieta' (filterable) e não de sabor/porção", () => {
     const g = buildFilterGroups(forno.products, forno.config.attributeDefs);
     expect(g.map((x) => x.key)).toEqual(["dieta"]);
-    expect(g[0].values.sort()).toEqual(["Sem glúten", "Vegano", "Vegetariano"]);
+    expect(g[0].values.sort()).toEqual(["Vegano", "Vegetariano"]);
   });
 
   it("mesmo atributo soma (OU); atributos diferentes restringem (E)", () => {
@@ -288,17 +288,27 @@ describe("homeBlocks", () => {
     expect(activeHomeBlocks([...blocks].reverse()).map((b) => b.id)).toEqual(["c", "a"]);
   });
 
-  it("presets reais: banner, categorias e destaques, nessa ordem", () => {
-    for (const p of [trama, forno]) {
-      expect(activeHomeBlocks(p.config.homeBlocks).map((b) => b.type)).toEqual(["banner", "categories", "featured"]);
-    }
+  it("presets reais: blocos na ordem do preset", () => {
+    expect(activeHomeBlocks(trama.config.homeBlocks).map((b) => b.type)).toEqual([
+      "banner",
+      "categories",
+      "featured",
+      "shippingProgress",
+    ]);
+    expect(activeHomeBlocks(forno.config.homeBlocks).map((b) => b.type)).toEqual([
+      "banner",
+      "chips",
+      "spotlight",
+      "featured",
+      "shippingProgress",
+    ]);
   });
 });
 
 describe("faixa de aviso", () => {
   it("gerada pelos módulos", () => {
     expect(plain(announcementMessage(trama.config.modules))).toBe("Frete grátis acima de R$ 199");
-    expect(plain(announcementMessage(forno.config.modules))).toBe("Frete grátis acima de R$ 80 · Retire na loja");
+    expect(plain(announcementMessage(forno.config.modules, forno.config.pickup?.leadTime))).toBe("Frete grátis acima de R$ 80 · Retire na loja em 20 min");
     expect(announcementMessage({})).toBeNull();
     expect(announcementMessage({ freteGratis: { enabled: false, minValue: 100 } })).toBeNull();
     expect(announcementMessage({ retiradaLocal: true })).toBe("Retire na loja");
@@ -333,9 +343,9 @@ describe("variações", () => {
   });
 
   it("Forno: porção define preço da variante", () => {
-    const lasanha = find(forno, "Lasanha à Bolonhesa");
-    const axes = variantAxes(lasanha, forno.config.attributeDefs);
+    const pizza = find(forno, "Pizza Margherita");
+    const axes = variantAxes(pizza, forno.config.attributeDefs);
     expect(axes.map((a) => a.key)).toEqual(["porcao"]);
-    expect(selectedVariant(lasanha, axes, { porcao: "2 pessoas (800 g)" })?.price).toBe(7990);
+    expect(selectedVariant(pizza, axes, { porcao: "Média (6 fatias)" })?.price).toBe(5490);
   });
 });

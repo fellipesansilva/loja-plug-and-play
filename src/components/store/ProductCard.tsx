@@ -6,6 +6,7 @@ import { formatBRL } from "@/lib/money";
 import { productValues } from "@/lib/filters";
 import { useDemoStore } from "@/store/demo-store";
 import { InstallmentLine } from "./InstallmentLine";
+import { ProductMenuItem } from "./ProductMenuItem";
 import { StoreImage } from "./StoreImage";
 
 const CARD_SIZES = "(min-width: 768px) 25vw, 50vw";
@@ -50,7 +51,18 @@ export function ProductCard({ product }: { product: Product }) {
   );
 }
 
+/** Listagem de produtos no formato escolhido pelo preset (config.layout.listing): grade de cards ou cardápio. */
 export function ProductGrid({ products }: { products: Product[] }) {
+  const listing = useDemoStore((s) => s.config.layout.listing);
+  if (listing === "menu") {
+    return (
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {products.map((p) => (
+          <ProductMenuItem key={p.id} product={p} />
+        ))}
+      </ul>
+    );
+  }
   return (
     <ul className="grid grid-cols-2 gap-x-md gap-y-lg md:grid-cols-4">
       {products.map((p) => (

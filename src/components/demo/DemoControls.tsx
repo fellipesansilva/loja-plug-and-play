@@ -13,9 +13,11 @@ export function DemoControls() {
   const applyPreset = useDemoStore((s) => s.applyPreset);
   const reset = useDemoStore((s) => s.reset);
   const inPainel = pathname.startsWith("/painel");
+  // Páginas de produto podem ter barra fixa de compra no rodapé: o botão sobe para não cobri-la.
+  const aboveBuyBar = pathname.startsWith("/produto/");
 
   return (
-    <div className="fixed bottom-md right-md z-50 flex flex-col items-end gap-sm">
+    <div className={`fixed right-md z-50 flex flex-col items-end gap-sm ${aboveBuyBar ? "bottom-24" : "bottom-md"}`}>
       {open && (
         <div
           role="dialog"

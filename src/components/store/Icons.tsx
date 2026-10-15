@@ -31,3 +31,17 @@ export const ChevronLeftIcon = () => (
 export const ChevronRightIcon = () => (
   <svg {...base}><path d="M9 5l7 7-7 7" /></svg>
 );
+export const PlusIcon = () => (
+  <svg {...base} strokeWidth={2.5}><path d="M12 5v14M5 12h14" /></svg>
+);
+export const MinusIcon = () => (
+  <svg {...base} strokeWidth={2.5}><path d="M5 12h14" /></svg>
+);
+export const CheckIcon = () => (
+  <svg {...base} strokeWidth={2.5}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+);
+export const HeartIcon = ({ filled = false }: { filled?: boolean }) => (
+  <svg {...base} fill={filled ? "currentColor" : "none"}>
+    <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+  </svg>
+);

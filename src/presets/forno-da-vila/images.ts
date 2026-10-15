@@ -4,78 +4,85 @@ import type { Image } from "@/domain/types";
  * Fotos reais (Unsplash, licença gratuita). Arquivos em public/images/presets/forno-da-vila/ e créditos em
  * IMAGE_CREDITS.md. O texto alternativo descreve o que a foto mostra. Gerado a partir da curadoria de imagens da F1.
  */
-export const bannerImage: Image = { src: "/images/presets/forno-da-vila/banner.webp", alt: "Pão de fermentação natural sobre o balcão de uma padaria" };
+export const bannerImage: Image = { src: "/images/presets/forno-da-vila/banner.webp", alt: "Mão levantando uma fatia de pizza de pepperoni com queijo derretido esticando" };
 
 export const categoryImages: Record<string, Image> = {
-  "pratos": { src: "/images/presets/forno-da-vila/lasanha-a-bolonhesa-2.webp", alt: "Lasanha assada em travessa branca com uma porção servida no prato" },
-  "doces": { src: "/images/presets/forno-da-vila/bolo-de-cenoura-com-chocolate-1.webp", alt: "Fatia de bolo de cenoura com cobertura cremosa e nozes" },
+  "pizzas": { src: "/images/presets/forno-da-vila/categoria-pizzas.webp", alt: "Pizza de pepperoni inteira sobre tábua de madeira, vista de cima" },
+  "paes": { src: "/images/presets/forno-da-vila/categoria-paes.webp", alt: "Baguete sobre tábua de madeira redonda" },
+  "doces": { src: "/images/presets/forno-da-vila/categoria-doces.webp", alt: "Fatia de cheesecake com calda de frutas vermelhas" },
   "bebidas": { src: "/images/presets/forno-da-vila/categoria-bebidas.webp", alt: "Copos de limonada com rodelas de limão" },
 };
 
 /** Fotos por id de produto (a 1ª é a principal). */
 export const productImages: Record<string, Image[]> = {
   "fv-001": [
-    { src: "/images/presets/forno-da-vila/lasanha-a-bolonhesa-1.webp", alt: "Fatia de lasanha à bolonhesa com folhas de manjericão" },
-    { src: "/images/presets/forno-da-vila/lasanha-a-bolonhesa-2.webp", alt: "Lasanha assada em travessa branca com uma porção servida no prato" },
-    { src: "/images/presets/forno-da-vila/lasanha-a-bolonhesa-3.webp", alt: "Prato de lasanha com molho e queijo em fundo escuro" },
+    { src: "/images/presets/forno-da-vila/pizza-margherita-1.webp", alt: "Mão levantando uma fatia de pizza margherita com tomate e manjericão" },
+    { src: "/images/presets/forno-da-vila/pizza-margherita-2.webp", alt: "Pizza margherita com queijo esticando ao tirar uma fatia" },
+    { src: "/images/presets/forno-da-vila/pizza-margherita-3.webp", alt: "Pizza margherita assando em forno a lenha, com chamas ao fundo" },
   ],
   "fv-002": [
-    { src: "/images/presets/forno-da-vila/feijoada-completa-1.webp", alt: "Tigela de feijão-preto cozido ao lado de limões" },
-    { src: "/images/presets/forno-da-vila/feijoada-completa-2.webp", alt: "Ensopado de carnes em molho escuro com cebolinha, visto de cima" },
-    { src: "/images/presets/forno-da-vila/feijoada-completa-3.webp", alt: "Prato com salada, ovo cozido e acompanhamento em molho escuro" },
+    { src: "/images/presets/forno-da-vila/pizza-quatro-queijos-1.webp", alt: "Fatia de pizza de queijos levantada com espátula, com o queijo esticando" },
+    { src: "/images/presets/forno-da-vila/pizza-quatro-queijos-2.webp", alt: "Pizza de queijos fatiada com tomates-cereja e alecrim sobre tábua de madeira" },
+    { src: "/images/presets/forno-da-vila/pizza-quatro-queijos-3.webp", alt: "Queijo derretido esticando ao levantar uma fatia de pizza" },
   ],
   "fv-003": [
-    { src: "/images/presets/forno-da-vila/frango-assado-com-batatas-1.webp", alt: "Frango assado com batatas e alecrim em frigideira de ferro" },
+    { src: "/images/presets/forno-da-vila/pizza-de-pepperoni-1.webp", alt: "Close de pizza de pepperoni com queijo derretido" },
   ],
   "fv-004": [
-    { src: "/images/presets/forno-da-vila/risoto-de-cogumelos-1.webp", alt: "Risoto de cogumelos com chips de alho e rúcula" },
+    { src: "/images/presets/forno-da-vila/pizza-mista-1.webp", alt: "Pizza com calabresa, cogumelos, pimentão e azeitonas, vista de cima" },
   ],
   "fv-005": [
-    { src: "/images/presets/forno-da-vila/escondidinho-de-carne-seca-1.webp", alt: "Pratos e tigelas de comida caseira com carne desfiada e purê" },
+    { src: "/images/presets/forno-da-vila/pizza-de-salame-1.webp", alt: "Pizza de salame e presunto sobre mesa de madeira escura, vista de cima" },
   ],
   "fv-006": [
-    { src: "/images/presets/forno-da-vila/strogonoff-de-frango-1.webp", alt: "Prato branco com massa ao molho cremoso de carne" },
+    { src: "/images/presets/forno-da-vila/pao-de-fermentacao-natural-1.webp", alt: "Pão de fermentação natural fatiado, com miolo aerado" },
+    { src: "/images/presets/forno-da-vila/pao-de-fermentacao-natural-2.webp", alt: "Duas fatias de pão rústico sobre uma travessa de madeira" },
+    { src: "/images/presets/forno-da-vila/pao-de-fermentacao-natural-3.webp", alt: "Pães de fermentação natural com casca enfarinhada sobre pano de juta" },
   ],
   "fv-007": [
-    { src: "/images/presets/forno-da-vila/quiche-lorraine-1.webp", alt: "Tortas salgadas de espinafre assadas em forma" },
+    { src: "/images/presets/forno-da-vila/focaccia-de-alecrim-1.webp", alt: "Focaccias empilhadas com alecrim, azeitonas e tomate" },
   ],
   "fv-008": [
-    { src: "/images/presets/forno-da-vila/brigadeiro-gourmet-box-1.webp", alt: "Caixa de bombons e chocolates variados" },
-    { src: "/images/presets/forno-da-vila/brigadeiro-gourmet-box-2.webp", alt: "Docinhos de chocolate enrolados em granulado" },
-    { src: "/images/presets/forno-da-vila/brigadeiro-gourmet-box-3.webp", alt: "Caixa de bombons decorados com diferentes coberturas" },
+    { src: "/images/presets/forno-da-vila/pao-de-queijo-1.webp", alt: "Pães de queijo dourados em um prato, ao lado de uma xícara de café" },
   ],
   "fv-009": [
-    { src: "/images/presets/forno-da-vila/bolo-de-cenoura-com-chocolate-1.webp", alt: "Fatia de bolo de cenoura com cobertura cremosa e nozes" },
-    { src: "/images/presets/forno-da-vila/bolo-de-cenoura-com-chocolate-2.webp", alt: "Fatia de bolo de cenoura em prato com garfo" },
-    { src: "/images/presets/forno-da-vila/bolo-de-cenoura-com-chocolate-3.webp", alt: "Bolo de cenoura inteiro com cobertura branca, já fatiado" },
+    { src: "/images/presets/forno-da-vila/croissant-de-manteiga-1.webp", alt: "Croissants dourados assados em uma assadeira" },
   ],
   "fv-010": [
-    { src: "/images/presets/forno-da-vila/torta-de-limao-1.webp", alt: "Torta de limão com merengue maçaricado, já fatiada" },
+    { src: "/images/presets/forno-da-vila/baguete-rustica-1.webp", alt: "Duas baguetes embrulhadas em papel e barbante" },
   ],
   "fv-011": [
-    { src: "/images/presets/forno-da-vila/pudim-de-leite-1.webp", alt: "Pudim de leite com calda de caramelo em prato branco" },
+    { src: "/images/presets/forno-da-vila/pao-de-alho-cremoso-1.webp", alt: "Fatias de pão de alho gratinadas com queijo e ervas sobre tábua de madeira" },
   ],
   "fv-012": [
-    { src: "/images/presets/forno-da-vila/cookie-red-velvet-1.webp", alt: "Bandeja de docinhos com cobertura de merengue recém-saídos do forno" },
+    { src: "/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-1.webp", alt: "Bolo vulcão de chocolate com o centro derretido e uma bola de sorvete" },
+    { src: "/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-2.webp", alt: "Bolo de chocolate inteiro com calda escorrendo e cerejas" },
+    { src: "/images/presets/forno-da-vila/bolo-vulcao-de-chocolate-3.webp", alt: "Fatias empilhadas de bolo de chocolate denso em um prato" },
   ],
   "fv-013": [
-    { src: "/images/presets/forno-da-vila/pao-de-mel-1.webp", alt: "Bandeja de bombons de chocolate com listras de cobertura" },
+    { src: "/images/presets/forno-da-vila/brownie-com-calda-1.webp", alt: "Calda de chocolate escorrendo sobre brownies empilhados" },
   ],
   "fv-014": [
-    { src: "/images/presets/forno-da-vila/suco-de-laranja-natural-1.webp", alt: "Copo alto de suco de laranja com fatia de laranja" },
-    { src: "/images/presets/forno-da-vila/suco-de-laranja-natural-2.webp", alt: "Copo de suco de laranja ao lado de laranjas cortadas" },
-    { src: "/images/presets/forno-da-vila/suco-de-laranja-natural-3.webp", alt: "Copo de suco com canudo e fatia de limão" },
+    { src: "/images/presets/forno-da-vila/rolinho-de-canela-1.webp", alt: "Rolinhos de canela com glacê em uma assadeira" },
   ],
   "fv-015": [
-    { src: "/images/presets/forno-da-vila/limonada-suica-1.webp", alt: "Copo de limonada com fatias de limão sobre tábua de madeira" },
+    { src: "/images/presets/forno-da-vila/cheesecake-frutas-vermelhas-1.webp", alt: "Fatia de cheesecake com calda de frutas vermelhas sendo servida com uma colher" },
   ],
   "fv-016": [
-    { src: "/images/presets/forno-da-vila/cafe-coado-especial-1.webp", alt: "Pó de café em filtro de papel para café coado" },
+    { src: "/images/presets/forno-da-vila/torta-de-limao-1.webp", alt: "Torta de limão com merengue maçaricado, já fatiada" },
   ],
   "fv-017": [
-    { src: "/images/presets/forno-da-vila/cha-gelado-de-pessego-1.webp", alt: "Copo de chá gelado com fatias de pêssego e gelo, visto de cima" },
+    { src: "/images/presets/forno-da-vila/suco-de-laranja-natural-1.webp", alt: "Copo alto de suco de laranja com fatia de laranja" },
+    { src: "/images/presets/forno-da-vila/suco-de-laranja-natural-2.webp", alt: "Copo de suco de laranja ao lado de laranjas cortadas" },
+    { src: "/images/presets/forno-da-vila/suco-de-laranja-natural-3.webp", alt: "Copo de suco de laranja com canudo e fatia de limão" },
   ],
   "fv-018": [
-    { src: "/images/presets/forno-da-vila/kombucha-de-gengibre-1.webp", alt: "Kombucha em garrafa de vidro, com a película da fermentação" },
+    { src: "/images/presets/forno-da-vila/limonada-suica-1.webp", alt: "Copo de limonada com fatias de limão sobre tábua de madeira" },
+  ],
+  "fv-019": [
+    { src: "/images/presets/forno-da-vila/milk-shake-de-morango-1.webp", alt: "Milk-shake de morango em copo alto, decorado com morangos" },
+  ],
+  "fv-020": [
+    { src: "/images/presets/forno-da-vila/cafe-coado-especial-1.webp", alt: "Café coado sendo servido em uma caneca" },
   ],
 };

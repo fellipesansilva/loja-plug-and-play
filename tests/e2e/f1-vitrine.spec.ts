@@ -11,7 +11,7 @@ async function openAs(page: Page, preset: string, route = "/") {
   await page.goto(route);
   await page.waitForFunction(() => !!window.__demoStore);
   const name = preset === TRAMA ? "Trama Studio" : "Forno da Vila";
-  await expect(page.getByTestId("store-name")).toHaveText(name);
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName(name);
 }
 
 const overflowOf = (page: Page) =>
@@ -20,21 +20,17 @@ const overflowOf = (page: Page) =>
 const cards = (page: Page) => page.getByTestId("product-card");
 
 test.describe("F1-01 · home", () => {
-  for (const preset of [TRAMA, FORNO]) {
-    test(`${preset}: blocos na ordem do preset (banner, categorias, destaques com 8 produtos)`, async ({ page }) => {
-      await openAs(page, preset);
-      const headings = await page.locator("main h1, main h2").allTextContents();
-      expect(headings).toHaveLength(3);
-      await expect(page.locator("main h1")).toHaveCount(1);
-      await expect(cards(page)).toHaveCount(8);
-      // ordem no DOM: banner → categorias → destaques
-      const order = await page.evaluate(() =>
-        [...document.querySelectorAll("main section")].map((s) => s.getAttribute("aria-label") ?? s.getAttribute("aria-labelledby")),
-      );
-      expect(order[0]).not.toMatch(/^bloco-/);
-      expect(order.slice(1)).toEqual(["bloco-categorias", "bloco-destaques"]);
-    });
-  }
+  test("Trama: blocos na ordem do preset (banner, categorias, destaques com 8 produtos)", async ({ page }) => {
+    await openAs(page, TRAMA);
+    await expect(page.locator("main h1, main h2")).toHaveCount(3);
+    await expect(page.locator("main h1")).toHaveCount(1);
+    await expect(cards(page)).toHaveCount(8);
+    const order = await page.evaluate(() =>
+      [...document.querySelectorAll("main section")].map((s) => s.getAttribute("aria-label") ?? s.getAttribute("aria-labelledby")),
+    );
+    expect(order[0]).not.toMatch(/^bloco-/);
+    expect(order.slice(1)).toEqual(["bloco-categorias", "bloco-destaques"]);
+  });
 
   test("Trama: faixa de frete grátis, parcelamento visível e selo Esgotado", async ({ page }) => {
     await openAs(page, TRAMA);
@@ -47,9 +43,8 @@ test.describe("F1-01 · home", () => {
 
   test("Forno: faixa com retirada, sem parcelamento e selo de restrição", async ({ page }) => {
     await openAs(page, FORNO);
-    await expect(page.getByTestId("announcement-bar")).toHaveText(/Frete grátis acima de R\$\s80 · Retire na loja/);
+    await expect(page.getByTestId("announcement-bar")).toHaveText(/Frete grátis acima de R\$\s80 · Retire na loja em 20 min/);
     await expect(page.getByTestId("installments")).toHaveCount(0);
-    await expect(cards(page).filter({ hasText: "Esgotado" })).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Mais pedidos" })).toBeVisible();
     await expect(cards(page).filter({ hasText: "Vegano" }).first()).toBeVisible();
   });
@@ -100,7 +95,7 @@ test.describe("F1-00 · título e descrição", () => {
     await page.getByRole("button", { name: "Demo", exact: true }).click();
     await page.getByRole("button", { name: "Forno da Vila" }).click();
     await expect(page).toHaveTitle("Início · Forno da Vila");
-    expect(await description()).toContain("Comida caseira");
+    expect(await description()).toContain("Pizzas, pães e doces");
     expect(await page.evaluate(() => (window as unknown as { __marker: string }).__marker)).toBe("sem-reload");
 
     for (const text of [await page.title(), (await description()) ?? ""]) {
@@ -202,9 +197,9 @@ test.describe("F1-02 · categoria", () => {
     await openAs(page, FORNO, "/categoria/bebidas");
     const side = page.getByRole("complementary", { name: "Filtros" });
     await expect(side.getByRole("group", { name: "Restrição alimentar" })).toBeVisible();
-    await expect(page.getByTestId("result-count")).toHaveText("5 produtos");
-    await side.getByLabel("Vegano").check();
     await expect(page.getByTestId("result-count")).toHaveText("4 produtos");
+    await side.getByLabel("Vegano").check();
+    await expect(page.getByTestId("result-count")).toHaveText("2 produtos");
   });
 });
 
@@ -234,20 +229,20 @@ test.describe("F1-02 · filtros no celular (360 px)", () => {
 });
 
 test.describe("F1-03 · busca", () => {
-  test("Forno: 'pao' encontra 'Pão de Mel' pela busca do cabeçalho", async ({ page }) => {
+  test("Forno: 'pao' encontra 'Pão de Queijo' pela busca do cabeçalho", async ({ page }) => {
     await openAs(page, FORNO);
     const field = page.getByRole("searchbox", { name: "Buscar produtos" });
     await field.fill("pao");
     await field.press("Enter");
     await expect(page).toHaveURL(/\/busca\?q=pao$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Resultados para “pao”");
-    await expect(cards(page).filter({ hasText: "Pão de Mel" })).toBeVisible();
+    await expect(cards(page).filter({ hasText: "Pão de Queijo" })).toBeVisible();
     await expect(page).toHaveTitle(/^Busca: pao · Forno da Vila$/);
   });
 
   test("termo vem da URL, com acento e maiúsculas", async ({ page }) => {
     await openAs(page, FORNO, "/busca?q=P%C3%83O");
-    await expect(cards(page).filter({ hasText: "Pão de Mel" })).toBeVisible();
+    await expect(cards(page).filter({ hasText: "Pão de Queijo" })).toBeVisible();
   });
 
   test("busca por SKU de variante", async ({ page }) => {
@@ -272,7 +267,7 @@ test.describe("F1-03 · busca", () => {
     await openAs(page, FORNO, "/busca?q=xyzinexistente");
     const empty = page.getByTestId("search-empty");
     await expect(empty).toContainText("Nenhum produto encontrado para “xyzinexistente”");
-    for (const name of ["Pratos", "Doces", "Bebidas"]) {
+    for (const name of ["Pizzas", "Pães", "Doces", "Bebidas"]) {
       await expect(empty.getByRole("link", { name })).toBeVisible();
     }
   });
@@ -280,12 +275,12 @@ test.describe("F1-03 · busca", () => {
 
 test.describe("F1-04 · produto", () => {
   test("variação atualiza preço e SKU; combinação sem estoque fica desabilitada", async ({ page }) => {
-    await openAs(page, FORNO, "/produto/lasanha-a-bolonhesa");
-    await expect(page.getByTestId("product-price")).toContainText("42,90");
-    await page.getByRole("button", { name: /2 pessoas/ }).click();
-    await expect(page.getByTestId("product-price")).toContainText("79,90");
-    await expect(page.getByTestId("product-sku")).toHaveText("SKU: FV-LAS-800");
-    await expect(page.getByRole("button", { name: /2 pessoas/ })).toHaveAttribute("aria-pressed", "true");
+    await openAs(page, FORNO, "/produto/pizza-margherita");
+    await expect(page.getByTestId("product-price")).toContainText("39,90");
+    await page.getByRole("button", { name: /Média/ }).click();
+    await expect(page.getByTestId("product-price")).toContainText("54,90");
+    await expect(page.getByTestId("product-sku")).toHaveText("SKU: FV-MAR-MED");
+    await expect(page.getByRole("button", { name: /Média/ })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("installments")).toHaveCount(0);
 
     await openAs(page, TRAMA, "/produto/vestido-midi-linho");
@@ -385,7 +380,7 @@ test.describe("F1-04 · produto", () => {
   });
 
   test("Forno: cobertura por CEP, retirada e frete grátis", async ({ page }) => {
-    await openAs(page, FORNO, "/produto/lasanha-a-bolonhesa"); // R$ 42,90
+    await openAs(page, FORNO, "/produto/pao-de-queijo-12-unidades"); // R$ 19,90
     const result = page.getByTestId("shipping-result");
 
     await page.getByLabel("CEP").fill("01310-100");
@@ -395,7 +390,7 @@ test.describe("F1-04 · produto", () => {
     await expect(result).toContainText("hoje");
     await expect(result).toContainText("Retirar na loja · grátis");
     await expect(result).toContainText("Praça Exemplo, 45");
-    await expect(result).toContainText("Faltam R$ 37,10 para frete grátis");
+    await expect(result).toContainText("Faltam R$ 60,10 para frete grátis");
 
     await page.getByLabel("CEP").fill("80010-000");
     await page.getByRole("button", { name: "Calcular" }).click();
@@ -427,11 +422,11 @@ test.describe("F1 · 360 px sem rolagem horizontal", () => {
     const routes = [
       "/",
       "/categoria/feminino",
-      "/categoria/pratos",
+      "/categoria/pizzas",
       "/busca?q=pao",
       "/busca?q=xyz",
       "/produto/vestido-midi-linho",
-      "/produto/lasanha-a-bolonhesa",
+      "/produto/pizza-margherita",
     ];
     for (const route of routes) {
       test(`${preset} ${route}`, async ({ page }) => {

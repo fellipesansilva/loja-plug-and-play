@@ -15,6 +15,7 @@ import {
 } from "@/lib/filters";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
+import { CategoryChips } from "./CategoryChips";
 import { FilterDrawer, FilterSidebar } from "./FilterPanel";
 import { PageTitle } from "./PageTitle";
 import { ProductGrid } from "./ProductCard";
@@ -24,6 +25,8 @@ export function CategoryView({ slug }: { slug: string }) {
   const category = useDemoStore((s) => s.categories.find((c) => c.slug === slug));
   const products = useDemoStore((s) => s.products);
   const defs = useDemoStore((s) => s.config.attributeDefs);
+  const listing = useDemoStore((s) => s.config.layout.listing);
+  const allCategories = useDemoStore((s) => s.categories);
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -95,6 +98,13 @@ export function CategoryView({ slug }: { slug: string }) {
   return (
     <section className="mx-auto w-full max-w-5xl px-md py-lg">
       <PageTitle title={category.name} />
+      {listing === "menu" && (
+        <div className="mb-md">
+          <CategoryChips
+            items={allCategories.map((c) => ({ label: c.name, href: `/categoria/${c.slug}`, active: c.id === category.id }))}
+          />
+        </div>
+      )}
       <h1 className="text-3xl">{category.name}</h1>
       <div className="mt-sm flex items-center justify-between gap-md">
         <p className="text-sm text-muted" data-testid="result-count" aria-live="polite">

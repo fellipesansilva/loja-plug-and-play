@@ -51,14 +51,14 @@ test.describe("F0 · rotas", () => {
 test("F0 · trocar preset pelo DemoControls muda nome e cor primária sem reload", async ({ page }) => {
   await page.goto("/");
   await page.waitForFunction(() => !!window.__demoStore);
-  await expect(page.getByTestId("store-name")).toHaveText("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
   const before = await primary(page);
   await page.evaluate(() => (window as unknown as { __marker: string }).__marker = "sem-reload");
 
   await openDemo(page);
   await page.getByRole("button", { name: "Forno da Vila" }).click();
 
-  await expect(page.getByTestId("store-name")).toHaveText("Forno da Vila");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
   const after = await primary(page);
   expect(after).not.toBe(before);
   expect(await page.evaluate(() => (window as unknown as { __marker: string }).__marker)).toBe("sem-reload");
@@ -75,17 +75,17 @@ test("F0 · alterar estado → recarregar → persiste → resetar → volta ao 
   await page.goto("/");
   await page.waitForFunction(() => !!window.__demoStore);
   await page.evaluate(() => window.__demoStore!.getState().setStoreName("Minha Loja Editada"));
-  await expect(page.getByTestId("store-name")).toHaveText("Minha Loja Editada");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Minha Loja Editada");
 
   await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveText("Minha Loja Editada");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Minha Loja Editada");
 
   await openDemo(page);
   await page.getByRole("button", { name: "Resetar dados" }).click();
-  await expect(page.getByTestId("store-name")).toHaveText("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
 
   await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveText("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
 });
 
 test("F0 · preset escolhido persiste após recarregar", async ({ page }) => {
@@ -94,7 +94,7 @@ test("F0 · preset escolhido persiste após recarregar", async ({ page }) => {
   await openDemo(page);
   await page.getByRole("button", { name: "Forno da Vila" }).click();
   await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveText("Forno da Vila");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
 });
 
 test("F0 · funciona com localStorage indisponível", async ({ page }) => {
@@ -108,10 +108,10 @@ test("F0 · funciona com localStorage indisponível", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await expect(page.getByTestId("store-name")).toHaveText("Trama Studio");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio");
   await openDemo(page);
   await page.getByRole("button", { name: "Forno da Vila" }).click();
-  await expect(page.getByTestId("store-name")).toHaveText("Forno da Vila");
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Forno da Vila");
   expect(errors).toEqual([]);
 });
 
@@ -175,7 +175,7 @@ test("F0 · sem flash: com Forno da Vila salvo, a primeira pintura já usa a cor
   // Impede o JS do React de carregar: só o script inline do HTML pode ter aplicado o tema.
   await page.route("**/_next/static/**/*.js", (route) => route.abort());
   await page.reload();
-  await expect(page.getByTestId("store-name")).toHaveText("Trama Studio"); // sem hidratação: SSR padrão
+  await expect(page.getByTestId("store-name")).toHaveAccessibleName("Trama Studio"); // sem hidratação: SSR padrão
   expect(await primary(page)).toBe(fornoPrimary);
 });
 

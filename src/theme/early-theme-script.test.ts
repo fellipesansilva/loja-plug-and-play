@@ -1,7 +1,7 @@
 import vm from "node:vm";
 import { describe, expect, it } from "vitest";
 import { getPreset } from "@/presets";
-import { STORAGE_KEY } from "@/store/storage-key";
+import { STORAGE_KEY, STORAGE_VERSION } from "@/store/storage-key";
 import { EARLY_THEME_SCRIPT } from "./early-theme-script";
 import { tokensToCss } from "./tokens";
 
@@ -17,7 +17,7 @@ function run(storage: { getItem: (k: string) => string | null }) {
 describe("early theme script", () => {
   it("gera o mesmo CSS que tokensToCss para o tema salvo", () => {
     const theme = getPreset("forno-da-vila")!.config.theme;
-    const saved = JSON.stringify({ state: { config: { theme } }, version: 2 });
+    const saved = JSON.stringify({ state: { config: { theme } }, version: STORAGE_VERSION });
     const css = run({ getItem: (k) => (k === STORAGE_KEY ? saved : null) });
     expect(css).toBe(tokensToCss(theme));
   });

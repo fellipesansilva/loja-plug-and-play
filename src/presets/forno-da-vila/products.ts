@@ -1,16 +1,17 @@
-import type { Category, Product, Variant } from "@/domain/types";
-import { categoryImages, productImages } from "./images";
+import type { Addon, Category, Product, Variant } from "@/domain/types";
 import { attrs, placeholderImage, product } from "../helpers";
+import { categoryImages, productImages } from "./images";
 
 export const categories: Category[] = [
-  { id: "pratos", slug: "pratos", name: "Pratos", image: categoryImages["pratos"] ?? placeholderImage("Pratos", "c9722f", "Pratos prontos do dia a dia") },
-  { id: "doces", slug: "doces", name: "Doces", image: categoryImages["doces"] ?? placeholderImage("Doces", "c9722f", "Doces e sobremesas artesanais") },
-  { id: "bebidas", slug: "bebidas", name: "Bebidas", image: categoryImages["bebidas"] ?? placeholderImage("Bebidas", "c9722f", "Sucos, chás e cafés") },
+  { id: "pizzas", slug: "pizzas", name: "Pizzas", image: categoryImages["pizzas"] ?? placeholderImage("Pizzas", "d93a16", "Pizzas assadas no forno") },
+  { id: "paes", slug: "paes", name: "Pães", image: categoryImages["paes"] ?? placeholderImage("Pães", "d93a16", "Pães frescos") },
+  { id: "doces", slug: "doces", name: "Doces", image: categoryImages["doces"] ?? placeholderImage("Doces", "d93a16", "Doces e sobremesas") },
+  { id: "bebidas", slug: "bebidas", name: "Bebidas", image: categoryImages["bebidas"] ?? placeholderImage("Bebidas", "d93a16", "Sucos, shakes e cafés") },
 ];
 
-const C = "c9722f";
+const C = "d93a16";
 
-/** Variações por peso/porção. SKU = `${base}-${code}`. */
+/** Variações por tamanho/porção. SKU = `${base}-${code}`. */
 function portions(
   base: string,
   list: { label: string; code: string; price?: number; stock: number }[],
@@ -25,119 +26,148 @@ function portions(
 }
 
 const validade = (v: string) => ["Validade", v] as [string, string];
+const dieta = (v: string) => ["Restrição alimentar", v] as [string, string];
+const restricoes = (v: string) => ["Restrições", v] as [string, string];
+
+const sorvete: Addon = { id: "sorvete", label: "Bola de sorvete de creme", price: 700 };
+const morangos: Addon = { id: "morangos", label: "Morangos frescos", price: 500 };
+const caldaExtra: Addon = { id: "calda-extra", label: "Calda quente extra", price: 300 };
+const borda: Addon = { id: "borda-catupiry", label: "Borda recheada de catupiry", price: 800 };
+const azeitonas: Addon = { id: "azeitonas", label: "Azeitonas pretas", price: 400 };
 
 const catalog: Product[] = [
+  // ——— Pizzas
   product({
-    id: "fv-001", name: "Lasanha à Bolonhesa", price: 4290, sku: "FV-LAS", categoryId: "pratos", color: C,
-    description: "Massa fresca, molho bolonhesa caseiro e queijo gratinado.",
-    attributes: attrs({ sabor: ["Sabor", "Bolonhesa"], validade: validade("3 dias refrigerada"), restricoes: ["Restrições", "Contém glúten e lactose"] }),
-    variants: portions("FV-LAS", [
-      { label: "1 pessoa (400 g)", code: "400", stock: 12 },
-      { label: "2 pessoas (800 g)", code: "800", price: 7990, stock: 8 },
-      { label: "Família (1,5 kg)", code: "1500", price: 13990, stock: 4 },
+    id: "fv-001", name: "Pizza Margherita", price: 3990, sku: "FV-MAR", categoryId: "pizzas", color: C,
+    badges: ["Nº 1 da semana", "Pronto em 20 min"],
+    addons: [borda, azeitonas],
+    description: "Massa de longa fermentação, molho de tomate, mussarela de búfala e manjericão fresco.",
+    attributes: attrs({ sabor: ["Sabor", "Tomate, mussarela e manjericão"], dieta: dieta("Vegetariano"), validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten e lactose") }),
+    variants: portions("FV-MAR", [
+      { label: "Broto (4 fatias)", code: "BRO", stock: 12 },
+      { label: "Média (6 fatias)", code: "MED", price: 5490, stock: 10 },
+      { label: "Grande (8 fatias)", code: "GRA", price: 6990, stock: 6 },
     ]),
   }),
   product({
-    id: "fv-002", name: "Feijoada Completa", price: 5490, sku: "FV-FEI", categoryId: "pratos", color: C,
-    description: "Feijão preto com carnes selecionadas, acompanha arroz e couve.",
-    attributes: attrs({ sabor: ["Sabor", "Tradicional"], validade: validade("4 dias refrigerada"), restricoes: ["Restrições", "Contém carne suína"] }),
-    variants: portions("FV-FEI", [
-      { label: "1 pessoa (500 g)", code: "500", stock: 10 },
-      { label: "3 pessoas (1,5 kg)", code: "1500", price: 13990, stock: 6 },
+    id: "fv-002", name: "Pizza Quatro Queijos", price: 5290, sku: "FV-4QJ", categoryId: "pizzas", color: C,
+    description: "Mussarela, provolone, gorgonzola e parmesão gratinados, daquelas que esticam o queijo.",
+    attributes: attrs({ sabor: ["Sabor", "Quatro queijos"], dieta: dieta("Vegetariano"), validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten e lactose") }),
+    variants: portions("FV-4QJ", [
+      { label: "Média (6 fatias)", code: "MED", stock: 9 },
+      { label: "Grande (8 fatias)", code: "GRA", price: 6890, stock: 5 },
     ]),
   }),
   product({
-    id: "fv-003", name: "Frango Assado com Batatas", price: 4990, sku: "FV-FRA", categoryId: "pratos", color: C, stock: 9,
-    description: "Coxa e sobrecoxa assadas com batatas rústicas e ervas.",
-    attributes: attrs({ porcao: ["Peso/porção", "600 g"], sabor: ["Sabor", "Ervas finas"], validade: validade("3 dias refrigerado"), dieta: ["Restrição alimentar", "Sem glúten"], restricoes: ["Restrições", "Sem glúten"] }),
+    id: "fv-003", name: "Pizza de Pepperoni", price: 5790, sku: "FV-PEP", categoryId: "pizzas", color: C, stock: 14,
+    description: "Pepperoni crocante nas bordas, muita mussarela e orégano.",
+    attributes: attrs({ porcao: ["Porção", "Média (6 fatias)"], sabor: ["Sabor", "Pepperoni"], validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten, lactose e carne suína") }),
   }),
   product({
-    id: "fv-004", name: "Risoto de Cogumelos", price: 4690, sku: "FV-RIS", categoryId: "pratos", color: C, stock: 7,
-    description: "Arroz arbóreo cremoso com mix de cogumelos e parmesão.",
-    attributes: attrs({ porcao: ["Peso/porção", "400 g"], sabor: ["Sabor", "Cogumelos"], validade: validade("2 dias refrigerado"), dieta: ["Restrição alimentar", "Vegetariano"], restricoes: ["Restrições", "Contém lactose"] }),
+    id: "fv-004", name: "Pizza Mista", price: 5490, sku: "FV-MIS", categoryId: "pizzas", color: C, stock: 0,
+    description: "Calabresa, cogumelos, pimentão e azeitonas. Esgotada por hoje.",
+    attributes: attrs({ porcao: ["Porção", "Média (6 fatias)"], sabor: ["Sabor", "Calabresa e cogumelos"], validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten, lactose e carne suína") }),
   }),
   product({
-    id: "fv-005", name: "Escondidinho de Carne Seca", price: 4490, sku: "FV-ESC", categoryId: "pratos", color: C, stock: 11,
-    description: "Purê de mandioca com carne seca desfiada e queijo coalho.",
-    attributes: attrs({ porcao: ["Peso/porção", "450 g"], sabor: ["Sabor", "Carne seca"], validade: validade("3 dias refrigerado"), restricoes: ["Restrições", "Contém lactose"] }),
+    id: "fv-005", name: "Pizza de Salame", price: 5590, sku: "FV-SAL", categoryId: "pizzas", color: C, stock: 9,
+    description: "Salame italiano em fatias finas, presunto e mussarela derretida.",
+    attributes: attrs({ porcao: ["Porção", "Média (6 fatias)"], sabor: ["Sabor", "Salame e presunto"], validade: validade("Consumir em até 2 dias refrigerada"), restricoes: restricoes("Contém glúten, lactose e carne suína") }),
   }),
+  // ——— Pães
   product({
-    id: "fv-006", name: "Strogonoff de Frango", price: 3990, sku: "FV-STR", categoryId: "pratos", color: C, stock: 14,
-    description: "Strogonoff cremoso de frango, acompanha arroz branco.",
-    attributes: attrs({ porcao: ["Peso/porção", "500 g"], sabor: ["Sabor", "Frango"], validade: validade("3 dias refrigerado"), restricoes: ["Restrições", "Contém lactose"] }),
-  }),
-  product({
-    id: "fv-007", name: "Quiche Lorraine", price: 3690, sku: "FV-QUI", categoryId: "pratos", color: C, stock: 0,
-    description: "Massa amanteigada com bacon, queijo e creme. Esgotada.",
-    attributes: attrs({ porcao: ["Peso/porção", "350 g"], sabor: ["Sabor", "Bacon e queijo"], validade: validade("2 dias refrigerada"), restricoes: ["Restrições", "Contém glúten e lactose"] }),
-  }),
-  product({
-    id: "fv-008", name: "Brigadeiro Gourmet Box", price: 2990, sku: "FV-BRI", categoryId: "doces", color: C,
-    description: "Brigadeiros de chocolate belga enrolados à mão.",
-    attributes: attrs({ sabor: ["Sabor", "Chocolate belga"], validade: validade("10 dias em local fresco"), restricoes: ["Restrições", "Contém lactose"] }),
-    variants: portions("FV-BRI", [
-      { label: "6 unidades (120 g)", code: "6", stock: 20 },
-      { label: "12 unidades (240 g)", code: "12", price: 5490, stock: 15 },
-      { label: "24 unidades (480 g)", code: "24", price: 9990, stock: 5 },
+    id: "fv-006", name: "Pão de Fermentação Natural", price: 2290, sku: "FV-PFN", categoryId: "paes", color: C,
+    description: "Casca crocante e miolo aerado, fermentado por 24 horas e assado na hora.",
+    badges: ["Saindo do forno"],
+    attributes: attrs({ sabor: ["Sabor", "Tradicional"], dieta: dieta("Vegano"), validade: validade("3 dias em saco de papel"), restricoes: restricoes("Contém glúten") }),
+    variants: portions("FV-PFN", [
+      { label: "500 g", code: "500", stock: 14 },
+      { label: "1 kg", code: "1000", price: 4190, stock: 8 },
     ]),
   }),
   product({
-    id: "fv-009", name: "Bolo de Cenoura com Chocolate", price: 3490, sku: "FV-BCC", categoryId: "doces", color: C,
-    description: "Bolo fofinho de cenoura com cobertura cremosa de chocolate.",
-    attributes: attrs({ sabor: ["Sabor", "Cenoura com chocolate"], validade: validade("5 dias refrigerado"), restricoes: ["Restrições", "Contém glúten, ovos e lactose"] }),
-    variants: portions("FV-BCC", [
-      { label: "500 g", code: "500", stock: 9 },
-      { label: "1 kg", code: "1000", price: 6290, stock: 6 },
+    id: "fv-007", name: "Focaccia de Alecrim", price: 1890, sku: "FV-FOC", categoryId: "paes", color: C, stock: 12,
+    description: "Macia por dentro, azeite e alecrim por cima, com azeitonas e tomate.",
+    attributes: attrs({ porcao: ["Porção", "300 g"], sabor: ["Sabor", "Alecrim e azeite"], dieta: dieta("Vegano"), validade: validade("2 dias"), restricoes: restricoes("Contém glúten") }),
+  }),
+  product({
+    id: "fv-008", name: "Pão de Queijo (12 unidades)", price: 1990, sku: "FV-PQJ", categoryId: "paes", color: C, stock: 25,
+    description: "Crocante por fora, macio e puxa-puxa por dentro, feito com queijo minas.",
+    attributes: attrs({ porcao: ["Porção", "12 unidades (360 g)"], sabor: ["Sabor", "Queijo minas"], dieta: dieta("Vegetariano"), validade: validade("2 dias, aqueça antes de servir"), restricoes: restricoes("Contém lactose; sem glúten") }),
+  }),
+  product({
+    id: "fv-009", name: "Croissant de Manteiga", price: 1290, sku: "FV-CRO", categoryId: "paes", color: C, stock: 18,
+    description: "Massa folhada de manteiga, dourada e leve, com dezenas de camadas.",
+    attributes: attrs({ porcao: ["Porção", "1 unidade (90 g)"], sabor: ["Sabor", "Manteiga"], dieta: dieta("Vegetariano"), validade: validade("1 dia"), restricoes: restricoes("Contém glúten e lactose") }),
+  }),
+  product({
+    id: "fv-010", name: "Baguete Rústica", price: 1090, sku: "FV-BAG", categoryId: "paes", color: C, stock: 15,
+    description: "Crosta fina e estalante, ideal para sanduíches e para acompanhar a mesa.",
+    attributes: attrs({ porcao: ["Porção", "1 unidade (250 g)"], sabor: ["Sabor", "Tradicional"], dieta: dieta("Vegano"), validade: validade("1 dia"), restricoes: restricoes("Contém glúten") }),
+  }),
+  product({
+    id: "fv-011", name: "Pão de Alho Cremoso", price: 1790, sku: "FV-PAL", categoryId: "paes", color: C, stock: 11,
+    description: "Pão fatiado com creme de alho, queijo gratinado e ervas.",
+    attributes: attrs({ porcao: ["Porção", "8 fatias"], sabor: ["Sabor", "Alho e queijo"], dieta: dieta("Vegetariano"), validade: validade("2 dias refrigerado"), restricoes: restricoes("Contém glúten e lactose") }),
+  }),
+  // ——— Doces
+  product({
+    id: "fv-012", name: "Bolo Vulcão de Chocolate", price: 1690, sku: "FV-VUL", categoryId: "doces", color: C,
+    description: "Massa fofa de chocolate com o centro cremoso, servido com calda quente que escorre.",
+    badges: ["Nº 1 da casa", "Calda quente"],
+    addons: [sorvete, morangos],
+    attributes: attrs({ sabor: ["Sabor", "Chocolate belga"], dieta: dieta("Vegetariano"), validade: validade("3 dias refrigerado"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
+    variants: portions("FV-VUL", [
+      { label: "Fatia", code: "FAT", stock: 20 },
+      { label: "Meio bolo", code: "MEI", price: 5990, stock: 8 },
+      { label: "Inteiro", code: "INT", price: 10990, stock: 4 },
     ]),
   }),
   product({
-    id: "fv-010", name: "Torta de Limão", price: 3890, sku: "FV-TLI", categoryId: "doces", color: C, stock: 6,
-    description: "Base crocante, creme de limão e merengue maçaricado.",
-    attributes: attrs({ porcao: ["Peso/porção", "400 g (4 fatias)"], sabor: ["Sabor", "Limão"], validade: validade("4 dias refrigerada"), restricoes: ["Restrições", "Contém glúten, ovos e lactose"] }),
+    id: "fv-013", name: "Brownie com Calda de Chocolate", price: 1490, sku: "FV-BRW", categoryId: "doces", color: C, stock: 20,
+    description: "Brownie denso e úmido de chocolate meio amargo, coberto com calda.",
+    addons: [sorvete, caldaExtra],
+    attributes: attrs({ porcao: ["Porção", "1 unidade (110 g)"], sabor: ["Sabor", "Chocolate meio amargo"], dieta: dieta("Vegetariano"), validade: validade("5 dias"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
   }),
   product({
-    id: "fv-011", name: "Pudim de Leite", price: 2790, sku: "FV-PUD", categoryId: "doces", color: C, stock: 13,
-    description: "Pudim cremoso de leite condensado com calda de caramelo.",
-    attributes: attrs({ porcao: ["Peso/porção", "300 g"], sabor: ["Sabor", "Leite condensado"], validade: validade("5 dias refrigerado"), restricoes: ["Restrições", "Contém ovos e lactose"] }),
+    id: "fv-014", name: "Rolinho de Canela", price: 1390, sku: "FV-ROL", categoryId: "doces", color: C, stock: 16,
+    description: "Massa macia enrolada com canela e açúcar mascavo, coberta com glacê.",
+    attributes: attrs({ porcao: ["Porção", "1 unidade (120 g)"], sabor: ["Sabor", "Canela"], dieta: dieta("Vegetariano"), validade: validade("2 dias"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
   }),
   product({
-    id: "fv-012", name: "Cookie Red Velvet", price: 1290, sku: "FV-COO", categoryId: "doces", color: C, stock: 30,
-    description: "Cookie macio de red velvet com gotas de chocolate branco.",
-    attributes: attrs({ porcao: ["Peso/porção", "80 g"], sabor: ["Sabor", "Red velvet"], validade: validade("7 dias"), restricoes: ["Restrições", "Contém glúten, ovos e lactose"] }),
+    id: "fv-015", name: "Cheesecake de Frutas Vermelhas", price: 1890, sku: "FV-CHE", categoryId: "doces", color: C, stock: 10,
+    description: "Base crocante, creme de queijo e calda de frutas vermelhas.",
+    addons: [caldaExtra],
+    attributes: attrs({ porcao: ["Porção", "1 fatia (140 g)"], sabor: ["Sabor", "Frutas vermelhas"], dieta: dieta("Vegetariano"), validade: validade("4 dias refrigerado"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
   }),
   product({
-    id: "fv-013", name: "Pão de Mel", price: 990, sku: "FV-PDM", categoryId: "doces", color: C, stock: 24,
-    description: "Pão de mel recheado com doce de leite e coberto com chocolate.",
-    attributes: attrs({ porcao: ["Peso/porção", "70 g"], sabor: ["Sabor", "Doce de leite"], validade: validade("10 dias"), restricoes: ["Restrições", "Contém glúten e lactose"] }),
+    id: "fv-016", name: "Torta de Limão", price: 1790, sku: "FV-TLI", categoryId: "doces", color: C, stock: 8,
+    description: "Base crocante, creme de limão e merengue maçaricado na hora.",
+    attributes: attrs({ porcao: ["Porção", "1 fatia (130 g)"], sabor: ["Sabor", "Limão"], dieta: dieta("Vegetariano"), validade: validade("4 dias refrigerada"), restricoes: restricoes("Contém glúten, ovos e lactose") }),
   }),
+  // ——— Bebidas
   product({
-    id: "fv-014", name: "Suco de Laranja Natural", price: 1290, sku: "FV-SLA", categoryId: "bebidas", color: C,
-    description: "Suco espremido na hora, sem adição de açúcar.",
-    attributes: attrs({ sabor: ["Sabor", "Laranja"], validade: validade("2 dias refrigerado"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
+    id: "fv-017", name: "Suco de Laranja Natural", price: 1290, sku: "FV-SLA", categoryId: "bebidas", color: C,
+    description: "Espremido na hora, sem adição de açúcar.",
+    attributes: attrs({ sabor: ["Sabor", "Laranja"], dieta: dieta("Vegano"), validade: validade("2 dias refrigerado"), restricoes: restricoes("Sem glúten") }),
     variants: portions("FV-SLA", [
       { label: "300 ml", code: "300", stock: 25 },
       { label: "1 litro", code: "1000", price: 2990, stock: 12 },
     ]),
   }),
   product({
-    id: "fv-015", name: "Limonada Suíça", price: 1490, sku: "FV-LIM", categoryId: "bebidas", color: C, stock: 18,
-    description: "Limonada cremosa batida com leite condensado.",
-    attributes: attrs({ porcao: ["Peso/porção", "400 ml"], sabor: ["Sabor", "Limão"], validade: validade("1 dia refrigerada"), restricoes: ["Restrições", "Contém lactose"] }),
+    id: "fv-018", name: "Limonada Suíça", price: 1490, sku: "FV-LIM", categoryId: "bebidas", color: C, stock: 18,
+    description: "Limonada cremosa batida com a casca do limão e leite condensado.",
+    attributes: attrs({ porcao: ["Porção", "400 ml"], sabor: ["Sabor", "Limão"], dieta: dieta("Vegetariano"), validade: validade("1 dia refrigerada"), restricoes: restricoes("Contém lactose") }),
   }),
   product({
-    id: "fv-016", name: "Café Coado Especial", price: 1190, sku: "FV-CAF", categoryId: "bebidas", color: C, stock: 40,
-    description: "Café especial coado, grãos de torra média.",
-    attributes: attrs({ porcao: ["Peso/porção", "250 ml"], sabor: ["Sabor", "Chocolate e caramelo"], validade: validade("Consumir no dia"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
+    id: "fv-019", name: "Milk-shake de Morango", price: 1990, sku: "FV-SHK", categoryId: "bebidas", color: C, stock: 12,
+    description: "Sorvete de creme batido com morangos de verdade, servido bem gelado.",
+    attributes: attrs({ porcao: ["Porção", "400 ml"], sabor: ["Sabor", "Morango"], dieta: dieta("Vegetariano"), validade: validade("Consumir na hora"), restricoes: restricoes("Contém lactose") }),
   }),
   product({
-    id: "fv-017", name: "Chá Gelado de Pêssego", price: 1390, sku: "FV-CHA", categoryId: "bebidas", color: C, stock: 16,
-    description: "Chá preto gelado com pêssego e hortelã.",
-    attributes: attrs({ porcao: ["Peso/porção", "500 ml"], sabor: ["Sabor", "Pêssego"], validade: validade("3 dias refrigerado"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
-  }),
-  product({
-    id: "fv-018", name: "Kombucha de Gengibre", price: 1690, sku: "FV-KOM", categoryId: "bebidas", color: C, stock: 10,
-    description: "Bebida fermentada artesanal com gengibre.",
-    attributes: attrs({ porcao: ["Peso/porção", "300 ml"], sabor: ["Sabor", "Gengibre"], validade: validade("30 dias refrigerada"), dieta: ["Restrição alimentar", "Vegano"], restricoes: ["Restrições", "Sem glúten"] }),
+    id: "fv-020", name: "Café Coado Especial", price: 790, sku: "FV-CAF", categoryId: "bebidas", color: C, stock: 40,
+    description: "Grãos especiais de torra média, coado na hora.",
+    attributes: attrs({ porcao: ["Porção", "250 ml"], sabor: ["Sabor", "Chocolate e caramelo"], dieta: dieta("Vegano"), validade: validade("Consumir na hora"), restricoes: restricoes("Sem glúten") }),
   }),
 ];
 

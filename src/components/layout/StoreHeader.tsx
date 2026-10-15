@@ -16,6 +16,21 @@ const links = [
 const iconButton =
   "inline-flex size-11 items-center justify-center rounded-button text-text hover:bg-border/50";
 
+/** Logo em texto: o caractere de destaque (ex.: o ponto de "forno.da vila") usa a cor de destaque do logo. */
+function Wordmark({ text, accent }: { text: string; accent: string }) {
+  const parts = accent ? text.split(accent) : [text];
+  return (
+    <span aria-hidden="true">
+      {parts.map((part, i) => (
+        <span key={i}>
+          {i > 0 && <span className="logo-accent">{accent}</span>}
+          {part}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function SearchForm({ pill, autoFocus = false }: { pill: boolean; autoFocus?: boolean }) {
   const router = useRouter();
   const [term, setTerm] = useState("");
@@ -53,6 +68,7 @@ export function StoreHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const name = useDemoStore((s) => s.config.name);
+  const wordmark = useDemoStore((s) => s.config.wordmark);
   const searchLayout = useDemoStore((s) => s.config.layout.search);
   const categories = useDemoStore((s) => s.categories);
   const count = useDemoStore((s) => s.cart.reduce((sum, l) => sum + l.qty, 0));
@@ -76,8 +92,9 @@ export function StoreHeader() {
             href="/"
             className="store-logo col-start-2 truncate text-center text-base md:text-xl md:col-start-1 md:row-start-1 md:text-left"
             data-testid="store-name"
+            aria-label={name}
           >
-            {name}
+            {wordmark ? <Wordmark text={wordmark.text} accent={wordmark.accent} /> : name}
           </Link>
           <div className="col-start-3 flex items-center md:col-start-3">
             {searchLayout === "icon" && (

@@ -1,4 +1,4 @@
-# Loja Virtual Plug and Play — Fatias 0 (Fundação) e 1 (Vitrine: catálogo)
+# Loja Virtual Plug and Play — Fatias 0 (Fundação), 1 (Vitrine: catálogo) e 1.1 (Forno da Vila v2)
 
 Mockup navegável de e-commerce reutilizável e agnóstico de nicho. Nada específico de cliente ou nicho está no código: tema (tokens), módulos (liga/desliga) e catálogo vêm de **presets** (dados).
 
@@ -49,9 +49,25 @@ Os dados legais devem ser fictícios e claramente de demonstração.
 ## Como adicionar um bloco de home a um preset
 
 A home é montada por `config.homeBlocks` (em `src/presets/<preset>/config.ts`): a **ordem do array é a ordem na página** e `enabled: false` esconde o bloco.
-Tipos existentes (`HomeBlock` em `src/domain/types.ts`): `banner`, `categories` e `featured`. Para criar um bloco novo de um tipo existente, basta acrescentar um item
+Tipos existentes (`HomeBlock` em `src/domain/types.ts`): `banner` (`variant: "full"` ou `"card"`, com selo e segundo botão opcionais), `categories`, `chips` (atalhos em pílula; `href` `#id` rola até o bloco), `spotlight` (card grande de um produto), `featured` e `shippingProgress` (barra de frete grátis, só aparece com itens no carrinho). Para criar um bloco novo de um tipo existente, basta acrescentar um item
 com `id` único (ex.: um segundo `featured` com outros `productIds`). Para um **tipo** novo: (1) adicione a variante em `HomeBlock`, (2) crie o componente em
 `src/components/store/HomeBlocks.tsx` e trate-o no `switch` de `HomeBlocks` (o TypeScript acusa o caso esquecido). O teste de presets valida que categorias e produtos citados existem.
+
+## Como escolher a variante de listagem e de produto
+
+Em `config.layout` do preset:
+
+- `listing: "grid"` (cards em grade) ou `"menu"` (cardápio: cartão branco com nome, descrição curta, preço e selos à esquerda, miniatura e botão "+" à direita). Vale para o bloco de destaques da home, a categoria (que ganha chips de categoria) e a busca.
+  O "+" adiciona direto ao carrinho; se o produto tiver variação, leva à página do produto.
+- `product: "classic"` (galeria na proporção do produto, botão "Adicionar ao carrinho") ou `"sheet"` (foto de ponta a ponta, folha de conteúdo, seletor de quantidade e barra fixa "Adicionar · total").
+- Opcionais: `wordmark: { text, accent }` (logo em texto com um caractere de destaque colorido, ex.: o ponto de "forno.da vila") e `pickup: { leadTime }` (prazo da retirada na faixa de aviso).
+- Tokens do tema usados por essas variantes: `colors.highlightBg/highlightText` (selos), `colors.footerBg/footerText`, `radii.xl` (banner em card), `radii.sheet` (folha do produto), `fonts.headingTracking` e `logo.accent`.
+
+## Como cadastrar adicionais e selos num produto
+
+No produto do preset: `addons: [{ id, label, price }]` (preço em centavos) e `badges: ["Nº 1 da semana"]`. Os adicionais aparecem em "Turbine seu pedido", em checkboxes com o preço à direita, e são somados ao preço da linha.
+O carrinho guarda linhas `{ lineId, productId, variantId?, addonIds, qty }`; `lineId` = produto + variante + adicionais ordenados (`src/lib/cart.ts`): a mesma combinação soma a quantidade e outra combinação vira linha nova. A tela do carrinho é da F2.
+Marque um atributo com `summary: true` em `attributeDefs` para ele aparecer como linha de resumo (muted) sob a descrição na página em folha.
 
 ## Como adicionar um atributo a um preset
 
@@ -87,7 +103,7 @@ Importe o repositório na Vercel (framework Next.js detectado automaticamente, s
 - Valores monetários são **inteiros em centavos** (`18990` = R$ 189,90); a exibição passa sempre por `formatBRL` (`src/lib/money.ts`). O `sample.csv` usa reais com vírgula/ponto e será convertido por `parseBRLToCents` na importação.
 - `window.__demoStore` só existe fora de produção ou com `NEXT_PUBLIC_EXPOSE_STORE=1` (usado só no build de teste do E2E).## Imagens
 
-As fotos dos dois presets são do Unsplash (licença gratuita), em `public/images/presets/<preset>/` (WebP, ≤ 1600 px, ≤ 200 KB), referenciadas em `src/presets/<preset>/images.ts`
+As fotos dos dois presets são do Unsplash (as do Forno v2 seguem a direção: close-up ou 45°, vapor, queijo esticando, calda escorrendo, luz natural quente, sem pessoas nem marcas) (licença gratuita), em `public/images/presets/<preset>/` (WebP, ≤ 1600 px, ≤ 200 KB), referenciadas em `src/presets/<preset>/images.ts`
 e **creditadas em `IMAGE_CREDITS.md`** (arquivo, URL, autor, licença). O texto alternativo descreve o que a foto mostra. Preset novo sem fotos cai nos placeholders SVG de `/placeholder`.
 O teste de presets exige que toda imagem de arquivo exista em `public/` e conste no `IMAGE_CREDITS.md`.
 

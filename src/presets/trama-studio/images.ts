@@ -27,7 +27,7 @@ export const productImages: Record<string, Image[]> = {
   "ts-003": [
     { src: "/images/presets/trama-studio/calca-alfaiataria-1.webp", alt: "Calça de alfaiataria azul-marinho em manequim" },
     { src: "/images/presets/trama-studio/calca-alfaiataria-2.webp", alt: "Calça ampla de linho vermelha" },
-    { src: "/images/presets/trama-studio/blusa-cropped-algodao-1.webp", alt: "Calça de perna larga verde usada com top branco" },
+    { src: "/images/presets/trama-studio/calca-alfaiataria-3.webp", alt: "Calça de corte reto verde-oliva, vista da cintura para baixo" },
   ],
   "ts-004": [
     { src: "/images/presets/trama-studio/saia-plissada-1.webp", alt: "Saia plissada clara combinada com blusa preta, junto ao mar" },
@@ -52,7 +52,7 @@ export const productImages: Record<string, Image[]> = {
     { src: "/images/presets/trama-studio/camisa-linho-manga-longa-3.webp", alt: "Camisa de linho clara pendurada em varal" },
   ],
   "ts-010": [
-    { src: "/images/presets/trama-studio/calca-chino-1.webp", alt: "Calça chino verde-oliva, vista da cintura para baixo" },
+    { src: "/images/presets/trama-studio/calca-alfaiataria-3.webp", alt: "Calça chino verde-oliva, vista da cintura para baixo" },
   ],
   "ts-011": [
     { src: "/images/presets/trama-studio/bermuda-sarja-1.webp", alt: "Homem caminhando na praia de bermuda cinza-claro e camiseta branca" },

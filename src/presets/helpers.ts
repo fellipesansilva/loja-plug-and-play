@@ -1,4 +1,5 @@
 import type {
+  Addon,
   Attribute,
   Image,
   Coupon,
@@ -44,6 +45,8 @@ type ProductInput = {
   stock?: number;
   attributes?: Attribute[];
   variants?: Variant[];
+  addons?: Addon[];
+  badges?: string[];
 };
 
 /** Produto com variações tem estoque = soma das variantes. */
@@ -70,6 +73,8 @@ export function product(input: ProductInput, imageCount = input.variants?.length
     categoryId: input.categoryId,
     attributes: input.attributes ?? [],
     variants,
+    ...(input.addons ? { addons: input.addons } : {}),
+    ...(input.badges ? { badges: input.badges } : {}),
   };
 }
 

@@ -18,6 +18,10 @@
   --color-danger: var(--t-color-danger);
   --color-announcement-bg: var(--t-color-announcementBg);
   --color-announcement-text: var(--t-color-announcementText);
+  --color-highlight-bg: var(--t-color-highlightBg);
+  --color-highlight-text: var(--t-color-highlightText);
+  --color-footer-bg: var(--t-color-footerBg);
+  --color-footer-text: var(--t-color-footerText);
 
   --font-heading: var(--t-font-heading);
   --font-body: var(--t-font-body);
@@ -25,6 +29,8 @@
   --radius-sm: var(--t-radius-sm);
   --radius-md: var(--t-radius-md);
   --radius-lg: var(--t-radius-lg);
+  --radius-xl: var(--t-radius-xl);
+  --radius-sheet: var(--t-radius-sheet);
   --radius-button: var(--t-radius-button);
 
   --aspect-product: var(--t-ratio-product);
@@ -48,6 +54,7 @@
   h3 {
     font-family: var(--font-heading);
     font-weight: var(--t-font-headingWeight);
+    letter-spacing: var(--t-font-headingTracking);
   }
 
   /* Foco visível em tudo que é interativo. */
@@ -65,6 +72,10 @@
     text-transform: var(--t-logo-transform);
     letter-spacing: var(--t-logo-tracking);
     color: var(--t-logo-color);
+  }
+
+  .store-logo .logo-accent {
+    color: var(--t-logo-accent);
   }
 
   /* Degradê escuro na base de imagens com texto por cima (usa a cor de texto do preset). */

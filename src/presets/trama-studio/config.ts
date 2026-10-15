@@ -8,7 +8,7 @@ export const config: StoreConfig = {
     titleTemplate: "%s · Trama Studio",
     description: "Moda atemporal em linho e algodão: peças femininas, masculinas e acessórios com entrega para todo o Brasil.",
   },
-  layout: { search: "icon", categoryTile: "rect" },
+  layout: { search: "icon", categoryTile: "rect", listing: "grid", product: "classic" },
   homeBlocks: [
     {
       id: "banner",
@@ -37,6 +37,7 @@ export const config: StoreConfig = {
       linkHref: "/categoria/feminino",
       productIds: ["ts-001", "ts-002", "ts-006", "ts-003", "ts-008", "ts-014", "ts-016", "ts-012"],
     },
+    { id: "frete-gratis", type: "shippingProgress", enabled: true },
   ],
   attributeDefs: [
     { key: "tamanho", label: "Tamanho", selector: "pill", filterable: true, highlight: false },
@@ -82,15 +83,26 @@ export const config: StoreConfig = {
       danger: "#b4443c",
       announcementBg: "#4b5340",
       announcementText: "#ffffff",
+      highlightBg: "#4b5340",
+      highlightText: "#ffffff",
+      footerBg: "#f5f3ef",
+      footerText: "#6b675f",
     },
     fonts: {
       heading: "var(--font-bodoni-moda), Georgia, 'Times New Roman', serif",
       body: "var(--font-manrope), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
       headingWeight: "400",
+      headingTracking: "0",
     },
-    radii: { sm: "0", md: "0", lg: "0", button: "0" },
+    radii: { sm: "0", md: "0", lg: "0", xl: "0", sheet: "0", button: "0" },
     ratios: { product: "3 / 4" },
-    logo: { transform: "uppercase", tracking: "0.18em", weight: "600", color: "var(--t-color-text)" },
+    logo: {
+      transform: "uppercase",
+      tracking: "0.18em",
+      weight: "600",
+      color: "var(--t-color-text)",
+      accent: "var(--t-color-text)",
+    },
     spacing: { xs: "0.25rem", sm: "0.5rem", md: "1rem", lg: "1.5rem", xl: "2.5rem" },
   },
   modules: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { Image } from "@/domain/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "./Icons";
 import { StoreImage } from "./StoreImage";
@@ -8,7 +8,17 @@ import { StoreImage } from "./StoreImage";
 const SIZES = "(min-width: 768px) 50vw, 100vw";
 
 /** Galeria com rolagem por deslizar (scroll-snap), botões anterior/próxima e indicador de posição. */
-export function ProductGallery({ images }: { images: Image[] }) {
+export function ProductGallery({
+  images,
+  tall = false,
+  children,
+}: {
+  images: Image[];
+  /** Foto de ponta a ponta com altura fixa (página em folha), em vez da proporção do produto. */
+  tall?: boolean;
+  /** Controles sobrepostos à foto (voltar, favoritar). */
+  children?: ReactNode;
+}) {
   const trackRef = useRef<HTMLUListElement>(null);
   const [index, setIndex] = useState(0);
   const total = images.length;
@@ -37,7 +47,10 @@ export function ProductGallery({ images }: { images: Image[] }) {
         className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]"
       >
         {images.map((img, i) => (
-          <li key={img.src} className="relative aspect-product w-full shrink-0 snap-center overflow-hidden bg-surface">
+          <li
+            key={img.src}
+            className={`relative w-full shrink-0 snap-center overflow-hidden bg-surface ${tall ? "h-[420px] md:h-[520px]" : "aspect-product"}`}
+          >
             <StoreImage image={img} sizes={SIZES} lcp={i === 0} />
           </li>
         ))}
@@ -71,6 +84,7 @@ export function ProductGallery({ images }: { images: Image[] }) {
           </p>
         </>
       )}
+      {children}
     </div>
   );
 }

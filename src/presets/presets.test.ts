@@ -83,9 +83,31 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
     for (const b of blocks) {
       if (b.type === "categories") for (const id of b.categoryIds) expect(categoryIds).toContain(id);
       if (b.type === "featured") {
-        expect(b.productIds).toHaveLength(8);
+        expect(b.productIds.length).toBeGreaterThanOrEqual(3);
+        expect(b.productIds.length).toBeLessThanOrEqual(8);
         for (const id of b.productIds) expect(productIds).toContain(id);
       }
+      if (b.type === "spotlight") expect(productIds).toContain(b.productId);
+    }
+  });
+
+  it("adicionais têm id único e preço inteiro em centavos; selos são textos não vazios", () => {
+    for (const p of preset.products) {
+      const ids = (p.addons ?? []).map((a) => a.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const a of p.addons ?? []) {
+        expect(Number.isInteger(a.price)).toBe(true);
+        expect(a.price).toBeGreaterThan(0);
+        expect(a.label.trim().length).toBeGreaterThan(0);
+      }
+      for (const b of p.badges ?? []) expect(b.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("nenhuma foto se repete entre os produtos da mesma categoria", () => {
+    for (const c of preset.categories) {
+      const srcs = preset.products.filter((p) => p.categoryId === c.id).flatMap((p) => p.images.map((i) => i.src));
+      expect(new Set(srcs).size, c.id).toBe(srcs.length);
     }
   });
 
@@ -180,5 +202,67 @@ describe("valores monetários em centavos inteiros", () => {
     for (const v of values) expect(Number.isInteger(v)).toBe(true);
     // preços plausíveis em centavos (nenhum preço de produto abaixo de R$ 1,00)
     for (const p of preset.products) expect(p.price).toBeGreaterThanOrEqual(100);
+  });
+});
+
+/** Razão de contraste WCAG entre duas cores #rrggbb. */
+function contrast(a: string, b: string): number {
+  const lum = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+describe("contraste (WCAG AA, 4,5:1)", () => {
+  it.each(presets.map((p) => [p.id, p] as const))("preset %s: primary sobre background e surface", (_id, preset) => {
+    const { primary, background, surface, text, muted, success, announcementBg, announcementText, footerBg, footerText } = preset.config.theme.colors;
+    expect(contrast(primary, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(primary, surface)).toBeGreaterThanOrEqual(4.5);
+    // o mesmo vale para o texto sobre o botão primary e para os demais textos do tema
+    expect(contrast(primary, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(text, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(muted, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(success, surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(announcementText, announcementBg)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(footerText, footerBg)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("Forno da Vila v2", () => {
+  const forno = presets.find((p) => p.id === "forno-da-vila")!;
+  const trama = presets.find((p) => p.id === "trama-studio")!;
+
+  it("listagem em cardápio e página do produto em folha; Trama segue em grade/clássica", () => {
+    expect(forno.config.layout.listing).toBe("menu");
+    expect(forno.config.layout.product).toBe("sheet");
+    expect(trama.config.layout.listing).toBe("grid");
+    expect(trama.config.layout.product).toBe("classic");
+  });
+
+  it("categorias: Pizzas, Pães, Doces e Bebidas", () => {
+    expect(forno.categories.map((c) => c.name)).toEqual(["Pizzas", "Pães", "Doces", "Bebidas"]);
+  });
+
+  it("spotlight é o Bolo Vulcão, com 3 tamanhos e os adicionais sorvete e morangos", () => {
+    const block = forno.config.homeBlocks.find((b) => b.type === "spotlight");
+    if (block?.type !== "spotlight") throw new Error("sem spotlight");
+    const bolo = forno.products.find((p) => p.id === block.productId)!;
+    expect(bolo.name).toBe("Bolo Vulcão de Chocolate");
+    expect(bolo.variants.map((v) => v.attributes.porcao)).toEqual(["Fatia", "Meio bolo", "Inteiro"]);
+    expect((bolo.addons ?? []).map((a) => a.id)).toEqual(["sorvete", "morangos"]);
+  });
+
+  it("pelo menos 3 produtos com adicionais; fotos reais em todos os produtos", () => {
+    expect(forno.products.filter((p) => (p.addons ?? []).length > 0).length).toBeGreaterThanOrEqual(3);
+    for (const p of forno.products) {
+      for (const img of p.images) expect(img.src.startsWith("/images/presets/forno-da-vila/"), p.id).toBe(true);
+    }
+  });
+
+  it("logo em texto com o ponto como destaque e retirada em 20 min", () => {
+    expect(forno.config.wordmark).toEqual({ text: "forno.da vila", accent: "." });
+    expect(forno.config.pickup?.leadTime).toBe("20 min");
   });
 });

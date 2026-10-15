@@ -10,6 +10,7 @@ import type {
   ThemeTokens,
 } from "@/domain/types";
 import { DEFAULT_PRESET_ID, getPreset } from "@/presets";
+import { addLine, type AddToCartInput } from "@/lib/cart";
 import { safeStorage } from "./safe-storage";
 import { STORAGE_KEY, STORAGE_VERSION } from "./storage-key";
 
@@ -30,8 +31,8 @@ type DemoActions = {
   reset: () => void;
   setThemeColor: (key: keyof ThemeTokens["colors"], value: string) => void;
   setStoreName: (name: string) => void;
-  /** Soma `qty` à linha do mesmo produto/variante, limitando ao estoque disponível. */
-  addToCart: (line: CartLine) => void;
+  /** Soma à linha com o mesmo lineId (produto + variante + adicionais) ou cria uma nova; respeita o estoque. */
+  addToCart: (input: AddToCartInput) => void;
 };
 
 export type DemoState = DemoData & DemoActions;
@@ -63,20 +64,7 @@ export const useDemoStore = create<DemoState>()(
           },
         })),
       setStoreName: (name) => set((s) => ({ config: { ...s.config, name } })),
-      addToCart: ({ productId, variantId, qty }) =>
-        set((s) => {
-          const product = s.products.find((p) => p.id === productId);
-          if (!product || qty < 1) return {};
-          const stock = variantId
-            ? (product.variants.find((v) => v.id === variantId)?.stock ?? 0)
-            : product.stock;
-          const same = (l: CartLine) => l.productId === productId && l.variantId === variantId;
-          const current = s.cart.find(same)?.qty ?? 0;
-          const next = Math.min(current + qty, stock);
-          if (next <= current) return {};
-          const lines = s.cart.filter((l) => !same(l));
-          return { cart: [...lines, { productId, variantId, qty: next }] };
-        }),
+      addToCart: (input) => set((s) => ({ cart: addLine(s.cart, s.products, input) })),
     }),
     {
       name: STORAGE_KEY,

@@ -5,7 +5,8 @@ import { useDemoStore } from "@/store/demo-store";
 
 export function AnnouncementBar() {
   const modules = useDemoStore((s) => s.config.modules);
-  const message = announcementMessage(modules);
+  const leadTime = useDemoStore((s) => s.config.pickup?.leadTime);
+  const message = announcementMessage(modules, leadTime);
   if (!message) return null;
   return (
     <p
