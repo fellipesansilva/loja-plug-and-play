@@ -149,3 +149,52 @@ test.describe("formato reserva e acessibilidade", () => {
     await expect(page.locator("main picture img")).toHaveAttribute("alt", /pizza/i);
   });
 });
+
+/**
+ * Celular de 400 px (o caso do relato): o preload e o <img> do Forno escolhem o MESMO arquivo, baixado uma vez só.
+ * O outro download de banner que aparece na rede é o <img> do HTML do servidor, que é sempre do preset padrão (Trama):
+ * ele é pedido pelo navegador antes de qualquer script rodar e escolhe o arquivo pelo `sizes` da própria Trama
+ * (100vw), por isso pode ser maior (960 px a partir de DPR ~1,93). Só o servidor saber o preset eliminaria esse pedido.
+ */
+for (const dpr of [1.75, 2]) {
+  test.describe(`celular de 400 px, tela ${dpr}x`, () => {
+    test.use({
+      userAgent: devices["Pixel 5"].userAgent,
+      isMobile: true,
+      hasTouch: true,
+      viewport: { width: 400, height: 800 },
+      screen: { width: 400, height: 800 },
+      deviceScaleFactor: dpr,
+    });
+    // 376 px de card × DPR: 658 px (1,75x) ou 752 px (2x) → o menor candidato que cobre é o de 768 px
+    const FORNO_FILE = `${BASE}/forno-da-vila/banner-m-768.avif`;
+
+    test("Forno: preload == <source> == img.currentSrc, e o banner do Forno é baixado uma única vez", async ({ page }) => {
+      const p = await probe(page, "/?preset=forno");
+      const source = p.sources.find((s) => s.type === "image/avif" && s.media === "(max-width: 767px)" && s.srcset?.includes("forno-da-vila"));
+      const preload = p.preloads.find((l) => l.media === "(max-width: 767px)" && l.srcset?.includes("forno-da-vila"));
+      expect(source && preload).toBeTruthy();
+      expect(preload!.srcset).toBe(source!.srcset);
+      expect(preload!.sizes).toBe(source!.sizes);
+
+      expect(p.currentSrc).toBe(FORNO_FILE);
+      const forno = bannerOf(p, "forno-da-vila");
+      expect(forno.map((r) => r.path)).toEqual([FORNO_FILE]); // um download só, o mesmo do <img>
+      expect(new Set(forno.map((r) => r.path)).size).toBe(1);
+    });
+
+    test("o único outro banner na rede é o <img> do HTML do preset padrão (Trama), nunca um segundo do Forno", async ({ page }) => {
+      const p = await probe(page, "/?preset=forno");
+      const others = p.requests.filter((r) => !r.path.includes("forno-da-vila"));
+      expect(others).toHaveLength(1);
+      expect(others[0].path).toMatch(/^\/images\/presets\/trama-studio\/banner-m-(768|960)\.avif$/);
+    });
+
+    test("Forno salvo (sem parâmetro): o mesmo único arquivo do Forno", async ({ page }) => {
+      await openForno(page);
+      const p = await probe(page, "/");
+      expect(bannerOf(p, "forno-da-vila").map((r) => r.path)).toEqual([FORNO_FILE]);
+      expect(p.currentSrc).toBe(FORNO_FILE);
+    });
+  });
+}
