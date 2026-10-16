@@ -171,8 +171,10 @@ test.describe("Arca · redesenho por blocos", () => {
     // ao rolar até os setores, as fotos deles são baixadas (e aparecem)
     await page.getByTestId("sectors").scrollIntoViewIfNeeded();
     await expect.poll(() => images.filter((f) => f.startsWith("setor-")).length).toBeGreaterThanOrEqual(4);
-    const broken = await page.getByTestId("sectors").locator("img").evaluateAll((els) => els.filter((e) => !(e as HTMLImageElement).complete || (e as HTMLImageElement).naturalWidth === 0).length);
-    expect(broken).toBe(0);
+    // as fotos chegam (o pedido sai antes de a imagem terminar de carregar): espera todas ficarem completas
+    await expect
+      .poll(() => page.getByTestId("sectors").locator("img").evaluateAll((els) => els.filter((e) => !(e as HTMLImageElement).complete || (e as HTMLImageElement).naturalWidth === 0).length))
+      .toBe(0);
   });
 
   test("home, setor e produto sem rolagem horizontal em 400 px", async ({ page }) => {

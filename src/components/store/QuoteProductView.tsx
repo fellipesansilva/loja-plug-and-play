@@ -8,6 +8,8 @@ import { QUOTE_MAX_QTY, clampQty } from "@/lib/quote";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { MinusIcon, PlusIcon } from "./Icons";
+import { Dimensionador } from "@/components/orcamento/Dimensionador";
+import { PorticoConfigurador } from "@/components/orcamento/PorticoConfigurador";
 import { Band, CaseCard, Heading } from "./SegmentBlocks";
 import { ProductGallery } from "./ProductGallery";
 import { useQuoteWords } from "./useQuoteWords";
@@ -22,6 +24,7 @@ export function QuoteProductView({ slug }: { slug: string }) {
   const addToQuote = useDemoStore((s) => s.addToQuote);
   const sectors = useDemoStore((s) => s.config.sectors);
   const cases = useDemoStore((s) => s.config.cases);
+  const blocks = useDemoStore((s) => s.config.orcamentoBlocks);
   const words = useQuoteWords();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -181,7 +184,13 @@ export function QuoteProductView({ slug }: { slug: string }) {
         </div>
       </article>
 
-      {product.benefits && product.benefits.length > 0 && (
+      {/* Ferramentas do orçamento (config.orcamentoBlocks): só quando ligadas e para o produto-alvo de cada uma. */}
+    {blocks?.ativos && blocks.porticoConfigurador?.alvoProduto === product.id && <PorticoConfigurador product={product} />}
+    {blocks?.ativos && blocks.dimensionador && (blocks.dimensionador.fechado.produto === product.id || blocks.dimensionador.aberto.produto === product.id) && (
+      <Dimensionador product={product} />
+    )}
+
+    {product.benefits && product.benefits.length > 0 && (
         <Band id="beneficios" tone="dark">
           <h2 id="bloco-beneficios" className="sr-only">
             Benefícios

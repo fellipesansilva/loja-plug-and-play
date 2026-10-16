@@ -147,6 +147,39 @@ export type HomeBlock =
   /** Chamada final. */
   | { id: string; type: "cta"; enabled: boolean; tone?: Tone; title: string; text?: string; ctaLabel: string; ctaHref: string };
 
+/** Cor da paleta do configurador: só estas cores aparecem para o cliente (`valor` é CSS, vem do preset). */
+export type PaletaCor = { id: string; nome: string; valor: string };
+
+/** Linha de reservatório do dimensionador: produto do catálogo e capacidades disponíveis (litros, inteiros, em ordem crescente). */
+export type LinhaReservatorio = { produto: string; capacidades: number[] };
+
+/**
+ * Ferramentas do modo orçamento. Tudo vem do preset: produto-alvo, paleta, limites e capacidades. `ativos` liga as duas ferramentas
+ * (desligado ou ausente em Trama e Forno).
+ */
+export type OrcamentoBlocks = {
+  ativos: boolean;
+  porticoConfigurador?: {
+    /** Id do produto que mostra o configurador. */
+    alvoProduto: string;
+    textoMax: number;
+    /** Texto mostrado na prévia (e na observação) enquanto o cliente não digita. */
+    textoExemplo: string;
+    /** Medidas escritas na observação do item (ex.: "6 × 4 m"). */
+    medidas: string;
+    paleta: PaletaCor[];
+  };
+  dimensionador?: {
+    fechado: LinhaReservatorio;
+    aberto: LinhaReservatorio;
+    diasMin: number;
+    diasMax: number;
+    unidadeConsumo: string;
+    /** O que oferecer quando o volume passa da maior capacidade. */
+    fallbackAcimaDoMaior: "projeto-sob-medida";
+  };
+};
+
 /** Fundo da seção: "dark" usa a cor primária; "light" (padrão) o fundo da loja. */
 export type Tone = "dark" | "light";
 
@@ -230,6 +263,8 @@ export type StoreConfig = {
   /** Retirada no local: prazo exibido na faixa de aviso (ex.: "20 min") e rótulo do status "enviado" nos pedidos de retirada (ex.: "Pronto para retirada"). */
   pickup?: { leadTime: string; readyLabel: string };
   homeBlocks: HomeBlock[];
+  /** Ferramentas do modo orçamento na página do produto (configurador de pórtico, dimensionador de reservatório). */
+  orcamentoBlocks?: OrcamentoBlocks;
   /** Entradas por necessidade, setor e projetos entregues (opcionais; só a Arca usa por enquanto). */
   needs?: Need[];
   sectors?: Sector[];
@@ -436,7 +471,11 @@ export type QuoteStatus = "nova" | "em_analise" | "orcamento_enviado" | "ganho" 
 export const QUOTE_STATUSES: readonly QuoteStatus[] = ["nova", "em_analise", "orcamento_enviado", "ganho", "perdido"];
 
 /** Item da lista de orçamento do visitante (sem preço): produto, quantidade e observação (até 500 caracteres). */
-export type QuoteListItem = { productId: string; qty: number; note: string };
+/**
+ * Linha da lista de orçamento. `id` identifica a linha: nos itens comuns é o próprio `productId` (somar o mesmo produto aumenta a
+ * quantidade); nos itens configurados (pórtico com a marca, reservatório dimensionado) cada configuração é uma linha com id próprio.
+ */
+export type QuoteListItem = { id: string; productId: string; qty: number; note: string; configurado: boolean };
 
 export const QUOTE_NOTE_MAX = 500;
 
