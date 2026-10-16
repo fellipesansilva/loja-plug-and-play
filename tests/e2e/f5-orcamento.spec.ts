@@ -115,3 +115,92 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
     expect(requested.some((p) => p.includes("/images/presets/arca-inflaveis/"))).toBe(true);
   });
 });
+
+const addFromProduct = async (page: import("@playwright/test").Page, slug: string, qty = 1) => {
+  await arca(page, `/produto/${slug}`);
+  for (let i = 1; i < qty; i++) await page.getByRole("button", { name: "Aumentar quantidade" }).click();
+  await page.getByTestId("add-to-quote").click();
+  await expect(page.getByTestId("quote-added")).toBeVisible();
+};
+
+test.describe("H2 · lista de orçamento", () => {
+  test("adiciona 3 itens, edita quantidade e observação, recarrega e mantém", async ({ page }) => {
+    await addFromProduct(page, "reservatorio-flexivel-fechado");
+    await addFromProduct(page, "boia-de-demarcacao", 3);
+    await addFromProduct(page, "blimp-inflavel");
+    // o contador do cabeçalho conta os itens diferentes
+    await expect(page.getByTestId("quote-count")).toHaveText("3");
+    await expect(page.getByRole("link", { name: "Lista de orçamento, 3 itens" })).toHaveAttribute("href", "/arca/orcamento");
+
+    await page.getByRole("link", { name: "Lista de orçamento, 3 itens" }).click();
+    await page.waitForFunction(() => !!window.__demoStore);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lista de orçamento");
+    const lines = page.getByTestId("quote-line");
+    await expect(lines).toHaveCount(3);
+    await expect(lines.nth(1).getByTestId("quote-line-qty")).toHaveValue("3");
+
+    // quantidade: botões e campo numérico
+    await lines.nth(0).getByRole("button", { name: "Aumentar quantidade de Reservatório Flexível Fechado" }).click();
+    await expect(lines.nth(0).getByTestId("quote-line-qty")).toHaveValue("2");
+    await lines.nth(1).getByTestId("quote-line-qty").fill("12");
+    await expect(lines.nth(1).getByTestId("quote-line-qty")).toHaveValue("12");
+    await lines.nth(2).getByRole("button", { name: "Diminuir quantidade de Blimp Inflável" }).waitFor();
+    await expect(lines.nth(2).getByRole("button", { name: "Diminuir quantidade de Blimp Inflável" })).toBeDisabled();
+
+    // observação por item
+    await lines.nth(0).getByLabel("Observações de Reservatório Flexível Fechado").fill("20.000 litros, água de irrigação, terreno plano");
+    await lines.nth(1).getByLabel("Observações de Boia de Demarcação").fill("Laranja, 60 cm, com olhal");
+    await expect(lines.nth(0).getByTestId("quote-note-count")).toHaveText("47/500");
+
+    await page.reload();
+    await page.waitForFunction(() => !!window.__demoStore);
+    await expect(lines).toHaveCount(3);
+    await expect(lines.nth(0).getByTestId("quote-line-qty")).toHaveValue("2");
+    await expect(lines.nth(1).getByTestId("quote-line-qty")).toHaveValue("12");
+    await expect(lines.nth(0).getByLabel("Observações de Reservatório Flexível Fechado")).toHaveValue("20.000 litros, água de irrigação, terreno plano");
+    await expect(lines.nth(1).getByLabel("Observações de Boia de Demarcação")).toHaveValue("Laranja, 60 cm, com olhal");
+    await expect(page.getByTestId("quote-count")).toHaveText("3");
+    // guardada no localStorage do preset (outra chave que a das outras lojas)
+    const keys = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("loja-demo")));
+    expect(keys).toEqual(["loja-demo-v1-arca"]);
+  });
+
+  test("a observação aceita até 500 caracteres", async ({ page }) => {
+    await addFromProduct(page, "portico-inflavel");
+    await page.goto(`${ARCA}/orcamento`);
+    const note = page.getByTestId("quote-line-note");
+    await note.fill("x".repeat(650));
+    await expect(note).toHaveValue("x".repeat(500));
+    await expect(page.getByTestId("quote-note-count")).toHaveText("500/500");
+    const stored = await page.evaluate(() => window.__demoStore!.getState().quoteList[0].note.length);
+    expect(stored).toBe(500);
+  });
+
+  test("somar o mesmo produto aumenta a quantidade; remover tira o item e esvazia o contador", async ({ page }) => {
+    await addFromProduct(page, "blimp-inflavel", 2);
+    await addFromProduct(page, "blimp-inflavel", 1);
+    await page.goto(`${ARCA}/orcamento`);
+    await expect(page.getByTestId("quote-line")).toHaveCount(1);
+    await expect(page.getByTestId("quote-line-qty")).toHaveValue("3");
+    await page.getByRole("button", { name: "Remover Blimp Inflável" }).click();
+    await expect(page.getByTestId("quote-empty")).toContainText("Sua lista de orçamento está vazia");
+    await expect(page.getByTestId("quote-count")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("quote-empty")).toBeVisible();
+  });
+
+  test("os textos usam o rótulo do preset (lista de orçamento, feminino)", async ({ page }) => {
+    await addFromProduct(page, "blimp-inflavel");
+    await expect(page.getByTestId("quote-added")).toContainText("Adicionado à lista de orçamento");
+    await expect(page.getByTestId("quote-added").getByRole("link")).toHaveText("Ver lista de orçamento");
+  });
+
+  test("produto inativo no painel some da lista de orçamento", async ({ page }) => {
+    await addFromProduct(page, "boia-cilindrica");
+    await arca(page, "/painel/produtos");
+    await page.getByLabel("Buscar por nome ou SKU").fill("Boia Cilíndrica");
+    await page.getByTestId("product-row").first().getByTestId("toggle-active").click();
+    await page.goto(`${ARCA}/orcamento`);
+    await expect(page.getByTestId("quote-empty")).toBeVisible();
+  });
+});
