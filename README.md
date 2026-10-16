@@ -158,6 +158,8 @@ As fontes são hospedadas em `public/fonts/<preset>/` (woff2 latin, de Google Fo
 | Bodoni Moda | Trama (títulos) | 2020 The Bodoni Moda Project Authors | OFL 1.1 — `public/fonts/trama/OFL-bodoni-moda.txt` |
 | Bricolage Grotesque | Forno (títulos) | 2022 The Bricolage Grotesque Project Authors | OFL 1.1 — `public/fonts/forno/OFL-bricolage-grotesque.txt` |
 | Manrope | Trama e Forno (texto) | 2018 The Manrope Project Authors | OFL 1.1 — `public/fonts/trama/OFL-manrope.txt` e `public/fonts/forno/OFL-manrope.txt` |
+| Barlow Condensed | Arca (títulos) | 2017 The Barlow Project Authors | OFL 1.1 — `public/fonts/arca/OFL-barlow-condensed.txt` |
+| Barlow | Arca (texto) | 2017 The Barlow Project Authors | OFL 1.1 — `public/fonts/arca/OFL-barlow.txt` |
 
 ## Painel de operação (F4)
 
@@ -168,6 +170,24 @@ Em `/<preset>/painel`, sem login na demo: faixa fixa "Painel de demonstração" 
 - **Produtos:** lista com foto, preço, estoque e situação, com busca por nome ou SKU. O formulário é **gerado a partir do preset**: um campo por atributo descritivo e uma variação por combinação dos eixos. As definições de `config.attributeDefs` com `variant: true` (Trama: tamanho e cor; Forno: porção) são os eixos de variação; as demais são atributos descritivos. Preço em formato BR (`19,90`, gravado em centavos), SKU único (inclusive entre variações), estoque inteiro. `Product.active === false` tira da loja (lista, busca, home e página do produto); estoque zero aparece como esgotado. Imagens: arquivo JPG, PNG ou WebP até 1 MB (guardado no navegador como data URL) ou imagem do preset. Se o navegador recusar gravar (armazenamento cheio), o painel mostra um aviso fixo e a tela continua funcionando (`safeStorage.hasWriteFailed`).
 - **Importação CSV:** botão para baixar o modelo do preset (colunas `sku, nome, preco, estoque, categoria, descricao` + uma coluna por atributo do preset). Aceita `;` ou `,`, UTF-8 com ou sem BOM (arquivo que não for UTF-8 é lido como Windows-1252, com aviso), preço em formato BR (também `19.90`), `categoria` pelo slug ou nome. A prévia mostra criados, atualizados (pelo SKU) e linhas com erro (número da linha e motivo); confirmar importa só as válidas. Arquivo vazio, colunas obrigatórias ausentes ou mais de 500 linhas: nada é importado. Produto criado pela importação ganha imagem de substituição (SVG do preset). Arquivos de teste: `tests/fixtures/csv/`.
 - **Estado salvo:** a versão do formato passou de 5 para 6 (histórico de status, produto ativo/inativo, rótulo de retirada). A migração mantém pedidos (ganham histórico), catálogo, carrinho e cupons; a config volta a ser a do preset, preservando o nome e o tema editados (`migrateState`, com teste).
+
+## Modo orçamento (loja Arca em `/arca`)
+
+Fabricante sob medida não vende com preço fixo: recebe pedidos de orçamento. O módulo `modules.orcamento: { enabled }` vale para a **loja inteira** e o preset fictício **Arca Infláveis** (`/arca`) o usa. Trama e Forno não mudam.
+
+- **Sem preço em lugar nenhum:** cards, produto, busca, destaques, ordenação por preço, painel e (se houvesse) dados estruturados. O produto vira "Adicionar ao orçamento" (texto em `config.quote.addLabel`); os demais textos da lista seguem o esquema do `cartWords` (`config.quote.listLabel` = "Lista de orçamento", `listGender` = "f").
+- **Sem venda:** carrinho, checkout, frete, cupom, Pix, cartão, boleto e parcelamento não existem. `validatePreset` **derruba o build** se um preset em orçamento tiver qualquer desses módulos ligado (a mensagem diz qual). As rotas `/arca/carrinho`, `/checkout`, `/pedido/…`, `/arrependimento` e `/trocas-e-devolucoes` dão **404**; `/arca/painel/pedidos` também (o menu mostra "Orçamentos"). Em Trama e Forno, `/orcamento`, `/condicoes-comerciais` e `/painel/orcamentos` dão 404. A guarda é `requireMode` (`src/lib/quote-mode.ts`).
+- **Lista de orçamento** (`/<preset>/orcamento`): itens com quantidade, observação de até 500 caracteres (medidas, cor, aplicação) e remover; contador no cabeçalho; guardada no `localStorage` do preset (`loja-demo-v1-arca`).
+- **Envio:** formulário com nome, empresa (opcional), e-mail, WhatsApp, cidade e UF de entrega, aplicação (opções de `config.quote.applications`) e mensagem; aviso de uso dos dados com link para a privacidade e **sem** caixa de "concordo". Enviar gera o protocolo `ORC-AAAAMMDD-XXXXX` (simulado), grava a solicitação (itens e contato), esvazia a lista e mostra a confirmação. "Enviar pelo WhatsApp": com `whatsapp.isReal` **falso** (a demo) abre uma janela com a mensagem pronta (itens, quantidades, observações) e o botão "Copiar", sem abrir conversa nem ter link para o `wa.me`; com `isReal` verdadeiro abre o `wa.me` com a mensagem.
+- **Painel:** "Orçamentos" lista as solicitações (da mais recente à mais antiga; filtro por status; busca por protocolo, nome ou empresa) e o detalhe mostra contato, itens com observações e histórico. Status: nova → em análise → orçamento enviado → ganho; "perdido" pode ser marcado de nova, em análise ou orçamento enviado, com confirmação. Produto e importação CSV têm preço e estoque **opcionais** (vazio = sem preço).
+- **Condições comerciais** (`/<preset>/condicoes-comerciais`, no lugar de Trocas e devoluções): prazo de produção e frete vêm de `policies.commercial`; a garantia vem de `policies.defect` (a validação do prazo de defeito do CDC continua valendo). A validação de arrependimento **não se aplica** a preset em orçamento (`regretDays` pode ficar ausente).
+- **Preset Arca:** 2 categorias ("Indústria e agro" e "Eventos e marketing") e 10 produtos com nomes genéricos do nicho, descrições escritas para o projeto, ficha técnica em tabela (`attributes`) e aplicações em etiquetas (`Product.applications`), 5 solicitações de exemplo em status variados (`src/presets/arca-inflaveis/quotes.ts`). Dados legais fictícios e textos marcados como de demonstração.
+- **Imagens:** não há fotos. As imagens são **ilustrações originais em SVG** (`public/images/presets/arca-inflaveis/`), na paleta do preset, porque nenhuma foto de licença comercial com crédito mostrava os produtos do nicho. Quando o cliente tiver fotos, elas entram no lugar. Detalhes em `IMAGE_CREDITS.md`.
+- **Estado salvo:** a versão do formato passou de 6 para 7 (lista e solicitações de orçamento). A migração aceita a v5 e a v6.
+
+### Como criar outro preset em orçamento
+
+Ligue `modules.orcamento`, desligue os módulos de venda, preencha `config.quote` (rótulo, gênero, botão, introdução, aplicações e WhatsApp), `policies.commercial` e `policies.defect`, e use `price: 0` nos produtos. Os testes genéricos de preset (16 a 20 produtos, pedidos, cupom, imagens com crédito) valem para presets de venda; os de orçamento estão em `src/presets/arca.test.ts`.
 
 ## Estado e persistência
 

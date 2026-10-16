@@ -3,8 +3,8 @@
 <rect width="800" height="600" fill="#E8F0F2"/>
 <rect x="0" y="400" width="800" height="200" fill="#CFE0C9"/>
 <rect x="0" y="360" width="800" height="50" fill="#DDE8D7"/>
-<rect x="110" y="250" width="580" height="190" rx="85" fill="#0F4C5C"/>
-<rect x="150" y="268" width="240" height="30" rx="14" fill="#FFFFFF" opacity="0.28"/>
-<circle cx="580" cy="300" r="24" fill="#F2B705"/>
-<path d="M40 360 V320 M60 360 V300 M80 360 V325 M720 360 V310 M742 360 V292 M764 360 V318" stroke="#7FA070" stroke-width="8" stroke-linecap="round"/>
+<rect x="200" y="260" width="400" height="170" rx="78" fill="#0F4C5C"/>
+<rect x="232" y="276" width="170" height="26" rx="14" fill="#FFFFFF" opacity="0.28"/>
+<circle cx="540" cy="318" r="22" fill="#F2B705"/>
+<path d="M170 360 V330 M190 360 V310 M210 360 V335 M590 360 V320 M610 360 V300 M630 360 V326" stroke="#7FA070" stroke-width="8" stroke-linecap="round"/>
 </svg>
