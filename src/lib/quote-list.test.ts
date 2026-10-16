@@ -114,14 +114,47 @@ describe("migração v8 → v9 da lista", () => {
       ],
       quotes: [],
     };
+    const antes = structuredClone(v8);
     const m = migrateState(v8, 8, arca.id);
+    expect(v8).toEqual(antes); // a migração não altera o estado de entrada
     expect(m.quoteList).toEqual([
       { id: "arc-004", productId: "arc-004", qty: 2, note: "Ensaio de 10 t", configurado: false },
       { id: "arc-007", productId: "arc-007", qty: 1, note: "", configurado: false },
     ]);
     expect(m.config!.name).toBe("Minha Arca");
     expect(m.config!.orcamentoBlocks?.ativos).toBe(true);
-    expect(m.products).toHaveLength(arca.products.length);
+    // produtos, categorias, solicitações e demais campos: exatamente os de antes
+    expect(m.products).toEqual(v8.products);
+    expect(m.categories).toEqual(v8.categories);
+    expect(m.quotes).toEqual(v8.quotes);
+    expect(m.orders).toEqual(v8.orders);
+    expect(m.presetId).toBe(v8.presetId);
+    // a config é a salva (com o que o cliente editou); só ganha as ferramentas
+    const { orcamentoBlocks: ferramentas, ...configMigrada } = m.config!;
+    expect(v8.config.orcamentoBlocks).toBeUndefined();
+    expect(configMigrada).toEqual(v8.config); // toEqual ignora o campo ausente/undefined
+    expect(ferramentas).toEqual(arca.config.orcamentoBlocks);
+  });
+
+  it("solicitações já enviadas na Arca (com protocolo e histórico) passam intactas, e o tema editado não volta ao padrão", () => {
+    const tema = { ...structuredClone(arca.config.theme), colors: { ...arca.config.theme.colors, primary: "#123456" } };
+    const v8 = {
+      presetId: arca.id,
+      config: { ...structuredClone(arca.config), theme: tema, orcamentoBlocks: undefined },
+      categories: arca.categories,
+      products: arca.products.slice(0, 3),
+      orders: [],
+      coupons: [],
+      cart: [],
+      checkout: { couponCode: null, cep: "", shippingId: null },
+      quoteList: [],
+      quotes: structuredClone(arca.quotes ?? []),
+    };
+    const m = migrateState(v8, 8, arca.id);
+    expect(m.quotes).toEqual(arca.quotes);
+    expect(m.quotes!.length).toBeGreaterThan(0);
+    expect(m.products).toHaveLength(3);
+    expect(m.config!.theme.colors.primary).toBe("#123456");
   });
 
   it("estado já no formato novo não muda; lixo vira lista vazia", () => {

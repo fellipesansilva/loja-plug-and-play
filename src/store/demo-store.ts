@@ -269,8 +269,9 @@ export function migrateState(persisted: unknown, version: number, presetId: stri
   const refreshedConfig = () => ({ ...structuredClone(current.config), name: saved.config!.name, theme: saved.config!.theme });
   let state: Partial<DemoData>;
   if (version === 8) {
-    // Loja de venda: o estado segue como está. Loja em orçamento: config nova (ferramentas), mantendo nome e tema editados.
-    state = quoteStore ? { ...saved, config: refreshedConfig() } : saved;
+    // Loja de venda: o estado segue como está. Loja em orçamento: só acrescenta as ferramentas (config.orcamentoBlocks) à config salva;
+    // produtos, categorias, solicitações e o que foi editado no painel ficam como estão.
+    state = quoteStore ? { ...saved, config: { ...saved.config, orcamentoBlocks: structuredClone(current.config.orcamentoBlocks) } } : saved;
   } else if (version === 7) {
     state = quoteStore
       ? { ...saved, config: refreshedConfig(), categories: structuredClone(current.categories), products: structuredClone(current.products) }

@@ -139,7 +139,6 @@ export function Dimensionador({ product }: { product: Product }) {
             <button
               type="button"
               onClick={adicionar}
-              aria-disabled={!valida}
               data-testid="dim-adicionar"
               className={`min-h-12 w-full rounded-button bg-primary px-lg font-bold text-background ${valida ? "" : "opacity-50"}`}
             >

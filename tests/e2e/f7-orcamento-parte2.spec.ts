@@ -159,13 +159,17 @@ test.describe("Parte 2 · dimensionador de reservatório", () => {
     await arca(page, "/produto/reservatorio-flexivel-fechado");
     const erros: string[] = [];
     page.on("pageerror", (e) => erros.push(e.message));
-    // o botão fica com aria-disabled (continua clicável, sem efeito): o Playwright exige force para clicar em aria-disabled
-    await expect(page.getByTestId("dim-adicionar")).toHaveAttribute("aria-disabled", "true");
-    await page.getByTestId("dim-adicionar").click({ force: true });
+    const lista = () => page.evaluate(() => JSON.stringify(window.__demoStore!.getState().quoteList));
+    const antes = await lista();
+    await page.getByTestId("dim-adicionar").click();
+    expect(await lista()).toBe(antes);
     await page.getByTestId("dim-consumo").fill("0");
     await expect(page.getByTestId("dim-resultado")).toContainText("Informe o consumo diário");
-    await page.getByTestId("dim-adicionar").click({ force: true });
-    expect(await page.evaluate(() => window.__demoStore!.getState().quoteList.length)).toBe(0);
+    await page.getByTestId("dim-adicionar").click();
+    expect(await lista()).toBe(antes);
+    await expect(page.getByTestId("dim-adicionar")).toHaveText("Adicionar sugestão ao orçamento");
+    await expect(page.getByTestId("dim-erro")).toHaveCount(0);
+    expect(JSON.parse(antes)).toEqual([]);
     expect(erros).toEqual([]);
   });
 
