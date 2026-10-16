@@ -91,6 +91,25 @@ test.describe("H4 · produtos", () => {
     await expect(page.locator(`[data-product-id="${created.id}"]`)).toHaveCount(1);
   });
 
+  test("ao salvar um produto novo, a tela de edição mostra 'Produto criado' (região ao vivo) e o aviso some sozinho", async ({ page }) => {
+    await ready(page, "/painel/produtos/novo");
+    const notice = page.getByTestId("created-notice");
+    await expect(notice).toHaveAttribute("role", "status");
+    await expect(notice).toHaveAttribute("aria-live", "polite");
+    await expect(notice).toHaveText(""); // a região já existe, vazia, antes de salvar
+    await fillBase(page, { name: "Produto Aviso", price: "9,90", sku: "AVISO-001", stock: "2" });
+    await pickPresetImage(page);
+    await save(page);
+    await expect(page).toHaveURL(/\/painel\/produtos\/np-/);
+    await expect(notice).toHaveText("Produto criado");
+    await expect(notice).toBeVisible();
+    await expect(notice).toHaveText("", { timeout: 9000 }); // some sozinho
+    // editar e salvar de novo não repete a mensagem de criação
+    await save(page);
+    await expect(page.getByTestId("saved-ok")).toBeVisible();
+    await expect(notice).toHaveText("");
+  });
+
   test("edita o preço e a loja mostra o novo valor; estoque zero aparece como esgotado", async ({ page }) => {
     await ready(page, "/painel/produtos");
     const target = await page.evaluate(() => {

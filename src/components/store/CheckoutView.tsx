@@ -172,6 +172,9 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
   const orders = useDemoStore((s) => s.orders);
   const placeOrder = useDemoStore((s) => s.placeOrder);
   const { config, allDigital, selected, checkout } = pricing;
+  const words = useCartWords();
+  const blockedItems = pricing.blockers.map((l) => `${l.product.name} (${l.availability.status === "short" ? words.only(l.availability.left) : words.unavailable})`);
+  const blocked = blockedItems.length > 0;
 
   const steps: Step[] = allDigital ? ["id", "payment"] : ["id", "delivery", "payment"];
   const [step, setStep] = useState<Step>("id");
@@ -243,6 +246,7 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
 
   function finish(e: FormEvent) {
     e.preventDefault();
+    if (blocked) return; // item indisponível: não finaliza
     const id = nextOrderId(config.orderPrefix ?? "PD", orders);
     let payment: Order["payment"];
 
@@ -455,7 +459,15 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
               </div>
             )}
 
-            <button type="submit" className={buttonPrimary} data-testid="finish">
+            {blocked && (
+              <p role="alert" id="finish-blocked" data-testid="checkout-unavailable" className="rounded-md border border-danger p-sm text-sm font-medium text-danger">
+                {words.blocked(blockedItems)}{" "}
+                <Link href="/carrinho" className="font-bold underline">
+                  {words.back}
+                </Link>
+              </p>
+            )}
+            <button type="submit" className={`${buttonPrimary} disabled:opacity-50`} data-testid="finish" disabled={blocked} aria-describedby={blocked ? "finish-blocked" : undefined}>
               Finalizar pedido · {formatBRL(totals.total)}
             </button>
             <button type="button" className={buttonGhost} onClick={() => setStep(steps[steps.length - 2])}>

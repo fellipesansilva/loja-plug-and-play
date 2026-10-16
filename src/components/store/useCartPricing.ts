@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Money } from "@/domain/types";
-import { cartIsAllDigital, physicalSubtotal, resolveLines } from "@/lib/cart";
+import { cartBlockers, cartIsAllDigital, physicalSubtotal, resolveLines } from "@/lib/cart";
 import { applyCoupon } from "@/lib/coupon";
 import { quoteShipping, type ShippingQuote } from "@/lib/shipping";
 import { computeTotals, type PaymentMethod } from "@/lib/totals";
@@ -26,6 +26,7 @@ export function useCartPricing() {
   const config = useDemoStore((s) => s.config);
 
   const lines = useMemo(() => resolveLines(cart, products), [cart, products]);
+  const blockers = cartBlockers(lines);
   const subtotal = lines.reduce((sum, l) => sum + l.total, 0);
   const physical = physicalSubtotal(lines);
   const allDigital = cartIsAllDigital(lines);
@@ -73,8 +74,10 @@ export function useCartPricing() {
     quote,
     pickupAvailable,
     selected,
-    /** Pode seguir para o checkout: carrinho com itens e entrega escolhida (dispensada só para carrinho 100% digital). */
-    canContinue: lines.length > 0 && (allDigital || selected !== null),
+    /** Itens indisponíveis ou com estoque menor que a quantidade: o checkout não finaliza enquanto houver. */
+    blockers,
+    /** Pode seguir para o checkout: carrinho com itens, sem item indisponível e entrega escolhida (dispensada só para carrinho 100% digital). */
+    canContinue: lines.length > 0 && blockers.length === 0 && (allDigital || selected !== null),
     totalsFor,
     config,
   };

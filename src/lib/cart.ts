@@ -1,6 +1,6 @@
 import type { Addon, CartLine, Money, Product } from "@/domain/types";
 import { variantText } from "./item-name";
-import { availableStock, isDigital } from "./product";
+import { availableStock, isDigital, isListed } from "./product";
 
 /** Identificador da combinação produto + variante + adicionais (a ordem dos adicionais não importa). */
 export function makeLineId(productId: string, variantId: string | undefined, addonIds: string[]): string {
@@ -85,6 +85,14 @@ export function addLine(cart: CartLine[], products: Product[], input: AddToCartI
   return current > 0 ? cart.map((l) => (l.lineId === lineId ? line : l)) : [...cart, line];
 }
 
+/**
+ * Situação de uma linha frente ao catálogo de agora:
+ * - `unavailable`: o produto (ou a variação) foi inativado/removido, ou o estoque acabou;
+ * - `short`: o estoque não cobre a quantidade pedida (`left` unidades ainda disponíveis);
+ * - `ok`.
+ */
+export type Availability = { status: "ok" } | { status: "unavailable" } | { status: "short"; left: number };
+
 /** Linha do carrinho com o produto, a variante e os preços já resolvidos. */
 export type ResolvedLine = {
   line: CartLine;
@@ -96,6 +104,7 @@ export type ResolvedLine = {
   /** Máximo que o seletor de quantidade permite (estoque da variante menos o das outras linhas do mesmo item). */
   maxQty: number;
   digital: boolean;
+  availability: Availability;
 };
 
 const MAX_QTY = 99;
@@ -109,6 +118,14 @@ export function resolveLines(cart: CartLine[], products: Product[]): ResolvedLin
       .filter((l) => l.lineId !== line.lineId && l.productId === line.productId && l.variantId === line.variantId)
       .reduce((s, l) => s + l.qty, 0);
     const stock = availableStock(product, line.variantId);
+    const left = stock - others;
+    const missingVariant = !!line.variantId && !variant;
+    const availability: Availability =
+      !isListed(product) || missingVariant || left <= 0
+        ? { status: "unavailable" }
+        : line.qty > left
+          ? { status: "short", left }
+          : { status: "ok" };
     return [
       {
         line,
@@ -119,9 +136,15 @@ export function resolveLines(cart: CartLine[], products: Product[]): ResolvedLin
         total: lineTotal(product, line),
         maxQty: Math.max(1, Math.min(MAX_QTY, stock - others)),
         digital: isDigital(product),
+        availability,
       },
     ];
   });
+}
+
+/** Linhas que impedem de finalizar: indisponíveis ou com estoque menor que a quantidade. */
+export function cartBlockers(lines: ResolvedLine[]): ResolvedLine[] {
+  return lines.filter((l) => l.availability.status !== "ok");
 }
 
 /** Carrinho só com produtos digitais (e com itens): não tem entrega nem frete. */

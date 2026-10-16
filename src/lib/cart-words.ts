@@ -16,6 +16,12 @@ export type CartWords = {
   back: string;
   /** "Seu carrinho está vazio" / "Sua sacola está vazia". */
   empty: string;
+  /** Aviso na linha do item sem estoque ou inativo. */
+  unavailable: string;
+  /** "Só restam 2". */
+  only: (left: number) => string;
+  /** "Para finalizar, resolva no carrinho: X (Indisponível), Y (Só restam 2)." */
+  blocked: (items: string[]) => string;
 };
 
 /** Textos do carrinho a partir do rótulo e do gênero definidos no preset (nada de "carrinho" fixo no código). */
@@ -34,5 +40,8 @@ export function cartWords(label: string = "Carrinho", gender: "m" | "f" = "m"): 
     view: `Ver ${lower}`,
     back: `Voltar para ${the}`,
     empty: f ? `Sua ${lower} está vazia` : `Seu ${lower} está vazio`,
+    unavailable: "Indisponível",
+    only: (left) => `Só ${left === 1 ? "resta" : "restam"} ${left}`,
+    blocked: (items) => `Para finalizar, resolva ${f ? "na" : "no"} ${lower}: ${items.join("; ")}.`,
   };
 }

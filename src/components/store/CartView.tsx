@@ -195,6 +195,7 @@ export function CartView() {
   const words = useCartWords();
   const label = words.name;
   const { lines } = pricing;
+  const blockedItems = pricing.blockers.map((l) => `${l.product.name} (${l.availability.status === "short" ? words.only(l.availability.left) : words.unavailable})`);
 
   if (lines.length === 0) {
     return (
@@ -233,7 +234,7 @@ export function CartView() {
       <div className="mt-md flex flex-col gap-lg md:grid md:grid-cols-[1fr_22rem] md:items-start">
         <div className="flex flex-col gap-md">
           <ul className="flex flex-col gap-sm" aria-label="Itens">
-            {lines.map(({ line, product, variantLabel, addons, unit, total, maxQty }) => (
+            {lines.map(({ line, product, variantLabel, addons, unit, total, maxQty, availability }) => (
               <li
                 key={line.lineId}
                 data-testid="cart-line"
@@ -249,6 +250,21 @@ export function CartView() {
                   {variantLabel && <p className="text-sm text-muted">{variantLabel}</p>}
                   {addons.length > 0 && <p className="text-sm text-muted">+ {addons.map((a) => a.label).join(", ")}</p>}
                   <p className="mt-xs text-sm text-muted">{formatBRL(unit)} cada</p>
+                  {availability.status !== "ok" && (
+                    <p role="alert" data-testid="line-unavailable" className="mt-xs text-sm font-bold text-danger">
+                      {availability.status === "unavailable" ? words.unavailable : words.only(availability.left)}
+                    </p>
+                  )}
+                  {availability.status === "short" && (
+                    <button
+                      type="button"
+                      data-testid="line-adjust"
+                      onClick={() => setLineQty(line.lineId, availability.left)}
+                      className="mt-xs inline-flex min-h-11 items-center text-sm font-bold underline"
+                    >
+                      Ajustar para {availability.left}
+                    </button>
+                  )}
                   <div className="mt-sm flex flex-wrap items-center justify-between gap-sm">
                     <div className="flex items-center gap-xs" role="group" aria-label={`Quantidade de ${product.name}`}>
                       <button
@@ -339,7 +355,9 @@ export function CartView() {
               >
                 Continuar
               </button>
-              <p className="mt-sm text-sm text-muted">Escolha a forma de entrega para continuar.</p>
+              <p className="mt-sm text-sm text-muted" data-testid="cart-blocked-note">
+                {pricing.blockers.length > 0 ? words.blocked(blockedItems) : "Escolha a forma de entrega para continuar."}
+              </p>
             </>
           )}
         </aside>

@@ -30,6 +30,10 @@ const field = "mt-xs h-11 w-full rounded-md border bg-surface px-md text-base";
 
 const Input = FormField;
 
+/** Id do produto recém-criado: a tela de edição (outra rota) mostra "Produto criado" uma vez. */
+let justCreatedId: string | null = null;
+const CREATED_NOTICE_MS = 5000;
+
 /** Tela de produto do painel: "novo" (sem id) ou edição. Só monta o formulário depois de ler o estado salvo da loja. */
 export function ProductEditor({ productId }: { productId?: string }) {
   const hydrated = useHydrated();
@@ -90,6 +94,20 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
   const [imageNote, setImageNote] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [focusTick, setFocusTick] = useState(0);
+  // Aviso "Produto criado": a região ao vivo já está na tela quando o texto entra (é assim que o leitor de tela anuncia) e some sozinha.
+  const [createdNotice, setCreatedNotice] = useState("");
+  useEffect(() => {
+    if (!editingId || justCreatedId !== editingId) return;
+    const show = setTimeout(() => setCreatedNotice("Produto criado"), 50);
+    const hide = setTimeout(() => {
+      setCreatedNotice("");
+      justCreatedId = null;
+    }, CREATED_NOTICE_MS);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [editingId]);
 
   // foco no primeiro campo com erro, na ordem da tela (depois de o erro estar no DOM)
   useEffect(() => {
@@ -116,7 +134,10 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
     saveProduct(product);
     // o navegador recusa gravar quando o armazenamento enche: o produto vale até recarregar e avisamos
     setSaved(safeStorage.hasWriteFailed() ? "full" : "ok");
-    if (!editingId) router.replace(`/painel/produtos/${product.id}`);
+    if (!editingId) {
+      justCreatedId = product.id;
+      router.replace(`/painel/produtos/${product.id}`);
+    }
   }
 
   function onFiles(files: FileList | null) {
@@ -153,6 +174,9 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
 
   return (
     <form ref={formRef} noValidate onSubmit={submit} className="mt-md flex max-w-[44rem] flex-col gap-md" data-testid="product-form" aria-label="Dados do produto">
+      <p role="status" aria-live="polite" data-testid="created-notice" className={createdNotice ? "rounded-md border border-success p-sm text-sm font-bold text-success" : "sr-only"}>
+        {createdNotice}
+      </p>
       {Object.keys(errors).length > 0 && (
         <p role="alert" className="rounded-md border border-danger p-sm text-sm font-medium text-danger" data-testid="form-errors">
           Corrija os campos destacados para salvar.
