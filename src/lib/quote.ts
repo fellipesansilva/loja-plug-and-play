@@ -15,12 +15,12 @@ export function clampNote(note: string): string {
   return note.slice(0, QUOTE_NOTE_MAX);
 }
 
-/** Adiciona o produto à lista (soma a quantidade se já estiver) ou devolve a mesma lista se a quantidade for inválida. */
+/** Adiciona o produto à lista (soma a quantidade se já estiver) ou devolve a mesma lista se a quantidade for inválida. Itens configurados não entram na soma. */
 export function addToList(list: QuoteListItem[], productId: string, qty = 1): QuoteListItem[] {
   const n = clampQty(qty);
-  const existing = list.find((i) => i.productId === productId);
-  if (existing) return list.map((i) => (i.productId === productId ? { ...i, qty: clampQty(i.qty + n) } : i));
-  return [...list, { productId, qty: n, note: "" }];
+  const existing = list.find((i) => i.id === productId && !i.configurado);
+  if (existing) return list.map((i) => (i === existing ? { ...i, qty: clampQty(i.qty + n) } : i));
+  return [...list, { id: productId, productId, qty: n, note: "", configurado: false }];
 }
 
 /** Protocolo simulado: ORC-AAAAMMDD-XXXXX (data do envio + 5 caracteres; não repete um protocolo já usado). */

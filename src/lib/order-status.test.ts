@@ -93,8 +93,8 @@ describe("store: mudança de status", () => {
 });
 
 describe("migração do estado salvo (v5 → v6)", () => {
-  it("a versão do formato subiu para 8", () => {
-    expect(STORAGE_VERSION).toBe(8);
+  it("a versão do formato subiu para 9", () => {
+    expect(STORAGE_VERSION).toBe(9);
   });
 
   it("mantém os pedidos (e ganham histórico), o carrinho e o catálogo; config volta a ser a do preset, com nome e tema editados", () => {
@@ -132,9 +132,9 @@ describe("migração do estado salvo (v5 → v6)", () => {
     expect(m.config!.name).toBe("Minha Arca");
     expect(m.config!.sectors).toHaveLength(6);
     expect(m.products).toHaveLength(arca.products.length);
-    expect(m.quoteList).toEqual(old.quoteList);
+    expect(m.quoteList).toEqual([{ id: "arc-004", productId: "arc-004", qty: 2, note: "", configurado: false }]);
     const sales = { presetId: forno.id, config: forno.config, products: forno.products.slice(0, 2) };
-    expect(migrateState(sales, 7, forno.id)).toBe(sales);
+    expect(migrateState(sales, 7, forno.id)).toEqual({ ...sales, quoteList: [] });
   });
 
   it("formato que não dá para aproveitar (outra versão, outro preset, vazio) é descartado", () => {

@@ -118,6 +118,32 @@ export const config: StoreConfig = {
       ctaHref: "/orcamento",
     },
   ],
+  // Ferramentas do orçamento na página do produto. Tudo daqui: nada de capacidade, paleta ou limite no componente.
+  orcamentoBlocks: {
+    ativos: true,
+    porticoConfigurador: {
+      alvoProduto: "arc-007",
+      textoMax: 22,
+      textoExemplo: "Sua marca",
+      medidas: "6 × 4 m",
+      // a confirmar com a Medilona: paleta da Arca (azul-petróleo e amarelo da marca, mais uma neutra)
+      paleta: [
+        { id: "petroleo", nome: "Azul-petróleo", valor: "#0f4c5c" },
+        { id: "amarelo", nome: "Amarelo", valor: "#f2b705" },
+        { id: "cinza", nome: "Cinza", valor: "#566b72" },
+      ],
+    },
+    dimensionador: {
+      // a confirmar com a Medilona: capacidades (litros) de cada linha
+      fechado: { produto: "arc-001", capacidades: [1000, 5000, 10000, 20000] },
+      // a confirmar com a Medilona
+      aberto: { produto: "arc-002", capacidades: [5000, 10000, 20000] },
+      diasMin: 1,
+      diasMax: 15,
+      unidadeConsumo: "L/dia",
+      fallbackAcimaDoMaior: "projeto-sob-medida",
+    },
+  },
   needs,
   sectors,
   cases,

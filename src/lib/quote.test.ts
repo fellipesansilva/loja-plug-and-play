@@ -15,8 +15,8 @@ describe("lista de orçamento", () => {
     list = addToList(list, "b", 3);
     list = addToList(list, "a", 2);
     expect(list).toEqual([
-      { productId: "a", qty: 3, note: "" },
-      { productId: "b", qty: 3, note: "" },
+      { id: "a", productId: "a", qty: 3, note: "", configurado: false },
+      { id: "b", productId: "b", qty: 3, note: "", configurado: false },
     ]);
     expect(clampQty(0)).toBe(1);
     expect(clampQty(-4)).toBe(1);
@@ -121,8 +121,8 @@ describe("store em orçamento", () => {
     s.getState().setQuoteQty(other.id, 5);
     s.getState().setQuoteNote(product.id, "x".repeat(900));
     expect(s.getState().quoteList).toEqual([
-      { productId: product.id, qty: 3, note: "x".repeat(500) },
-      { productId: other.id, qty: 5, note: "" },
+      { id: product.id, productId: product.id, qty: 3, note: "x".repeat(500), configurado: false },
+      { id: other.id, productId: other.id, qty: 5, note: "", configurado: false },
     ]);
     s.getState().removeFromQuote(product.id);
     expect(s.getState().quoteList.map((i) => i.productId)).toEqual([other.id]);

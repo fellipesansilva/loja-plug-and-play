@@ -21,6 +21,7 @@ import type {
 import { getPreset } from "@/presets";
 import { applyStatus, isValidTransition, withHistory } from "@/lib/order-status";
 import { addToList, clampNote, clampQty, makeProtocol } from "@/lib/quote";
+import { addConfiguredToList, normalizeQuoteList } from "@/lib/quote-list";
 import { applyQuoteStatus, isValidQuoteTransition } from "@/lib/quote-status";
 import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
@@ -66,9 +67,12 @@ type DemoActions = {
   setOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => void;
   /** Modo orçamento: lista de orçamento do visitante. */
   addToQuote: (productId: string, qty?: number) => void;
-  setQuoteQty: (productId: string, qty: number) => void;
-  setQuoteNote: (productId: string, note: string) => void;
-  removeFromQuote: (productId: string) => void;
+  /** Item configurado (pórtico com a marca, reservatório dimensionado). Observação acima de 500 caracteres: recusa e devolve a mensagem. */
+  addConfiguredToQuote: (productId: string, note: string, qty?: number) => { ok: true } | { ok: false; error: string };
+  /** `id` é o da linha da lista: o do produto nos itens comuns, "<produto>#n" nos configurados. */
+  setQuoteQty: (id: string, qty: number) => void;
+  setQuoteNote: (id: string, note: string) => void;
+  removeFromQuote: (id: string) => void;
   /** Envia a lista: gera o protocolo, grava a solicitação (itens + contato), esvazia a lista e devolve a solicitação. Lista vazia: null. */
   submitQuote: (contact: QuoteContact, now?: Date) => QuoteRequest | null;
   /** Mudança de status de uma solicitação (só a próxima etapa ou "perdido" permitido). Devolve se mudou. */
@@ -155,11 +159,15 @@ export function createDemoStore(presetId: string) {
         return true;
       },
       addToQuote: (productId, qty = 1) => set((s) => ({ quoteList: addToList(s.quoteList, productId, qty) })),
-      setQuoteQty: (productId, qty) =>
-        set((s) => ({ quoteList: s.quoteList.map((i) => (i.productId === productId ? { ...i, qty: clampQty(qty) } : i)) })),
-      setQuoteNote: (productId, note) =>
-        set((s) => ({ quoteList: s.quoteList.map((i) => (i.productId === productId ? { ...i, note: clampNote(note) } : i)) })),
-      removeFromQuote: (productId) => set((s) => ({ quoteList: s.quoteList.filter((i) => i.productId !== productId) })),
+      addConfiguredToQuote: (productId, note, qty = 1) => {
+        const r = addConfiguredToList(get().quoteList, productId, note, qty);
+        if (!r.ok) return { ok: false, error: r.error };
+        set({ quoteList: r.list });
+        return { ok: true };
+      },
+      setQuoteQty: (id, qty) => set((s) => ({ quoteList: s.quoteList.map((i) => (i.id === id ? { ...i, qty: clampQty(qty) } : i)) })),
+      setQuoteNote: (id, note) => set((s) => ({ quoteList: s.quoteList.map((i) => (i.id === id ? { ...i, note: clampNote(note) } : i)) })),
+      removeFromQuote: (id) => set((s) => ({ quoteList: s.quoteList.filter((i) => i.id !== id) })),
       submitQuote: (contact, now = new Date()) => {
         const { quoteList, products, quotes } = get();
         const items = quoteList.flatMap((i) => {
@@ -248,28 +256,34 @@ export function useDemoStore<T>(selector: (state: DemoState) => T): T {
   return useStore(useDemoStoreApi(), selector);
 }
 
-/** Migração do estado salvo (exportada para teste). Devolve {} para formatos que não dá para aproveitar. */
+/**
+ * Migração do estado salvo (exportada para teste). Devolve {} para formatos que não dá para aproveitar.
+ * v5/v6 → v7: histórico dos pedidos, lista e solicitações de orçamento. v7 → v8: blocos de segmento e produtos novos da loja em orçamento.
+ * v8 → v9: ferramentas do orçamento (config.orcamentoBlocks) e itens da lista com `id` e `configurado` (id = productId, configurado = false).
+ */
 export function migrateState(persisted: unknown, version: number, presetId: string): Partial<DemoData> {
   const saved = persisted as Partial<DemoData> | undefined;
-  if (version === 7 && saved && saved.presetId === presetId && saved.config) {
-    // v8: blocos de segmento (necessidades, setores, cases) e produtos novos da loja em orçamento. Loja de venda: o estado segue como está.
-    const current = getPreset(presetId)!;
-    if (current.config.modules.orcamento?.enabled !== true) return saved;
-    return {
+  if (!saved || saved.presetId !== presetId || !saved.config) return {};
+  const current = getPreset(presetId)!;
+  const quoteStore = current.config.modules.orcamento?.enabled === true;
+  const refreshedConfig = () => ({ ...structuredClone(current.config), name: saved.config!.name, theme: saved.config!.theme });
+  let state: Partial<DemoData>;
+  if (version === 8) {
+    // Loja de venda: o estado segue como está. Loja em orçamento: config nova (ferramentas), mantendo nome e tema editados.
+    state = quoteStore ? { ...saved, config: refreshedConfig() } : saved;
+  } else if (version === 7) {
+    state = quoteStore
+      ? { ...saved, config: refreshedConfig(), categories: structuredClone(current.categories), products: structuredClone(current.products) }
+      : saved;
+  } else if (version === 5 || version === 6) {
+    state = {
       ...saved,
-      config: { ...structuredClone(current.config), name: saved.config.name, theme: saved.config.theme },
-      categories: structuredClone(current.categories),
-      products: structuredClone(current.products),
+      config: refreshedConfig(),
+      orders: (saved.orders ?? []).map(withHistory),
+      quotes: saved.quotes ?? structuredClone(current.quotes ?? []),
     };
+  } else {
+    return {};
   }
-  if ((version !== 5 && version !== 6) || !saved || saved.presetId !== presetId || !saved.config) return {};
-  const fresh = getPreset(presetId)!;
-  return {
-    ...saved,
-    config: { ...structuredClone(fresh.config), name: saved.config.name, theme: saved.config.theme },
-    orders: (saved.orders ?? []).map(withHistory),
-    // v7: modo orçamento (lista e solicitações). Lojas de venda não usam, mas o estado salvo passa a tê-los.
-    quoteList: saved.quoteList ?? [],
-    quotes: saved.quotes ?? structuredClone(fresh.quotes ?? []),
-  };
+  return { ...state, quoteList: normalizeQuoteList(state.quoteList) };
 }

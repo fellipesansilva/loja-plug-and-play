@@ -129,6 +129,44 @@ export function validatePreset(preset: Preset): string[] {
     need((x.benefits?.length ?? 0) <= 3, `products.${x.id}.benefits`, "no máximo 3 benefícios");
   }
 
+  // Ferramentas do orçamento (configurador de pórtico e dimensionador): só em loja em orçamento, com produtos e valores válidos.
+  const ob = cfg.orcamentoBlocks;
+  if (ob) {
+    need(!ob.ativos || quoteMode, "config.orcamentoBlocks", "as ferramentas do orçamento só existem em loja em orçamento (modules.orcamento)");
+    const pc = ob.porticoConfigurador;
+    if (pc) {
+      need(productIds.has(pc.alvoProduto), "config.orcamentoBlocks.porticoConfigurador.alvoProduto", "produto inexistente");
+      need(Number.isInteger(pc.textoMax) && pc.textoMax >= 1 && pc.textoMax <= 100, "config.orcamentoBlocks.porticoConfigurador.textoMax", "informe um limite inteiro de 1 a 100");
+      need(filled(pc.medidas) && filled(pc.textoExemplo), "config.orcamentoBlocks.porticoConfigurador", "informe medidas e textoExemplo");
+      need(pc.textoExemplo.length <= pc.textoMax, "config.orcamentoBlocks.porticoConfigurador.textoExemplo", "o texto de exemplo não pode passar de textoMax");
+      const ids = pc.paleta.map((c) => c.id);
+      need(
+        pc.paleta.length >= 2 && new Set(ids).size === ids.length && pc.paleta.every((c) => filled(c.id) && filled(c.nome) && /^#[0-9a-fA-F]{6}$/.test(c.valor)),
+        "config.orcamentoBlocks.porticoConfigurador.paleta",
+        "informe 2 ou mais cores com id único, nome e valor #rrggbb",
+      );
+    }
+    const d = ob.dimensionador;
+    if (d) {
+      for (const tipo of ["fechado", "aberto"] as const) {
+        const linha = d[tipo];
+        need(productIds.has(linha.produto), `config.orcamentoBlocks.dimensionador.${tipo}.produto`, "produto inexistente");
+        const caps = linha.capacidades;
+        need(
+          caps.length > 0 && caps.every((c, i) => Number.isInteger(c) && c > 0 && (i === 0 || c > caps[i - 1])),
+          `config.orcamentoBlocks.dimensionador.${tipo}.capacidades`,
+          "informe litros inteiros, positivos e em ordem crescente",
+        );
+      }
+      need(
+        Number.isInteger(d.diasMin) && Number.isInteger(d.diasMax) && d.diasMin >= 1 && d.diasMax > d.diasMin,
+        "config.orcamentoBlocks.dimensionador.dias",
+        "diasMin e diasMax inteiros, com diasMin >= 1 e diasMax maior",
+      );
+      need(filled(d.unidadeConsumo), "config.orcamentoBlocks.dimensionador.unidadeConsumo", "informe a unidade (ex.: L/dia)");
+    }
+  }
+
   return problems;
 }
 

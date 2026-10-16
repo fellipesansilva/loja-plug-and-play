@@ -78,8 +78,11 @@ export function QuoteListView() {
       <p className="mt-xs max-w-[40rem] text-muted">{intro}</p>
 
       <ul className="mt-md flex flex-col gap-sm" aria-label="Itens" data-testid="quote-lines">
-        {lines.map(({ item, product }) => (
-          <li key={product.id} data-testid="quote-line" data-product-id={product.id} className="flex gap-3 rounded-lg border border-border bg-surface p-3">
+        {lines.map(({ item, product }) => {
+          // Itens configurados do mesmo produto têm o mesmo nome: o número da configuração (id "<produto>#n") separa os rótulos.
+          const label = item.configurado ? `${product.name} (configuração ${item.id.split("#")[1] ?? "1"})` : product.name;
+          return (
+          <li key={item.id} data-testid="quote-line" data-product-id={product.id} data-line-id={item.id} data-configurado={item.configurado || undefined} className="flex gap-3 rounded-lg border border-border bg-surface p-3">
             <Link href={`/produto/${product.slug}`} className="relative block size-20 shrink-0 overflow-hidden rounded-md bg-border">
               <StoreImage image={product.images[0]} sizes="80px" />
             </Link>
@@ -89,8 +92,8 @@ export function QuoteListView() {
               </Link>
               <p className="text-sm text-muted">SKU: {product.sku}</p>
 
-              <div className="mt-sm flex items-center gap-xs" role="group" aria-label={`Quantidade de ${product.name}`}>
-                <button type="button" aria-label={`Diminuir quantidade de ${product.name}`} disabled={item.qty <= 1} onClick={() => setQuoteQty(product.id, item.qty - 1)} className={stepper}>
+              <div className="mt-sm flex items-center gap-xs" role="group" aria-label={`Quantidade de ${label}`}>
+                <button type="button" aria-label={`Diminuir quantidade de ${label}`} disabled={item.qty <= 1} onClick={() => setQuoteQty(item.id, item.qty - 1)} className={stepper}>
                   <MinusIcon />
                 </button>
                 <input
@@ -99,27 +102,27 @@ export function QuoteListView() {
                   min={1}
                   max={QUOTE_MAX_QTY}
                   value={item.qty}
-                  aria-label={`Quantidade de ${product.name} (número)`}
+                  aria-label={`Quantidade de ${label} (número)`}
                   data-testid="quote-line-qty"
-                  onChange={(e) => setQuoteQty(product.id, clampQty(Number(e.target.value)))}
+                  onChange={(e) => setQuoteQty(item.id, clampQty(Number(e.target.value)))}
                   className="h-11 w-20 rounded-md border border-border bg-background text-center text-base font-extrabold"
                 />
-                <button type="button" aria-label={`Aumentar quantidade de ${product.name}`} disabled={item.qty >= QUOTE_MAX_QTY} onClick={() => setQuoteQty(product.id, item.qty + 1)} className={stepper}>
+                <button type="button" aria-label={`Aumentar quantidade de ${label}`} disabled={item.qty >= QUOTE_MAX_QTY} onClick={() => setQuoteQty(item.id, item.qty + 1)} className={stepper}>
                   <PlusIcon />
                 </button>
               </div>
 
               <div className="mt-sm">
-                <label htmlFor={`nota-${product.id}`} className="text-sm font-bold">
-                  Observações de {product.name}
+                <label htmlFor={`nota-${item.id}`} className="text-sm font-bold">
+                  Observações de {label}
                 </label>
                 <textarea
-                  id={`nota-${product.id}`}
+                  id={`nota-${item.id}`}
                   rows={2}
                   maxLength={QUOTE_NOTE_MAX}
                   value={item.note}
                   placeholder="Medidas, cor, aplicação…"
-                  onChange={(e) => setQuoteNote(product.id, e.target.value)}
+                  onChange={(e) => setQuoteNote(item.id, e.target.value)}
                   data-testid="quote-line-note"
                   className="mt-xs w-full rounded-md border border-border bg-background p-sm text-base"
                 />
@@ -130,15 +133,16 @@ export function QuoteListView() {
 
               <button
                 type="button"
-                onClick={() => removeFromQuote(product.id)}
-                aria-label={`Remover ${product.name}`}
+                onClick={() => removeFromQuote(item.id)}
+                aria-label={`Remover ${label}`}
                 className="inline-flex min-h-11 items-center text-sm text-muted underline"
               >
                 Remover
               </button>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <QuoteForm
