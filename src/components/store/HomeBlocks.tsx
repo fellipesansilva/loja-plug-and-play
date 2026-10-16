@@ -173,7 +173,7 @@ function FeaturedBlock({ block }: { block: BlockOf<"featured"> }) {
         </Link>
       </div>
       <div className="mt-md">
-        <ProductGrid products={items} />
+        <ProductGrid products={items} defer={block.deferImages} />
       </div>
     </section>
   );

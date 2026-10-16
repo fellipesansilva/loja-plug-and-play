@@ -121,6 +121,8 @@ export type HomeBlock =
       linkLabel: string;
       linkHref: string;
       productIds: string[];
+      /** Imagens dos cards só são baixadas perto da janela (para blocos abaixo da primeira tela; poupa banda para o LCP). */
+      deferImages?: boolean;
     }
   /** Entrada por necessidade (usa `config.needs`: cada necessidade leva a uma página com os produtos dela). */
   | { id: string; type: "needs"; enabled: boolean; tone?: Tone; eyebrow?: string; title: string }

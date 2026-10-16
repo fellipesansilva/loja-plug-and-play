@@ -52,6 +52,7 @@ export const config: StoreConfig = {
       type: "featured",
       enabled: true,
       title: "Mais pedidos",
+      deferImages: true,
       linkLabel: "Ver todos os produtos",
       linkHref: "/categoria/industria-e-agro",
       productIds: ["arc-001", "arc-004", "arc-007", "arc-006"],

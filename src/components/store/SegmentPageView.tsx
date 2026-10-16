@@ -76,7 +76,7 @@ export function SegmentPageView({ kind, slug }: { kind: keyof typeof KIND; slug:
           {copy.productsTitle}
         </h2>
         <div className="mt-md">
-          <ProductGrid products={products} />
+          <ProductGrid products={products} defer />
         </div>
       </section>
 

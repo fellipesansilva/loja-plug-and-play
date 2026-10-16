@@ -56,7 +56,7 @@ function PhotoTile({
 }) {
   return (
     <Link href={href} className={`group relative block overflow-hidden rounded-md bg-primary ${ratio} ${focusRing}`}>
-      <StoreImage image={image} sizes={sizes} className="object-cover transition-transform duration-300 group-hover:scale-105" />
+      <StoreImage image={image} sizes={sizes} defer className="object-cover transition-transform duration-300 group-hover:scale-105" />
       <span className="scrim-bottom absolute inset-0" aria-hidden="true" />
       <span className="absolute inset-x-0 bottom-0 flex flex-col gap-xs p-md text-background">
         <span className="font-heading text-2xl font-bold uppercase leading-none md:text-3xl">{label}</span>
@@ -154,7 +154,7 @@ export function CaseCard({ item }: { item: CaseStudy }) {
   return (
     <article data-testid="case-card" className="flex flex-col overflow-hidden rounded-md bg-surface">
       <div className="relative aspect-[4/3] bg-primary">
-        <StoreImage image={item.image} sizes="(min-width: 1024px) 330px, 100vw" />
+        <StoreImage image={item.image} sizes="(min-width: 1024px) 330px, 100vw" defer />
       </div>
       <div className="flex flex-1 flex-col gap-xs p-md">
         <p className="text-xs font-bold uppercase tracking-widest text-primary">{item.city}</p>

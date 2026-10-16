@@ -14,7 +14,7 @@ import { StoreImage } from "./StoreImage";
 
 const CARD_SIZES = "(min-width: 768px) 25vw, 50vw";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, defer = false }: { product: Product; defer?: boolean }) {
   const defs = useDemoStore((s) => s.config.attributeDefs);
   const quote = useQuoteMode();
   // Loja em orçamento: sem preço, parcelas, Pix nem "esgotado" (tudo é sob encomenda).
@@ -27,7 +27,7 @@ export function ProductCard({ product }: { product: Product }) {
     <li data-testid="product-card">
       <Link href={`/produto/${product.slug}`} className="group block">
         <div className="relative aspect-product overflow-hidden rounded-md border border-border bg-surface">
-          <StoreImage image={product.images[0]} sizes={CARD_SIZES} />
+          <StoreImage image={product.images[0]} sizes={CARD_SIZES} defer={defer} />
           {soldOut && (
             <span className="absolute left-sm top-sm rounded-sm bg-text px-sm py-xs text-xs font-bold text-background">
               Esgotado
@@ -62,7 +62,7 @@ export function ProductCard({ product }: { product: Product }) {
 }
 
 /** Listagem de produtos no formato escolhido pelo preset (config.layout.listing): grade de cards ou cardápio. */
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({ products, defer = false }: { products: Product[]; defer?: boolean }) {
   const listing = useDemoStore((s) => s.config.layout.listing);
   if (listing === "menu") {
     return (
@@ -82,7 +82,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
       data-cols={cols}
     >
       {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
+        <ProductCard key={p.id} product={p} defer={defer} />
       ))}
     </ul>
   );

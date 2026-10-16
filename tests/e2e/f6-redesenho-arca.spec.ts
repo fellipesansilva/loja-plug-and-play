@@ -24,7 +24,14 @@ test.describe("Arca · redesenho por blocos", () => {
     await expect(page.getByText("Números fictícios")).toBeVisible();
     await expect(page.getByTestId("case-card")).toHaveCount(3);
     await expect(page.getByText("Projetos de demonstração")).toBeVisible();
-    // cada case tem foto própria, e nenhuma foto da home se repete
+    // cada case tem foto própria, e nenhuma foto da home se repete (as de baixo só entram ao rolar)
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 400) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 80));
+      }
+    });
+    await expect.poll(() => page.getByTestId("case-card").locator("img").count()).toBe(3);
     const srcs = await page.locator("main img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).getAttribute("src")));
     const cases = await page.getByTestId("case-card").locator("img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).getAttribute("src")));
     expect(cases).toHaveLength(3);
@@ -148,6 +155,24 @@ test.describe("Arca · redesenho por blocos", () => {
     expect(await noHorizontalScroll(page)).toBeLessThanOrEqual(0);
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(bar).toHaveCSS("position", "static");
+  });
+
+  test("desempenho: no celular a home só baixa o banner antes da rolagem; as fotos de baixo chegam quando a janela se aproxima", async ({ page }) => {
+    await page.setViewportSize({ width: 412, height: 823 });
+    const images: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "image") images.push(new URL(r.url()).pathname.split("/").pop()!);
+    });
+    await page.goto(`${ORIGIN}/arca`);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
+    expect(images.filter((f) => !f.startsWith("banner")), images.join(", ")).toEqual([]);
+    expect(images.filter((f) => f.startsWith("banner-m")).length).toBe(1);
+    // ao rolar até os setores, as fotos deles são baixadas (e aparecem)
+    await page.getByTestId("sectors").scrollIntoViewIfNeeded();
+    await expect.poll(() => images.filter((f) => f.startsWith("setor-")).length).toBeGreaterThanOrEqual(4);
+    const broken = await page.getByTestId("sectors").locator("img").evaluateAll((els) => els.filter((e) => !(e as HTMLImageElement).complete || (e as HTMLImageElement).naturalWidth === 0).length);
+    expect(broken).toBe(0);
   });
 
   test("home, setor e produto sem rolagem horizontal em 400 px", async ({ page }) => {
