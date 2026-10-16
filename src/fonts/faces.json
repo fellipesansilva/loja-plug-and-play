@@ -1,0 +1,68 @@
+{
+  "trama": {
+    "faces": [
+      {
+        "family": "Bodoni Moda",
+        "file": "bodoni-moda-latin.woff2",
+        "weight": "400 600"
+      },
+      {
+        "family": "Manrope",
+        "file": "manrope-latin.woff2",
+        "weight": "400 700"
+      }
+    ],
+    "vars": {
+      "--font-bodoni-moda": "Bodoni Moda",
+      "--font-manrope": "Manrope"
+    }
+  },
+  "forno": {
+    "faces": [
+      {
+        "family": "Bricolage Grotesque",
+        "file": "bricolage-grotesque-latin.woff2",
+        "weight": "800"
+      },
+      {
+        "family": "Manrope",
+        "file": "manrope-latin.woff2",
+        "weight": "400 700"
+      }
+    ],
+    "vars": {
+      "--font-bricolage": "Bricolage Grotesque",
+      "--font-manrope": "Manrope"
+    }
+  },
+  "arca": {
+    "faces": [
+      {
+        "family": "Barlow Condensed",
+        "file": "barlow-condensed-700.woff2",
+        "weight": "700"
+      },
+      {
+        "family": "Barlow",
+        "file": "barlow-400.woff2",
+        "weight": "400"
+      },
+      {
+        "family": "Barlow",
+        "file": "barlow-500.woff2",
+        "weight": "500",
+        "preload": false
+      },
+      {
+        "family": "Barlow",
+        "file": "barlow-700.woff2",
+        "weight": "700",
+        "preload": false
+      }
+    ],
+    "vars": {
+      "--font-barlow-condensed": "Barlow Condensed",
+      "--font-barlow": "Barlow"
+    }
+  }
+}

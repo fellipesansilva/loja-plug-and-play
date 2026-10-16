@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { CategoryView } from "@/components/store/CategoryView";
 import { presets } from "@/presets";
 
@@ -12,9 +11,6 @@ export function generateStaticParams() {
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return (
-    <Suspense fallback={<h1 className="mx-auto w-full max-w-page px-md py-lg text-2xl">Carregando…</h1>}>
-      <CategoryView slug={slug} />
-    </Suspense>
-  );
+  // Sem Suspense: a lista sai completa do servidor (os filtros da URL entram logo após a hidratação), sem pulo de layout.
+  return <CategoryView slug={slug} />;
 }

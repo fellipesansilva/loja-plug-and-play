@@ -1,7 +1,7 @@
 "use client";
 
 import { StoreLink as Link } from "@/components/store/StoreLink";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   applyFilters,
@@ -13,6 +13,7 @@ import {
   type FilterSelection,
   type SortOrder,
 } from "@/lib/filters";
+import { notifyUrlChange, useUrlSearchParams } from "@/lib/use-url-params";
 import { useDemoStore } from "@/store/demo-store";
 import { useListedProducts } from "@/store/use-listed-products";
 import { useHydrated } from "@/store/use-hydrated";
@@ -30,7 +31,7 @@ export function CategoryView({ slug }: { slug: string }) {
   const allCategories = useDemoStore((s) => s.categories);
 
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useUrlSearchParams();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -61,6 +62,7 @@ export function CategoryView({ slug }: { slug: string }) {
       const query = serializeFilters(nextSelection, nextOrder, groups).toString();
       // History API nativa: o Next sincroniza com useSearchParams na hora (sem navegação nem rolagem).
       window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+      notifyUrlChange();
     },
     [groups, pathname],
   );

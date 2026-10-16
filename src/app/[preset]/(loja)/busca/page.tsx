@@ -1,9 +1,10 @@
+import { PageFallback } from "@/components/store/PageFallback";
 import { Suspense } from "react";
 import { SearchView } from "@/components/store/SearchView";
 
 export default function Page() {
   return (
-    <Suspense fallback={<h1 className="mx-auto w-full max-w-page px-md py-lg text-2xl">Busca</h1>}>
+    <Suspense fallback={<PageFallback title="Busca" />}>
       <SearchView />
     </Suspense>
   );

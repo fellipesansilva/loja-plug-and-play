@@ -4,37 +4,20 @@
  * baixa nada da Trama e vice-versa. (next/font não serve aqui: ele coloca as fontes de todos os presets no CSS
  * compartilhado da árvore de rotas.) Ao criar um preset novo, adicione a pasta em public/fonts e uma entrada aqui.
  */
+import facesJson from "./faces.json";
+import { fallbackFaces } from "./fallbacks.generated";
+
 type FontFace = { family: string; file: string; weight: string; /** Padrão: true. Só as fontes do primeiro uso (título e texto regular) precisam de preload. */ preload?: boolean };
 type PresetFonts = { faces: FontFace[]; vars: Record<string, string> };
 
 const LATIN_RANGE =
   "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD";
 
-export const fontsBySlug: Record<string, PresetFonts> = {
-  trama: {
-    faces: [
-      { family: "Bodoni Moda", file: "bodoni-moda-latin.woff2", weight: "400 600" },
-      { family: "Manrope", file: "manrope-latin.woff2", weight: "400 700" },
-    ],
-    vars: { "--font-bodoni-moda": '"Bodoni Moda"', "--font-manrope": '"Manrope"' },
-  },
-  forno: {
-    faces: [
-      { family: "Bricolage Grotesque", file: "bricolage-grotesque-latin.woff2", weight: "800" },
-      { family: "Manrope", file: "manrope-latin.woff2", weight: "400 700" },
-    ],
-    vars: { "--font-bricolage": '"Bricolage Grotesque"', "--font-manrope": '"Manrope"' },
-  },
-  arca: {
-    faces: [
-      { family: "Barlow Condensed", file: "barlow-condensed-700.woff2", weight: "700" },
-      { family: "Barlow", file: "barlow-400.woff2", weight: "400" },
-      { family: "Barlow", file: "barlow-500.woff2", weight: "500", preload: false },
-      { family: "Barlow", file: "barlow-700.woff2", weight: "700", preload: false },
-    ],
-    vars: { "--font-barlow-condensed": '"Barlow Condensed"', "--font-barlow": '"Barlow"' },
-  },
-};
+// Os dados vivem em faces.json para o script scripts/font-metrics.mjs ler os mesmos arquivos. `vars`: variável CSS → família.
+const data = facesJson as Record<string, PresetFonts>;
+export const fontsBySlug: Record<string, PresetFonts> = Object.fromEntries(
+  Object.entries(data).map(([slug, f]) => [slug, { faces: f.faces, vars: Object.fromEntries(Object.entries(f.vars).map(([k, v]) => [k, `"${v}"`])) }]),
+);
 
 /** Endereços dos arquivos de fonte do preset (para o preload). */
 export function fontUrlsFor(slug: string): string[] {
@@ -51,8 +34,21 @@ export function fontCssFor(slug: string): string {
         `@font-face{font-family:"${f.family}";font-style:normal;font-weight:${f.weight};font-display:swap;src:url(/fonts/${slug}/${f.file}) format("woff2");unicode-range:${LATIN_RANGE}}`,
     )
     .join("");
+  // Fonte reserva com métricas ajustadas (scripts/font-metrics.mjs): enquanto a fonte da loja não chega, o texto ocupa o mesmo espaço
+  // que terá depois (size-adjust e overrides), e a troca não desloca o layout.
+  const fallbackFamilies = new Set<string>();
+  const fallbacks = (fallbackFaces[slug] ?? [])
+    .map((f) => {
+      fallbackFamilies.add(f.family);
+      const src = f.local.map((n) => `local("${n}")`).join(",");
+      return `@font-face{font-family:"${f.family} Fallback";font-style:normal;font-weight:${f.weight};src:${src};size-adjust:${f.sizeAdjust}%;ascent-override:${f.ascent}%;descent-override:${f.descent}%;line-gap-override:${f.lineGap}%}`;
+    })
+    .join("");
   const vars = Object.entries(fonts.vars)
-    .map(([name, family]) => `${name}:${family}`)
+    .map(([name, family]) => {
+      const bare = family.replace(/"/g, "");
+      return `${name}:${family}${fallbackFamilies.has(bare) ? `,"${bare} Fallback"` : ""}`;
+    })
     .join(";");
-  return `${faces}:root{${vars}}`;
+  return `${faces}${fallbacks}:root{${vars}}`;
 }

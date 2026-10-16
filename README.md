@@ -161,6 +161,17 @@ As fontes são hospedadas em `public/fonts/<preset>/` (woff2 latin, de Google Fo
 | Barlow Condensed | Arca (títulos) | 2017 The Barlow Project Authors | OFL 1.1 — `public/fonts/arca/OFL-barlow-condensed.txt` |
 | Barlow | Arca (texto) | 2017 The Barlow Project Authors | OFL 1.1 — `public/fonts/arca/OFL-barlow.txt` |
 
+### Fonte reserva com métricas ajustadas (CLS)
+
+As fontes usam `font-display: swap`: o texto aparece na fonte reserva e troca quando a fonte da loja chega. Para a troca não deslocar o layout, cada fonte tem uma fonte reserva (`"<Família> Fallback"`, Arial ou Times New Roman) com `size-adjust`, `ascent-override`, `descent-override` e `line-gap-override`, escritas por `fontCssFor` (`src/fonts/index.ts`) e entrando logo depois da fonte da loja nas variáveis `--font-*`. Os valores ficam em `src/fonts/fallbacks.generated.ts`, gerado por `node scripts/font-metrics.mjs` (dependências de desenvolvimento: `fontkit` e `wawoff2`; precisa das fontes Arial e Times New Roman do Windows em `C:/Windows/Fonts`). Como são calculados:
+
+1. **Texto de amostra:** todas as frases com 25 ou mais caracteres escritas nos presets (nomes, descrições, avisos), ou seja, o texto real de cada loja.
+2. **Largura média:** soma das larguras de avanço dos caracteres do texto de amostra ÷ número de caracteres ÷ `unitsPerEm`, medida no arquivo woff2 da fonte (convertido para ttf) e no arquivo da fonte reserva. Fontes variáveis são medidas na instância do peso usado (400 e 700, ou 400 e 600).
+3. **`size-adjust`** = largura média da fonte da loja ÷ largura média da reserva (Arial regular ou Arial Bold, conforme o peso; Times New Roman para Bodoni Moda).
+4. **`ascent-override`** = ascent ÷ (`unitsPerEm` × size-adjust); `descent-override` e `line-gap-override` do mesmo jeito, com os valores da tabela `hhea` do arquivo.
+
+No Linux e no Android a reserva cai nos equivalentes métricos (Liberation Sans e Liberation Serif, listados em `local()`). Ao trocar uma fonte ou o texto dos presets, rode o script e commite o arquivo gerado. O teste `tests/e2e/cls-fontes.spec.ts` atrasa as fontes e exige CLS abaixo de 0,01 nas três homes e na lista de produtos do Forno.
+
 ## Painel de operação (F4)
 
 Em `/<preset>/painel`, sem login na demo: faixa fixa "Painel de demonstração" em todas as telas e `noindex` em todas as páginas. Os dados são os do preset e ficam no `localStorage` da loja (por preset). Configurações (tema e módulos) é da F5 e segue como placeholder. O código do painel só é carregado nas rotas do painel (`src/components/painel/`); a loja não importa nada de lá.
