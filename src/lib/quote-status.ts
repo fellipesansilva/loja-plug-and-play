@@ -1,4 +1,5 @@
 import type { QuoteRequest, QuoteStatus } from "@/domain/types";
+import { normalizeText } from "./search";
 
 export const QUOTE_STATUS_LABEL: Record<QuoteStatus, string> = {
   nova: "Nova",
@@ -33,4 +34,17 @@ export function isValidQuoteTransition(status: QuoteStatus, to: QuoteStatus): bo
 
 export function applyQuoteStatus(q: QuoteRequest, status: QuoteStatus, at: Date): QuoteRequest {
   return { ...q, status, history: [...q.history, { status, at: at.toISOString() }] };
+}
+
+/** Da mais recente à mais antiga; filtro por status e busca por protocolo, nome ou empresa (sem acento nem caixa). */
+export function filterQuotes(quotes: readonly QuoteRequest[], status: QuoteStatus | "todos", term: string): QuoteRequest[] {
+  const words = normalizeText(term).split(" ").filter(Boolean);
+  return [...quotes]
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+    .filter((q) => {
+      if (status !== "todos" && q.status !== status) return false;
+      if (words.length === 0) return true;
+      const text = normalizeText(`${q.id} ${q.contact.name} ${q.contact.company ?? ""}`);
+      return words.every((w) => text.includes(w));
+    });
 }

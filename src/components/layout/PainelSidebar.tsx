@@ -6,12 +6,14 @@ import { stripPresetPrefix } from "@/lib/preset-href";
 import { useDemoStore } from "@/store/demo-store";
 import { usePreset } from "@/store/PresetProvider";
 
-const items = [
+const saleItems = [
   { href: "/painel/produtos", label: "Produtos" },
   { href: "/painel/pedidos", label: "Pedidos" },
   { href: "/painel/importacao", label: "Importação" },
   { href: "/painel/configuracoes/loja", label: "Configurações" },
 ];
+
+const quoteItems = saleItems.map((i) => (i.label === "Pedidos" ? { href: "/painel/orcamentos", label: "Orçamentos" } : i));
 
 const settings = [
   { href: "/painel/configuracoes/loja", label: "Loja" },
@@ -28,6 +30,8 @@ export function PainelSidebar() {
   const { slug } = usePreset();
   const pathname = stripPresetPrefix(slug, usePathname());
   const name = useDemoStore((s) => s.config.name);
+  // Loja em orçamento: não há pedidos; o menu mostra as solicitações de orçamento no lugar.
+  const items = useDemoStore((s) => (s.config.modules.orcamento?.enabled ? quoteItems : saleItems));
   const inSettings = pathname.startsWith("/painel/configuracoes");
 
   return (

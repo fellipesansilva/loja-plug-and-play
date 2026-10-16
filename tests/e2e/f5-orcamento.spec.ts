@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { test, ORIGIN } from "./helpers";
 import { ARCA, arca, expect, setupArca } from "./orcamento-helpers";
 
@@ -348,5 +350,228 @@ test.describe("H3 · envio do pedido de orçamento", () => {
     await page.getByTestId("quote-submit").click();
     await expect(page.getByTestId("quote-protocol")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// H4 · orçamentos no painel
+// ---------------------------------------------------------------------------------------------------------------------
+const FIXTURES = path.resolve(__dirname, "../fixtures/csv");
+const quoteIds = (page: import("@playwright/test").Page) => page.getByTestId("quote-row").evaluateAll((els) => els.map((e) => e.getAttribute("data-quote-id")));
+
+/** Envia um pedido de orçamento pela loja (lista + formulário) e devolve o protocolo. */
+const sendQuote = async (page: import("@playwright/test").Page, name = "Ana Souza", company = "Fazenda Boa Água") => {
+  await seedList(page);
+  await fillQuote(page, { name, company });
+  await page.getByTestId("quote-submit").click();
+  return (await page.getByTestId("quote-protocol").textContent())!;
+};
+
+test.describe("H4 · orçamentos no painel", () => {
+  test("o menu mostra 'Orçamentos' no lugar de 'Pedidos' e a lista traz as solicitações de exemplo, da mais recente à mais antiga", async ({ page }) => {
+    await arca(page, "/painel/orcamentos");
+    const nav = page.getByRole("navigation", { name: "Menu do painel" });
+    await expect(nav.getByRole("link", { name: "Orçamentos", exact: true })).toHaveAttribute("href", "/arca/painel/orcamentos");
+    await expect(nav.getByRole("link", { name: "Pedidos", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Orçamentos");
+    const samples = await page.evaluate(() => window.__demoStore!.getState().quotes.map((q) => ({ id: q.id, at: q.createdAt, status: q.status })));
+    expect(samples.length).toBeGreaterThanOrEqual(3);
+    expect(samples.length).toBeLessThanOrEqual(5);
+    expect(new Set(samples.map((s) => s.status)).size).toBeGreaterThanOrEqual(3);
+    expect(await quoteIds(page)).toEqual([...samples].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).map((s) => s.id));
+    await expect(page.getByTestId("quote-row").first().locator("dt")).toHaveText(["Data", "Cliente", "Empresa", "Itens"]);
+  });
+
+  test("filtro por status e busca por protocolo, nome ou empresa", async ({ page }) => {
+    await arca(page, "/painel/orcamentos");
+    const rows = page.getByTestId("quote-row");
+    const total = await rows.count();
+    await page.getByLabel("Status").selectOption("ganho");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first().getByTestId("quote-row-status")).toHaveText("Ganho");
+    await page.getByLabel("Status").selectOption("todos");
+    await page.getByLabel("Buscar por protocolo, nome ou empresa").fill("orc-20260312-t9c3d");
+    await expect(rows).toHaveCount(1);
+    await page.getByLabel("Buscar por protocolo, nome ou empresa").fill("helena");
+    await expect(rows).toHaveCount(1);
+    await page.getByLabel("Buscar por protocolo, nome ou empresa").fill("metalurgica prado");
+    await expect(rows).toHaveCount(1);
+    await page.getByLabel("Status").selectOption("nova");
+    await expect(page.getByTestId("quotes-empty")).toBeVisible();
+    await page.getByLabel("Status").selectOption("todos");
+    await page.getByLabel("Buscar por protocolo, nome ou empresa").fill("");
+    await expect(rows).toHaveCount(total);
+  });
+
+  test("o pedido enviado pela loja aparece no topo da lista e o detalhe mostra contato, itens, observações e histórico", async ({ page }) => {
+    const protocol = await sendQuote(page);
+    await page.goto(`${ARCA}/painel/orcamentos`);
+    await expect(page.getByTestId("quote-row").first()).toHaveAttribute("data-quote-id", protocol);
+    await page.getByTestId("quote-row").first().click(); // a linha inteira é clicável
+    await expect(page).toHaveURL(new RegExp(`/painel/orcamentos/${protocol}$`));
+    await expect(page.getByTestId("detail-id")).toHaveText(protocol);
+    await expect(page.getByTestId("detail-status")).toHaveText("Nova");
+    await expect(page.getByTestId("contact-name")).toHaveText("Ana Souza");
+    await expect(page.getByTestId("contact-company")).toHaveText("Fazenda Boa Água");
+    await expect(page.getByTestId("quote-contact")).toContainText("ana@example.com");
+    await expect(page.getByTestId("quote-contact")).toContainText("(19) 91234-5678");
+    await expect(page.getByTestId("quote-contact")).toContainText("Campinas/SP");
+    await expect(page.getByTestId("contact-application")).toHaveText("Agro e irrigação");
+    await expect(page.getByTestId("contact-message")).toContainText("Preciso do prazo e do frete.");
+    await expect(page.getByTestId("quote-item")).toHaveCount(2);
+    await expect(page.getByTestId("quote-item").first()).toContainText("2× Reservatório Flexível Fechado");
+    await expect(page.getByTestId("quote-item-note").first()).toHaveText("Observações: 20.000 litros, terreno plano");
+    await expect(page.getByTestId("history-entry")).toHaveCount(1);
+    await expect(page.getByTestId("history-entry").first()).toContainText("Nova");
+    // sem preço em nenhum lugar do painel desta loja
+    expect(await page.locator("body").innerText()).not.toContain("R$");
+  });
+
+  test("percorre nova → em análise → orçamento enviado → ganho, só com as próximas etapas, e registra o histórico", async ({ page }) => {
+    const protocol = await sendQuote(page);
+    await page.goto(`${ARCA}/painel/orcamentos/${protocol}`);
+    const ids = () => page.locator('[data-testid^="quote-status-to-"]').evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!.replace("quote-status-to-", "")));
+    const status = page.getByTestId("detail-status");
+
+    expect(await ids()).toEqual(["em_analise"]);
+    await expect(page.getByTestId("quote-lost")).toBeVisible();
+    await page.getByTestId("quote-status-to-em_analise").click();
+    await expect(status).toHaveText("Em análise");
+    expect(await ids()).toEqual(["orcamento_enviado"]);
+    await expect(page.getByTestId("quote-status-to-orcamento_enviado")).toHaveText("Marcar como Orçamento enviado");
+    await page.getByTestId("quote-status-to-orcamento_enviado").click();
+    await expect(status).toHaveText("Orçamento enviado");
+    expect(await ids()).toEqual(["ganho"]);
+    await page.getByTestId("quote-status-to-ganho").click();
+    await expect(status).toHaveText("Ganho");
+
+    // final: sem ações
+    await expect(page.getByTestId("quote-status-actions")).toHaveCount(0);
+    await expect(page.getByTestId("quote-status-final")).toBeVisible();
+    await expect(page.getByTestId("quote-lost")).toHaveCount(0);
+    const entries = page.getByTestId("history-entry");
+    await expect(entries).toHaveText([/Nova/, /Em análise/, /Orçamento enviado/, /Ganho/]);
+    for (const t of await entries.allTextContents()) expect(t).toMatch(/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/);
+    // a lista reflete o status
+    await page.goto(`${ARCA}/painel/orcamentos`);
+    await expect(page.locator(`[data-quote-id="${protocol}"] [data-testid="quote-row-status"]`)).toHaveText("Ganho");
+  });
+
+  test("perdido: de nova, em análise e orçamento enviado, com confirmação (Esc e Voltar não marcam)", async ({ page }) => {
+    const first = await sendQuote(page, "Rui Perdido", "");
+    await page.goto(`${ARCA}/painel/orcamentos/${first}`);
+    await page.getByTestId("quote-lost").click();
+    const confirm = page.getByTestId("lost-confirm");
+    await expect(confirm).toBeVisible();
+    await expect(page.getByTestId("lost-confirm-yes")).toBeFocused();
+    await expect(page.getByTestId("detail-status")).toHaveText("Nova");
+    await page.keyboard.press("Escape");
+    await expect(confirm).toHaveCount(0);
+    await expect(page.getByTestId("detail-status")).toHaveText("Nova");
+    await page.getByTestId("quote-lost").click();
+    await confirm.getByRole("button", { name: "Voltar" }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(page.getByTestId("detail-status")).toHaveText("Nova");
+    await page.getByTestId("quote-lost").click();
+    await page.getByTestId("lost-confirm-yes").click();
+    await expect(page.getByTestId("detail-status")).toHaveText("Perdido");
+    await expect(page.getByTestId("quote-status-actions")).toHaveCount(0);
+    await expect(page.getByTestId("history-entry").last()).toContainText("Perdido");
+
+    // também de "em análise" e de "orçamento enviado"
+    for (const to of ["em_analise", "orcamento_enviado"] as const) {
+      const id = await sendQuote(page, `Cliente ${to}`);
+      await page.goto(`${ARCA}/painel/orcamentos/${id}`);
+      await page.getByTestId("quote-status-to-em_analise").click();
+      if (to === "orcamento_enviado") await page.getByTestId("quote-status-to-orcamento_enviado").click();
+      await page.getByTestId("quote-lost").click();
+      await page.getByTestId("lost-confirm-yes").click();
+      await expect(page.getByTestId("detail-status")).toHaveText("Perdido");
+    }
+    // ganho não pode ser perdido; os exemplos em status final também não
+    await page.goto(`${ARCA}/painel/orcamentos`);
+    await page.getByLabel("Status").selectOption("ganho");
+    await page.getByTestId("quote-row").first().click();
+    await expect(page.getByTestId("quote-lost")).toHaveCount(0);
+  });
+
+  test("produto criado sem preço e sem estoque: aparece na loja sem preço", async ({ page }) => {
+    await arca(page, "/painel/produtos/novo");
+    await expect(page.getByLabel("Preço (R$) (opcional)")).toBeVisible();
+    await page.locator("#chk-name").fill("Boia de Teste Sem Preço");
+    await page.locator("#chk-sku").fill("ARC-TST-001");
+    await page.getByText(/Escolher entre as imagens do preset/).click();
+    await page.getByTestId("image-pool").getByRole("button").first().click();
+    await page.getByTestId("save-product").click();
+    await expect(page).toHaveURL(/\/painel\/produtos\/np-/);
+    const created = await page.evaluate(() => window.__demoStore!.getState().products.find((p) => p.sku === "ARC-TST-001")!);
+    expect(created).toMatchObject({ price: 0, stock: 0, active: true });
+    await page.goto(`${ARCA}/produto/boia-de-teste-sem-preco`);
+    await expect(page.getByRole("heading", { level: 1, name: "Boia de Teste Sem Preço" })).toBeVisible();
+    expect(await page.locator("body").innerText()).not.toContain("R$");
+    await expect(page.getByRole("button", { name: "Adicionar ao orçamento" })).toBeVisible();
+    await arca(page, "/painel/produtos");
+    await expect(page.getByTestId("product-price")).toHaveCount(0);
+    await expect(page.getByTestId("product-stock")).toHaveCount(0);
+    expect(await page.locator("body").innerText()).not.toContain("R$");
+    // um preço digitado inválido ainda é recusado
+    await page.goto(`${ARCA}/painel/produtos/novo`);
+    await page.locator("#chk-name").fill("Com Preço Ruim");
+    await page.locator("#chk-price").fill("19.90");
+    await page.locator("#chk-sku").fill("ARC-TST-002");
+    await page.getByTestId("save-product").click();
+    await expect(page.locator("#chk-price")).toHaveAttribute("aria-invalid", "true");
+  });
+
+  test("importação CSV sem preço: cria e atualiza; modelo sem preço; arquivo sem as colunas preco e estoque também vale", async ({ page }) => {
+    await arca(page, "/painel/importacao");
+    const before = await page.evaluate(() => window.__demoStore!.getState().products.length);
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByTestId("download-template").click()]);
+    const tmpl = fs.readFileSync((await download.path())!, "utf8").replace(/^﻿/, "").split(/\r?\n/);
+    expect(tmpl[0]).toBe("sku;nome;preco;estoque;categoria;descricao;material;medidas;capacidade;valvula");
+    expect(tmpl[1]).toMatch(/^EXEMPLO-001;Nome do produto;;;industria-e-agro;/);
+
+    await page.getByTestId("import-file").setInputFiles(path.join(FIXTURES, "arca-valido.csv"));
+    await expect(page.getByTestId("count-created")).toHaveText("2");
+    await expect(page.getByTestId("count-updated")).toHaveText("1");
+    await expect(page.getByTestId("count-errors")).toHaveText("0");
+    await page.getByTestId("import-confirm").click();
+    await expect(page.getByTestId("import-done")).toContainText("2 criados, 1 atualizado");
+    const state = await page.evaluate(() => {
+      const ps = window.__demoStore!.getState().products;
+      return { n: ps.length, upd: ps.find((p) => p.sku === "ARC-RFF-001")!, created: ps.find((p) => p.sku === "ARC-IMP-001")! };
+    });
+    expect(state.n).toBe(before + 2);
+    expect(state.upd).toMatchObject({ name: "Reservatório Flexível Fechado Atualizado", price: 0 });
+    expect(state.upd.attributes.length).toBeGreaterThan(0); // atributos mantidos quando a planilha não traz valor
+    expect(state.created).toMatchObject({ price: 0, stock: 0, name: "Reservatório de Teste" });
+    await page.goto(`${ARCA}/produto/reservatorio-de-teste`);
+    await expect(page.getByRole("heading", { level: 1, name: "Reservatório de Teste" })).toBeVisible();
+    expect(await page.locator("body").innerText()).not.toContain("R$");
+
+    await arca(page, "/painel/importacao");
+    await page.getByTestId("import-file").setInputFiles(path.join(FIXTURES, "arca-sem-colunas-de-preco.csv"));
+    await expect(page.getByTestId("count-created")).toHaveText("2");
+    await expect(page.getByTestId("count-errors")).toHaveText("0");
+  });
+
+  test("celular 400 px: lista e detalhe de orçamentos sem rolagem horizontal; primeira solicitação na metade de cima", async ({ page }) => {
+    await page.setViewportSize({ width: 400, height: 800 });
+    await arca(page, "/painel/orcamentos");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+    const top = await page.getByTestId("quote-row").first().evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    expect(top).toBeLessThan(400);
+    await page.getByTestId("quote-row").first().click();
+    await expect(page.getByTestId("detail-id")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  });
+
+  test("o painel Demo reseta as solicitações e a lista da Arca", async ({ page }) => {
+    await sendQuote(page);
+    await arca(page, "/painel/orcamentos");
+    const original = (await page.evaluate(() => window.__demoStore!.getState().quotes.length)) - 1;
+    await page.getByRole("button", { name: "Demo", exact: true }).click();
+    await page.getByRole("button", { name: "Resetar dados" }).click();
+    await expect(page.getByTestId("quote-row")).toHaveCount(original);
   });
 });

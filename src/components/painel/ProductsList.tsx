@@ -15,6 +15,7 @@ const control = "mt-xs h-11 w-full rounded-md border border-border bg-surface px
 export function ProductsList() {
   const products = useDemoStore((s) => s.products);
   const setProductActive = useDemoStore((s) => s.setProductActive);
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
   const [term, setTerm] = useState("");
 
   const words = normalizeText(term).split(" ").filter(Boolean);
@@ -74,20 +75,24 @@ export function ProductsList() {
                   </StoreLink>
                   <p className="text-sm text-muted">SKU {p.sku}</p>
                 </div>
-                <dl className="grid grid-cols-3 gap-md text-sm">
-                  <div>
-                    <dt className="text-muted">Preço</dt>
-                    <dd data-testid="product-price">{formatBRL(p.price)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted">Estoque</dt>
-                    <dd data-testid="product-stock">{p.type === "digital" ? "—" : p.stock}</dd>
-                  </div>
+                <dl className={`grid gap-md text-sm ${quote ? "grid-cols-1" : "grid-cols-3"}`}>
+                  {!quote && (
+                    <>
+                      <div>
+                        <dt className="text-muted">Preço</dt>
+                        <dd data-testid="product-price">{formatBRL(p.price)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted">Estoque</dt>
+                        <dd data-testid="product-stock">{p.type === "digital" ? "—" : p.stock}</dd>
+                      </div>
+                    </>
+                  )}
                   <div>
                     <dt className="text-muted">Situação</dt>
                     <dd data-testid="product-status">
                       {listed ? "Ativo" : "Inativo"}
-                      {listed && isSoldOut(p) ? " · Esgotado" : ""}
+                      {listed && !quote && isSoldOut(p) ? " · Esgotado" : ""}
                     </dd>
                   </div>
                 </dl>

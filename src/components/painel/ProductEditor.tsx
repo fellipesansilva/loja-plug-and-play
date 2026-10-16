@@ -40,6 +40,7 @@ export function ProductEditor({ productId }: { productId?: string }) {
   const product = useDemoStore((s) => (productId ? s.products.find((p) => p.id === productId) : undefined));
   const categories = useDemoStore((s) => s.categories);
   const defs = useDemoStore((s) => s.config.attributeDefs);
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
   const title = productId ? "Editar produto" : "Novo produto";
 
   const back = (
@@ -67,7 +68,7 @@ export function ProductEditor({ productId }: { productId?: string }) {
     );
   }
 
-  const initial = product ? formFromProduct(product, defs) : emptyForm(categories[0]?.id ?? "");
+  const initial = product ? formFromProduct(product, defs, { quote }) : { ...emptyForm(categories[0]?.id ?? ""), ...(quote ? { stock: "" } : {}) };
   return (
     <section className="px-md py-lg">
       <PageTitle title={title} />
@@ -84,6 +85,7 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
   const products = useDemoStore((s) => s.products);
   const categories = useDemoStore((s) => s.categories);
   const defs = useDemoStore((s) => s.config.attributeDefs);
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
   const saveProduct = useDemoStore((s) => s.saveProduct);
   const { axes, descriptive } = splitDefs(defs);
   const formId = useId();
@@ -122,7 +124,7 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    const ctx = { products, categories, defs, editingId };
+    const ctx = { products, categories, defs, editingId, quote };
     const found = validateProductForm(form, ctx);
     setErrors(found);
     setSaved(null);
@@ -184,10 +186,10 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
       )}
 
       <Input name="name" label="Nome" value={form.name} error={errors.name} onChange={(e) => set("name", e.target.value)} />
-      <Input name="price" label="Preço (R$)" inputMode="decimal" placeholder="19,90" hint="Em reais, com vírgula: 19,90" value={form.price} error={errors.price} onChange={(e) => set("price", e.target.value)} />
+      <Input name="price" label={quote ? "Preço (R$) (opcional)" : "Preço (R$)"} inputMode="decimal" placeholder="19,90" hint={quote ? "Opcional: esta loja é em orçamento e não mostra preço" : "Em reais, com vírgula: 19,90"} value={form.price} error={errors.price} onChange={(e) => set("price", e.target.value)} />
       <Input name="sku" label="SKU" autoComplete="off" value={form.sku} error={errors.sku} onChange={(e) => set("sku", e.target.value)} />
       {!hasVariants ? (
-        <Input name="stock" label="Estoque" inputMode="numeric" value={form.stock} error={errors.stock} onChange={(e) => set("stock", e.target.value)} />
+        <Input name="stock" label={quote ? "Estoque (opcional)" : "Estoque"} inputMode="numeric" value={form.stock} error={errors.stock} onChange={(e) => set("stock", e.target.value)} />
       ) : (
         <p className="text-sm text-muted" data-testid="stock-derived">
           Estoque: soma das variações ({form.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)}).

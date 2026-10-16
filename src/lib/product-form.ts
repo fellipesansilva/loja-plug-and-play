@@ -36,14 +36,14 @@ export function emptyForm(categoryId: string): ProductFormValues {
 let uidCounter = 0;
 export const newUid = (): string => `v${Date.now().toString(36)}${(uidCounter++).toString(36)}`;
 
-export function formFromProduct(p: Product, defs: readonly AttributeDef[]): ProductFormValues {
+export function formFromProduct(p: Product, defs: readonly AttributeDef[], opts: { quote?: boolean } = {}): ProductFormValues {
   const { axes, descriptive } = splitDefs(defs);
   return {
     name: p.name,
-    price: formatPriceInput(p.price),
+    price: opts.quote && p.price === 0 ? "" : formatPriceInput(p.price),
     description: p.description,
     sku: p.sku,
-    stock: String(p.stock),
+    stock: opts.quote && p.stock === 0 ? "" : String(p.stock),
     categoryId: p.categoryId,
     active: p.active !== false,
     images: p.images.map((i) => ({ ...i })),
@@ -81,6 +81,8 @@ export function skuProblem(sku: string, used: ReadonlySet<string>): string | nul
 }
 
 export type FormContext = {
+  /** Loja em orçamento: preço e estoque são opcionais (vazio = sem preço / sob encomenda). */
+  quote?: boolean;
   products: readonly Product[];
   categories: readonly Category[];
   defs: readonly AttributeDef[];
@@ -93,7 +95,7 @@ export function validateProductForm(f: ProductFormValues, ctx: FormContext): For
   const { axes } = splitDefs(ctx.defs);
 
   if (f.name.trim().length < 2) errors.name = "Informe o nome do produto";
-  if (parsePriceBR(f.price) === null) errors.price = "Preço inválido. Use o formato 19,90";
+  if (!(ctx.quote && f.price.trim() === "") && parsePriceBR(f.price) === null) errors.price = "Preço inválido. Use o formato 19,90";
 
   const used = usedSkus(ctx.products, ctx.editingId);
   const skuError = skuProblem(f.sku, used);
@@ -106,7 +108,7 @@ export function validateProductForm(f: ProductFormValues, ctx: FormContext): For
   if (f.images.some((i) => !i.alt.trim())) errors.images = "Descreva cada imagem (texto alternativo)";
 
   if (f.variants.length === 0) {
-    if (!isInt(f.stock)) errors.stock = "Estoque inválido. Use um número inteiro, 0 ou maior";
+    if (!(ctx.quote && f.stock.trim() === "") && !isInt(f.stock)) errors.stock = "Estoque inválido. Use um número inteiro, 0 ou maior";
   } else {
     const combos = new Set<string>();
     f.variants.forEach((v, i) => {
@@ -162,11 +164,11 @@ export function productFromForm(f: ProductFormValues, ctx: FormContext & { newId
     id,
     slug: existing?.slug ?? uniqueSlug(f.name, ctx.products),
     name: f.name.trim(),
-    price: parsePriceBR(f.price)!,
+    price: f.price.trim() === "" ? 0 : parsePriceBR(f.price)!,
     images: f.images.map((i) => ({ src: i.src, alt: i.alt.trim() })),
     description: f.description.trim(),
     sku: f.sku.trim(),
-    stock: variants.length ? variants.reduce((sum, v) => sum + v.stock, 0) : Number(f.stock),
+    stock: variants.length ? variants.reduce((sum, v) => sum + v.stock, 0) : f.stock.trim() === "" ? 0 : Number(f.stock),
     categoryId: f.categoryId,
     attributes: [...edited, ...untouched],
     variants,

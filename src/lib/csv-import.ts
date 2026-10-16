@@ -12,6 +12,8 @@ export const BASE_COLUMNS = ["sku", "nome", "preco", "estoque", "categoria", "de
 const REQUIRED = ["sku", "nome", "preco", "estoque", "categoria"] as const;
 
 export type ImportContext = {
+  /** Loja em orçamento: as colunas preco e estoque são opcionais (vazio = sem preço / mantém o valor atual no produto existente). */
+  quote?: boolean;
   products: readonly Product[];
   categories: readonly Category[];
   defs: readonly AttributeDef[];
@@ -41,12 +43,12 @@ export function templateColumns(defs: readonly AttributeDef[]): string[] {
 }
 
 /** Modelo para baixar: BOM + ";" + CRLF (abre direto no Excel em português), cabeçalho e uma linha de exemplo. */
-export function templateCsv(defs: readonly AttributeDef[], categories: readonly Category[]): string {
+export function templateCsv(defs: readonly AttributeDef[], categories: readonly Category[], quote = false): string {
   const example: Record<string, string> = {
     sku: "EXEMPLO-001",
     nome: "Nome do produto",
-    preco: formatPriceInput(1990),
-    estoque: "10",
+    preco: quote ? "" : formatPriceInput(1990),
+    estoque: quote ? "" : "10",
     categoria: categories[0]?.slug ?? "",
     descricao: "Descrição do produto",
   };
@@ -69,7 +71,8 @@ export function planImport(rawText: string, ctx: ImportContext): ImportPlan {
 
   const header = rows[0].cells.map((c) => norm(c));
   const known = new Set<string>([...BASE_COLUMNS, ...ctx.defs.map((d) => d.key)]);
-  const missing = REQUIRED.filter((c) => !header.includes(c));
+  const required = ctx.quote ? REQUIRED.filter((c) => c !== "preco" && c !== "estoque") : REQUIRED;
+  const missing = required.filter((c) => !header.includes(c));
   if (missing.length > 0) {
     return {
       ok: false,
@@ -129,12 +132,13 @@ export function planImport(rawText: string, ctx: ImportContext): ImportPlan {
       out.push(fail("Nome vazio"));
       continue;
     }
-    const price = parsePriceCsv(col(cells, "preco"));
+    const priceText = col(cells, "preco");
+    const price = ctx.quote && priceText === "" ? (existing?.price ?? 0) : parsePriceCsv(priceText);
     if (price === null) {
       out.push(fail(`Preço inválido (${col(cells, "preco") || "vazio"}): use o formato 19,90`));
       continue;
     }
-    const stockText = col(cells, "estoque");
+    const stockText = ctx.quote && col(cells, "estoque") === "" ? String(existing?.stock ?? 0) : col(cells, "estoque");
     if (!/^\d+$/.test(stockText) || Number(stockText) > 1_000_000) {
       out.push(fail(`Estoque inválido (${stockText || "vazio"}): use um número inteiro, 0 ou maior`));
       continue;

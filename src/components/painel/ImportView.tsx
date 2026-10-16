@@ -23,6 +23,7 @@ export function ImportView() {
   const categories = useDemoStore((s) => s.categories);
   const config = useDemoStore((s) => s.config);
   const upsertProducts = useDemoStore((s) => s.upsertProducts);
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
 
   const [plan, setPlan] = useState<ImportPlan | null>(null);
   const [fileName, setFileName] = useState("");
@@ -34,7 +35,7 @@ export function ImportView() {
   const defs = config.attributeDefs;
 
   function downloadTemplate() {
-    const blob = new Blob([templateCsv(defs, categories)], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob([templateCsv(defs, categories, quote)], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -61,6 +62,7 @@ export function ImportView() {
       const stamp = Date.now().toString(36);
       setPlan(
         planImport(text, {
+          quote,
           products,
           categories,
           defs,
@@ -97,7 +99,7 @@ export function ImportView() {
       <h1 className="text-3xl">Importação</h1>
       <p className="mt-sm max-w-[40rem] text-muted">
         Importe produtos por planilha CSV. O SKU identifica o produto: SKU novo cria, SKU que já existe atualiza. Até {IMPORT_MAX_ROWS} linhas por arquivo, com
-        separador ; ou , e preço em formato brasileiro (19,90).
+        separador ; ou , e preço em formato brasileiro (19,90){quote ? " — nesta loja em orçamento, preço e estoque são opcionais" : ""}.
       </p>
 
       <div className="mt-md flex flex-col gap-md md:max-w-[36rem]">
