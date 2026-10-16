@@ -51,7 +51,7 @@ export function ProductGallery({
             key={img.src}
             className={`relative w-full shrink-0 snap-center overflow-hidden bg-surface ${tall ? "h-[420px] md:h-[520px]" : "aspect-product"}`}
           >
-            <StoreImage image={img} sizes={SIZES} lcp={i === 0} />
+            <StoreImage image={img} sizes={SIZES} lcp={i === 0} variants={false} />
           </li>
         ))}
       </ul>

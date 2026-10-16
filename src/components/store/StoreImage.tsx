@@ -4,6 +4,19 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { Image as ImageData } from "@/domain/types";
 
+/** Larguras (px) das versões menores de cada foto (scripts/image-variants.mjs): <nome>-360.webp e <nome>-640.webp. */
+export const IMAGE_VARIANT_WIDTHS = [360, 640] as const;
+
+/**
+ * srcset da foto de um preset (arquivo em /images/presets/<loja>/<nome>.webp, fora os banners): o navegador baixa a versão que cobre o espaço
+ * exibido. Miniaturas de 100 px e cards de 200 px não precisam do arquivo de 150 KB. Fotos enviadas pelo painel (data:) não têm versões.
+ */
+export function imageSrcSet(src: string): string | undefined {
+  const m = /^(\/images\/presets\/[^/]+\/(?!banner)[^/]+?)\.webp$/.exec(src);
+  if (!m || /-(360|640)\.webp$/.test(src)) return undefined;
+  return IMAGE_VARIANT_WIDTHS.map((w) => `${m[1]}-${w}.webp ${w}w`).join(", ");
+}
+
 /**
  * Imagem do preset preenchendo o contêiner (que deve ser `relative` e ter dimensões).
  * `unoptimized`: placeholders SVG locais não passam pelo otimizador; fotos reais (WebP já
@@ -18,12 +31,15 @@ export function StoreImage({
   sizes,
   lcp = false,
   defer = false,
+  variants = true,
   className = "object-cover",
 }: {
   image: ImageData;
   sizes: string;
   lcp?: boolean;
   defer?: boolean;
+  /** Falso quando a foto aparece grande (galeria do produto): usa só o arquivo original. */
+  variants?: boolean;
   className?: string;
 }) {
   const [near, setNear] = useState(!defer || lcp);
@@ -50,6 +66,23 @@ export function StoreImage({
   }, [near]);
 
   if (!near) return <span ref={holder} aria-hidden="true" className="absolute inset-0" data-deferred-image={image.src} />;
+  const srcSet = !lcp && variants ? imageSrcSet(image.src) : undefined;
+  if (srcSet) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- o next/image sem otimizador não gera srcset; este <img> reproduz o dele (fill)
+      <img
+        src={image.src}
+        srcSet={srcSet}
+        sizes={sizes}
+        alt={image.alt}
+        loading="lazy"
+        decoding="async"
+        data-nimg="fill"
+        className={className}
+        style={{ position: "absolute", height: "100%", width: "100%", left: 0, top: 0, right: 0, bottom: 0, color: "transparent" }}
+      />
+    );
+  }
   return (
     <Image
       src={image.src}
