@@ -14,6 +14,7 @@ export function validatePreset(preset: Preset): string[] {
     if (!ok) problems.push(`${field}: ${why}`);
   };
   const { legal, policies } = preset.config;
+  const quoteMode = preset.config.modules.orcamento?.enabled === true;
 
   // H1 · identificação da loja (rodapé)
   need(filled(legal?.name), "config.legal.name", "informe o nome ou a razão social");
@@ -22,14 +23,42 @@ export function validatePreset(preset: Preset): string[] {
   need(filled(legal?.email) && /^\S+@\S+\.\S+$/.test(legal.email), "config.legal.email", "informe um e-mail válido");
   need(filled(legal?.phone) && /\d/.test(legal.phone), "config.legal.phone", "informe o telefone");
 
-  // H2 · arrependimento e troca
-  need(
-    Number.isInteger(policies?.regretDays) && policies.regretDays >= MIN_REGRET_DAYS,
-    "config.policies.regretDays",
-    `o direito de arrependimento não pode ser menor que ${MIN_REGRET_DAYS} dias (CDC, art. 49); recebido: ${policies?.regretDays}`,
-  );
-  need(filled(policies?.regret), "config.policies.regret", "informe o aviso curto de arrependimento");
-  need(filled(policies?.regretConditions), "config.policies.regretConditions", "informe as condições de devolução no arrependimento");
+  if (quoteMode) {
+    // Modo orçamento: não há venda ao consumidor pela loja, então o arrependimento (CDC, art. 49) não se aplica,
+    // mas a loja não pode ter nenhum módulo de venda e precisa dos dados do orçamento e das condições comerciais.
+    const m = preset.config.modules;
+    const sales = [
+      m.retiradaLocal && "retiradaLocal",
+      m.freteGratis?.enabled && "freteGratis",
+      m.parcelamento?.enabled && "parcelamento",
+      m.boleto && "boleto",
+      m.cartao?.enabled && "cartao",
+      m.descontoPix?.enabled && "descontoPix",
+      m.cupom && "cupom",
+    ].filter(Boolean);
+    need(
+      sales.length === 0,
+      "config.modules",
+      `loja em orçamento (orcamento.enabled) não pode ter módulos de venda ligados; desligue: ${sales.join(", ")}`,
+    );
+    const quote = preset.config.quote;
+    need(!!quote && filled(quote.listLabel) && filled(quote.addLabel) && filled(quote.intro), "config.quote", "informe listLabel, addLabel e intro do modo orçamento");
+    need(!!quote && filledList(quote.applications), "config.quote.applications", "liste as aplicações do formulário");
+    need(
+      !!quote && filled(quote.whatsapp?.number) && /\d{10,}/.test(quote.whatsapp.number) && typeof quote.whatsapp.isReal === "boolean",
+      "config.quote.whatsapp",
+      "informe number (só dígitos, com DDI e DDD) e isReal",
+    );
+    need(filled(policies?.commercial?.production) && filled(policies?.commercial?.freight), "config.policies.commercial", "informe prazo de produção e frete das condições comerciais");
+  } else {
+    need(
+      Number.isInteger(policies?.regretDays) && (policies.regretDays as number) >= MIN_REGRET_DAYS,
+      "config.policies.regretDays",
+      `o direito de arrependimento não pode ser menor que ${MIN_REGRET_DAYS} dias (CDC, art. 49); recebido: ${policies?.regretDays}`,
+    );
+    need(filled(policies?.regret), "config.policies.regret", "informe o aviso curto de arrependimento");
+    need(filled(policies?.regretConditions), "config.policies.regretConditions", "informe as condições de devolução no arrependimento");
+  }
   const durability = policies?.defect?.durability;
   need(
     durability === "durable" || durability === "nonDurable",

@@ -9,13 +9,16 @@ import { useDemoStore } from "@/store/demo-store";
 import { InstallmentLine } from "./InstallmentLine";
 import { PixLine } from "./PixLine";
 import { ProductMenuItem } from "./ProductMenuItem";
+import { useQuoteMode } from "./useQuoteWords";
 import { StoreImage } from "./StoreImage";
 
 const CARD_SIZES = "(min-width: 768px) 25vw, 50vw";
 
 export function ProductCard({ product }: { product: Product }) {
   const defs = useDemoStore((s) => s.config.attributeDefs);
-  const soldOut = isSoldOut(product);
+  const quote = useQuoteMode();
+  // Loja em orçamento: sem preço, parcelas, Pix nem "esgotado" (tudo é sob encomenda).
+  const soldOut = !quote && isSoldOut(product);
   const badges = defs
     .filter((d) => d.highlight)
     .flatMap((d) => productValues(product, d.key));
@@ -46,9 +49,13 @@ export function ProductCard({ product }: { product: Product }) {
         <h3 className="mt-sm text-sm font-medium leading-snug text-text group-hover:underline">
           {product.name}
         </h3>
-        <p className="mt-xs text-base font-bold text-text">{formatBRL(product.price)}</p>
-        <InstallmentLine price={product.price} variant="card" className="text-xs text-muted" />
-        <PixLine amount={product.price} className="text-xs text-muted" />
+        {!quote && (
+          <>
+            <p className="mt-xs text-base font-bold text-text">{formatBRL(product.price)}</p>
+            <InstallmentLine price={product.price} variant="card" className="text-xs text-muted" />
+            <PixLine amount={product.price} className="text-xs text-muted" />
+          </>
+        )}
       </Link>
     </li>
   );

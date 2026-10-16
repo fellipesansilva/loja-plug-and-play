@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Saco de água para teste de carga, em formato de pera, com alça superior">
+<title>Saco de água para teste de carga, em formato de pera, com alça superior</title>
+<rect width="800" height="600" fill="#E8F0F2"/>
+<path d="M340 150 Q400 60 460 150" fill="none" stroke="#9DB2B8" stroke-width="22" stroke-linecap="round"/>
+<path d="M400 150 C300 150 250 250 235 340 C220 440 300 500 400 500 C500 500 580 440 565 340 C550 250 500 150 400 150 Z" fill="#0F4C5C"/>
+<path d="M300 330 H500" stroke="#0A3440" stroke-width="6" opacity="0.45"/>
+<rect x="285" y="230" width="34" height="160" rx="17" fill="#FFFFFF" opacity="0.28"/>
+<circle cx="400" cy="420" r="26" fill="#F2B705"/>
+<ellipse cx="400" cy="526" rx="190" ry="16" fill="#C7D6DA"/>
+</svg>

@@ -54,6 +54,11 @@ export type Modules = {
   descontoPix?: { enabled: boolean; percent: number };
   cupom?: boolean;
   assistenteVirtual?: boolean;
+  /**
+   * Modo orçamento (loja inteira): sem preço, carrinho, checkout, frete, cupom nem meios de pagamento; o cliente monta uma lista
+   * e pede orçamento. Não pode coexistir com nenhum dos módulos de venda acima (validado no build).
+   */
+  orcamento?: { enabled: boolean };
 };
 
 /** Candidatos de uma imagem responsiva (`width` em px do arquivo). */
@@ -168,6 +173,20 @@ export type StoreConfig = {
   };
   /** Logo em texto com um caractere de destaque colorido (ex.: "forno.da vila" com o ponto). Sem isso, usa `name`. */
   wordmark?: { text: string; accent: string };
+  /** Textos e dados do modo orçamento (obrigatório quando `modules.orcamento.enabled`). */
+  quote?: {
+    /** Nome da lista ("Lista de orçamento") e o gênero gramatical dele, como `cartLabel`/`cartGender`. */
+    listLabel: string;
+    listGender: "m" | "f";
+    /** Texto do botão do produto ("Adicionar ao orçamento"). */
+    addLabel: string;
+    /** Introdução da página da lista. */
+    intro: string;
+    /** Opções do campo "aplicação" do formulário. */
+    applications: string[];
+    /** WhatsApp da loja. Com `isReal` falso (demo) nada abre a conversa: mostra a mensagem pronta para copiar. */
+    whatsapp: { number: string; isReal: boolean };
+  };
   /** Retirada no local: prazo exibido na faixa de aviso (ex.: "20 min") e rótulo do status "enviado" nos pedidos de retirada (ex.: "Pronto para retirada"). */
   pickup?: { leadTime: string; readyLabel: string };
   homeBlocks: HomeBlock[];
@@ -186,12 +205,14 @@ export type StoreConfig = {
   theme: ThemeTokens;
   modules: Modules;
   policies: {
-    /** Aviso curto sobre arrependimento, exibido na página do produto (antes do link de Trocas e devoluções). */
-    regret: string;
+    /** Aviso curto sobre arrependimento, exibido na página do produto (antes do link de Trocas e devoluções). Não se aplica a loja em orçamento. */
+    regret?: string;
     /** Direito de arrependimento (CDC, art. 49): prazo em dias a partir do recebimento. Nunca menor que `MIN_REGRET_DAYS` (validado no build). */
-    regretDays: number;
+    regretDays?: number;
     /** Condições para devolver o produto no arrependimento (ex.: "peça sem uso e com etiqueta"). */
-    regretConditions: string;
+    regretConditions?: string;
+    /** Condições comerciais (loja em orçamento, no lugar de Trocas e devoluções): produção, frete. A garantia vem de `defect`. */
+    commercial?: { production: string; freight: string };
     /** Troca por defeito: prazo em dias a partir do recebimento e condições. */
     defect: {
       /** Os produtos da loja são duráveis (ex.: roupas) ou não duráveis (ex.: alimentos)? Define o prazo mínimo legal. */
@@ -270,6 +291,8 @@ export type Product = {
   addons?: Addon[];
   /** Selos de destaque do produto (ex.: "Nº 1 da semana"). */
   badges?: string[];
+  /** Aplicações do produto (etiquetas na página; ex.: "Agro", "Eventos"). */
+  applications?: string[];
   /** Padrão: `true`. Inativo some da loja (lista, busca, home e página do produto), mas continua no painel. */
   active?: boolean;
 };
@@ -359,6 +382,39 @@ export type Order = {
   total: Money;
 };
 
+export type QuoteStatus = "nova" | "em_analise" | "orcamento_enviado" | "ganho" | "perdido";
+
+export const QUOTE_STATUSES: readonly QuoteStatus[] = ["nova", "em_analise", "orcamento_enviado", "ganho", "perdido"];
+
+/** Item da lista de orçamento do visitante (sem preço): produto, quantidade e observação (até 500 caracteres). */
+export type QuoteListItem = { productId: string; qty: number; note: string };
+
+export const QUOTE_NOTE_MAX = 500;
+
+/** Item de uma solicitação enviada: guarda nome e SKU da época do envio. */
+export type QuoteRequestItem = { productId: string; name: string; sku: string; qty: number; note: string };
+
+export type QuoteContact = {
+  name: string;
+  company?: string;
+  email: string;
+  whatsapp: string;
+  city: string;
+  state: string;
+  application: string;
+  message: string;
+};
+
+/** Solicitação de orçamento (simulada). O protocolo é o id (ORC-AAAAMMDD-XXXXX). */
+export type QuoteRequest = {
+  id: string;
+  createdAt: string;
+  status: QuoteStatus;
+  items: QuoteRequestItem[];
+  contact: QuoteContact;
+  history: { status: QuoteStatus; at: string }[];
+};
+
 export type Coupon = {
   code: string;
   type: "percent" | "fixed";
@@ -387,5 +443,7 @@ export type Preset = {
   products: Product[];
   orders: Order[];
   coupons: Coupon[];
+  /** Solicitações de orçamento de exemplo (só em loja com `modules.orcamento`). */
+  quotes?: QuoteRequest[];
   sampleCsv: string;
 };

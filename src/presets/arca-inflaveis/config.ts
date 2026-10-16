@@ -1,0 +1,169 @@
+import type { StoreConfig } from "@/domain/types";
+import { bannerImage } from "./images";
+
+/** Arca Infláveis: fabricante fictício sob medida (loja em modo orçamento, sem preço, carrinho nem checkout). */
+export const config: StoreConfig = {
+  name: "Arca Infláveis",
+  orderPrefix: "ARC",
+  logo: "/placeholder?l=Arca%20Inflaveis&c=0f4c5c",
+  seo: {
+    titleTemplate: "%s · Arca Infláveis",
+    description: "Reservatórios flexíveis, boias e infláveis promocionais sob medida. Monte sua lista e peça um orçamento.",
+  },
+  layout: { search: "bar", categoryTile: "rect", listing: "grid", product: "classic" },
+  homeBlocks: [
+    {
+      id: "banner",
+      type: "banner",
+      enabled: true,
+      image: bannerImage,
+      eyebrow: "Fabricante sob medida",
+      title: "Infláveis e reservatórios na medida do seu projeto",
+      subtitle: "Escolha os produtos, descreva a aplicação e peça seu orçamento.",
+      ctaLabel: "Ver reservatórios e boias",
+      ctaHref: "/categoria/industria-e-agro",
+      secondaryCtaLabel: "Eventos e marketing",
+      secondaryCtaHref: "/categoria/eventos-e-marketing",
+    },
+    {
+      id: "categorias",
+      type: "categories",
+      enabled: true,
+      title: "Linhas de produto",
+      categoryIds: ["industria-e-agro", "eventos-e-marketing"],
+    },
+    {
+      id: "destaques",
+      type: "featured",
+      enabled: true,
+      title: "Mais pedidos",
+      linkLabel: "Ver indústria e agro",
+      linkHref: "/categoria/industria-e-agro",
+      productIds: ["arc-001", "arc-007", "arc-008", "arc-004", "arc-005", "arc-010", "arc-003", "arc-009"],
+    },
+  ],
+  attributeDefs: [
+    { key: "material", label: "Material", selector: "pill", filterable: false, highlight: false },
+    { key: "medidas", label: "Medidas", selector: "pill", filterable: false, highlight: false },
+    { key: "capacidade", label: "Capacidade", selector: "pill", filterable: false, highlight: false },
+    { key: "valvula", label: "Válvulas", selector: "pill", filterable: false, highlight: false },
+  ],
+  // Sem venda online: não há opções de frete a calcular (o frete é FOB, combinado no orçamento).
+  shipping: { options: [], coverage: "national" },
+  legal: {
+    name: "Arca Infláveis Indústria Ltda. (fictícia)",
+    document: "00.000.000/0001-00 (fictício, apenas demonstração)",
+    address: "Av. Exemplo, 1000 — Distrito Industrial, Campinas/SP (endereço fictício)",
+    email: "orcamentos@arcainflaveis.example",
+    phone: "(19) 0000-0000",
+  },
+  quote: {
+    listLabel: "Lista de orçamento",
+    listGender: "f",
+    addLabel: "Adicionar ao orçamento",
+    intro:
+      "Monte a lista com os produtos de interesse e descreva em cada item as medidas, a cor e a aplicação. Depois envie: respondemos com a proposta comercial.",
+    applications: [
+      "Agro e irrigação",
+      "Indústria e saneamento",
+      "Construção e içamento de cargas",
+      "Náutica e demarcação",
+      "Eventos e feiras",
+      "Publicidade e ações de marca",
+      "Outra aplicação",
+    ],
+    whatsapp: { number: "5519900000000", isReal: false },
+  },
+  theme: {
+    colors: {
+      primary: "#0f4c5c",
+      secondary: "#f2b705",
+      background: "#f4f8f9",
+      surface: "#ffffff",
+      text: "#12262d",
+      muted: "#566b72",
+      border: "#d3e0e4",
+      success: "#2e7d4f",
+      warning: "#b7791f",
+      danger: "#b4443c",
+      announcementBg: "#0f4c5c",
+      announcementText: "#ffffff",
+      highlightBg: "#f2b705",
+      highlightText: "#12262d",
+      footerBg: "#e8f0f2",
+      footerText: "#3f565d",
+    },
+    fonts: {
+      heading: "var(--font-barlow-condensed), 'Arial Narrow', 'Segoe UI', sans-serif",
+      body: "var(--font-barlow), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+      headingWeight: "700",
+      headingTracking: "0.01em",
+    },
+    radii: { sm: "4px", md: "6px", lg: "8px", xl: "12px", sheet: "8px", button: "4px" },
+    ratios: { product: "4 / 3" },
+    logo: {
+      transform: "uppercase",
+      tracking: "0.08em",
+      weight: "700",
+      color: "var(--t-color-text)",
+      accent: "var(--t-color-primary)",
+    },
+    spacing: { xs: "0.25rem", sm: "0.5rem", md: "1rem", lg: "1.5rem", xl: "2.5rem" },
+  },
+  modules: {
+    orcamento: { enabled: true },
+    retiradaLocal: false,
+    freteGratis: { enabled: false, minValue: 0 },
+    parcelamento: { enabled: false, maxInstallments: 1 },
+    boleto: false,
+    cartao: { enabled: false },
+    descontoPix: { enabled: false, percent: 0 },
+    cupom: false,
+    assistenteVirtual: false,
+  },
+  policies: {
+    // Loja em orçamento: não há venda ao consumidor pela loja, então não há arrependimento nem troca por arrependimento.
+    defect: {
+      durability: "durable",
+      days: 90,
+      conditions:
+        "Garantia de 90 dias contra defeito de fabricação (costuras, soldas e válvulas), contados do recebimento. Não cobre furos por uso, pressão acima da indicada nem contato com produtos químicos que não constem do pedido. (Texto de demonstração.)",
+    },
+    commercial: {
+      production:
+        "Prazo de produção sob consulta: depende do modelo, das medidas e da fila de fabricação, e vem na proposta. (Texto de demonstração.)",
+      freight:
+        "Frete FOB: o transporte sai da nossa fábrica por conta do comprador, na transportadora que ele escolher ou na que indicarmos. (Texto de demonstração.)",
+    },
+    about:
+      "A Arca Infláveis é um fabricante fictício de reservatórios flexíveis, boias e infláveis promocionais, criado para demonstrar a loja em modo orçamento da plataforma de loja virtual plug and play.",
+    privacy: {
+      dataCollected: [
+        "Nome, empresa (opcional), e-mail, WhatsApp, cidade e UF de entrega, informados no pedido de orçamento.",
+        "Aplicação e mensagem escritas por você, e as observações de cada item da lista.",
+        "Sua escolha sobre cookies.",
+      ],
+      purpose:
+        "Responder ao pedido de orçamento, enviar a proposta comercial e dar seguimento à negociação. Não enviamos ofertas sem que você peça. (Texto de demonstração.)",
+      retention:
+        "Pedidos de orçamento ficam guardados por até 2 anos, para consulta de propostas anteriores. Depois disso são apagados. (Texto de demonstração.)",
+      sharing: [
+        "Transportadoras, quando a proposta é aceita e a entrega é combinada.",
+        "Autoridades, quando a lei exigir.",
+      ],
+      rights: [
+        "Confirmar que tratamos seus dados e acessá-los.",
+        "Corrigir dados incompletos ou desatualizados.",
+        "Pedir anonimização, bloqueio ou eliminação de dados desnecessários.",
+        "Pedir a portabilidade dos dados.",
+        "Revogar o consentimento e se opor ao tratamento, quando cabível.",
+      ],
+      controller: { name: "Encarregado de dados da Arca Infláveis (fictício)", email: "privacidade@arcainflaveis.example" },
+    },
+    cookies: {
+      notice:
+        "Usamos apenas cookies essenciais para a loja funcionar. Você escolhe se permite também os não essenciais (como medição de audiência), que hoje não usamos. (Texto de demonstração.)",
+      version: "1",
+    },
+  },
+};

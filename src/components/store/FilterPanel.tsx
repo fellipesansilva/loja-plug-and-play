@@ -31,6 +31,8 @@ function FilterFields({
   idPrefix,
 }: Props & { idPrefix: string }) {
   const defs = useDemoStore((s) => s.config.attributeDefs);
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
+  const sortOptions = quote ? SORT_OPTIONS.filter((o) => !o.value.endsWith("-preco")) : SORT_OPTIONS;
   return (
     <div className="flex flex-col gap-lg">
       <div>
@@ -43,7 +45,7 @@ function FilterFields({
           onChange={(e) => onOrder(e.target.value as SortOrder)}
           className="mt-xs h-11 w-full rounded-md border border-border bg-surface px-sm text-base"
         >
-          {SORT_OPTIONS.map((o) => (
+          {sortOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>

@@ -9,6 +9,7 @@ import { isListed } from "@/lib/product";
 import { useListedProducts } from "@/store/use-listed-products";
 import { CategoryChips } from "./CategoryChips";
 import { ProductGrid } from "./ProductCard";
+import { useQuoteMode } from "./useQuoteWords";
 import { ResponsiveBanner } from "./ResponsiveBanner";
 import { QuickAddButton } from "./ProductMenuItem";
 import { ShippingProgress } from "./ShippingProgress";
@@ -119,6 +120,7 @@ function ChipsBlock({ block }: { block: BlockOf<"chips"> }) {
 
 function SpotlightBlock({ block }: { block: BlockOf<"spotlight"> }) {
   const product = useDemoStore((s) => s.products.find((p) => p.id === block.productId && isListed(p)));
+  const quote = useQuoteMode();
   if (!product) return null;
   const badge = product.badges?.[0];
   const href = `/produto/${product.slug}`;
@@ -141,9 +143,9 @@ function SpotlightBlock({ block }: { block: BlockOf<"spotlight"> }) {
           <Link href={href} className="min-w-0 flex-1">
             <h3 className="font-body text-xl font-extrabold leading-snug">{product.name}</h3>
             <p className="mt-1 line-clamp-2 text-sm text-muted">{product.description}</p>
-            <p className="mt-2 text-lg font-extrabold text-primary">{formatBRL(product.price)}</p>
+            {!quote && <p className="mt-2 text-lg font-extrabold text-primary">{formatBRL(product.price)}</p>}
           </Link>
-          <QuickAddButton product={product} className="size-13" />
+          {!quote && <QuickAddButton product={product} className="size-13" />}
         </div>
       </article>
     </section>

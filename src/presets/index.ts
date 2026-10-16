@@ -1,10 +1,11 @@
 import type { Preset } from "@/domain/types";
 import { tramaStudio } from "./trama-studio";
 import { fornoDaVila } from "./forno-da-vila";
+import { arcaInflaveis } from "./arca-inflaveis";
 import { assertValidPreset } from "./validate";
 
 /** Registro de presets. Para adicionar um novo, crie a pasta e registre aqui. */
-export const presets: readonly Preset[] = [tramaStudio, fornoDaVila];
+export const presets: readonly Preset[] = [tramaStudio, fornoDaVila, arcaInflaveis];
 
 // Preset sem os dados de conformidade (identificação, arrependimento, privacidade, cookies) derruba o build.
 for (const preset of presets) assertValidPreset(preset);

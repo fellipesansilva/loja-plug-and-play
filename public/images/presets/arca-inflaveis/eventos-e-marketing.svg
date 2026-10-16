@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Pórtico inflável e blimp em um evento ao ar livre">
+<title>Pórtico inflável e blimp em um evento ao ar livre</title>
+<rect width="800" height="600" fill="#E8F0F2"/>
+<rect x="0" y="440" width="800" height="160" fill="#D4E0E3"/>
+<path d="M120 450 V300 Q120 170 330 170 Q540 170 540 300 V450" fill="none" stroke="#0F4C5C" stroke-width="64" stroke-linecap="round"/>
+<path d="M192 360 H258 M402 360 H468" stroke="#F2B705" stroke-width="12"/>
+<ellipse cx="610" cy="150" rx="130" ry="56" fill="#F2B705"/>
+<path d="M720 135 L780 100 L770 150 L780 200 L720 170 Z" fill="#0F4C5C"/>
+<rect x="585" y="195" width="50" height="20" rx="8" fill="#0A3440"/>
+</svg>

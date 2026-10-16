@@ -4,7 +4,7 @@
  * baixa nada da Trama e vice-versa. (next/font não serve aqui: ele coloca as fontes de todos os presets no CSS
  * compartilhado da árvore de rotas.) Ao criar um preset novo, adicione a pasta em public/fonts e uma entrada aqui.
  */
-type FontFace = { family: string; file: string; weight: string };
+type FontFace = { family: string; file: string; weight: string; /** Padrão: true. Só as fontes do primeiro uso (título e texto regular) precisam de preload. */ preload?: boolean };
 type PresetFonts = { faces: FontFace[]; vars: Record<string, string> };
 
 const LATIN_RANGE =
@@ -25,11 +25,20 @@ export const fontsBySlug: Record<string, PresetFonts> = {
     ],
     vars: { "--font-bricolage": '"Bricolage Grotesque"', "--font-manrope": '"Manrope"' },
   },
+  arca: {
+    faces: [
+      { family: "Barlow Condensed", file: "barlow-condensed-700.woff2", weight: "700" },
+      { family: "Barlow", file: "barlow-400.woff2", weight: "400" },
+      { family: "Barlow", file: "barlow-500.woff2", weight: "500", preload: false },
+      { family: "Barlow", file: "barlow-700.woff2", weight: "700", preload: false },
+    ],
+    vars: { "--font-barlow-condensed": '"Barlow Condensed"', "--font-barlow": '"Barlow"' },
+  },
 };
 
 /** Endereços dos arquivos de fonte do preset (para o preload). */
 export function fontUrlsFor(slug: string): string[] {
-  return (fontsBySlug[slug]?.faces ?? []).map((f) => `/fonts/${slug}/${f.file}`);
+  return (fontsBySlug[slug]?.faces ?? []).filter((f) => f.preload !== false).map((f) => `/fonts/${slug}/${f.file}`);
 }
 
 /** CSS com as @font-face e as variáveis de fonte do preset em :root (os tokens do preset referenciam as variáveis). */

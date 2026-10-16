@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Inflável temático em formato de foguete, para eventos">
+<title>Inflável temático em formato de foguete, para eventos</title>
+<rect width="800" height="600" fill="#E8F0F2"/>
+<ellipse cx="400" cy="500" rx="300" ry="26" fill="#C7D6DA"/>
+<path d="M400 70 C500 150 520 300 500 420 H300 C280 300 300 150 400 70 Z" fill="#0F4C5C"/>
+<path d="M300 380 L200 470 L300 440 Z M500 380 L600 470 L500 440 Z" fill="#F2B705"/>
+<circle cx="400" cy="250" r="56" fill="#E8F0F2"/><circle cx="400" cy="250" r="40" fill="#9AD0DC"/>
+<path d="M340 420 H460 L430 480 H370 Z" fill="#F2B705"/>
+<rect x="330" y="130" width="26" height="170" rx="13" fill="#FFFFFF" opacity="0.28"/>
+</svg>

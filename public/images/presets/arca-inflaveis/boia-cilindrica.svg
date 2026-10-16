@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Boia cilíndrica inflável com faixas, flutuando na água">
+<title>Boia cilíndrica inflável com faixas, flutuando na água</title>
+<rect width="800" height="600" fill="#E8F0F2"/>
+<rect x="0" y="380" width="800" height="220" fill="#BFDDE4"/>
+<path d="M0 400 q50 -20 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" stroke="#FFFFFF" stroke-width="5" fill="none" opacity="0.7"/>
+<rect x="250" y="140" width="300" height="300" rx="150" fill="#0F4C5C"/>
+<rect x="250" y="250" width="300" height="60" fill="#F2B705"/>
+<rect x="285" y="170" width="36" height="220" rx="18" fill="#FFFFFF" opacity="0.28"/>
+<circle cx="400" cy="120" r="20" fill="#9DB2B8"/>
+<path d="M400 100 V70" stroke="#9DB2B8" stroke-width="8"/>
+</svg>

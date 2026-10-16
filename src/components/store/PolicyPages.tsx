@@ -71,6 +71,29 @@ export function ExchangeView() {
   );
 }
 
+/** Condições comerciais (loja em orçamento, no lugar de Trocas e devoluções): produção, frete e garantia vêm do preset. */
+export function CommercialTermsView() {
+  const policies = useDemoStore((s) => s.config.policies);
+  const commercial = policies.commercial;
+  return (
+    <Page title="Condições comerciais">
+      <Block id="cond-producao" title="Prazo de produção">
+        <p>{commercial?.production}</p>
+      </Block>
+      <Block id="cond-frete" title="Frete">
+        <p>{commercial?.freight}</p>
+      </Block>
+      <Block id="cond-garantia" title="Garantia">
+        <p>
+          Prazo: <strong data-testid="defect-days">{policies.defect.days} dias</strong> contra defeito de fabricação.
+        </p>
+        <p>{policies.defect.conditions}</p>
+      </Block>
+      <p className="text-sm text-muted">Os preços e prazos finais de cada projeto vêm na proposta comercial enviada depois do pedido de orçamento.</p>
+    </Page>
+  );
+}
+
 /** Política de privacidade (LGPD): as seis seções vêm do preset. */
 export function PrivacyView() {
   const { privacy } = useDemoStore((s) => s.config.policies);

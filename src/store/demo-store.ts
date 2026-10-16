@@ -11,11 +11,17 @@ import type {
   Order,
   OrderStatus,
   Product,
+  QuoteContact,
+  QuoteListItem,
+  QuoteRequest,
+  QuoteStatus,
   StoreConfig,
   ThemeTokens,
 } from "@/domain/types";
 import { getPreset } from "@/presets";
 import { applyStatus, isValidTransition, withHistory } from "@/lib/order-status";
+import { addToList, clampNote, clampQty, makeProtocol } from "@/lib/quote";
+import { applyQuoteStatus, isValidQuoteTransition } from "@/lib/quote-status";
 import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
 import { safeStorage } from "./safe-storage";
@@ -31,6 +37,9 @@ type DemoData = {
   cart: CartLine[];
   /** Cupom, CEP e entrega escolhidos no carrinho. */
   checkout: CheckoutDraft;
+  /** Modo orçamento: a lista do visitante e as solicitações enviadas (exemplos do preset + feitas na demo, da mais recente à mais antiga). */
+  quoteList: QuoteListItem[];
+  quotes: QuoteRequest[];
 };
 
 type DemoActions = {
@@ -55,6 +64,15 @@ type DemoActions = {
   /** Inativo some da loja, mas continua no painel. */
   setProductActive: (productId: string, active: boolean) => void;
   setOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => void;
+  /** Modo orçamento: lista de orçamento do visitante. */
+  addToQuote: (productId: string, qty?: number) => void;
+  setQuoteQty: (productId: string, qty: number) => void;
+  setQuoteNote: (productId: string, note: string) => void;
+  removeFromQuote: (productId: string) => void;
+  /** Envia a lista: gera o protocolo, grava a solicitação (itens + contato), esvazia a lista e devolve a solicitação. Lista vazia: null. */
+  submitQuote: (contact: QuoteContact, now?: Date) => QuoteRequest | null;
+  /** Mudança de status de uma solicitação (só a próxima etapa ou "perdido" permitido). Devolve se mudou. */
+  changeQuoteStatus: (id: string, status: QuoteStatus, now?: Date) => boolean;
   /** Mudança de status do painel: só vale a próxima etapa ou o cancelamento permitido. Devolve se mudou. */
   changeOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => boolean;
   /** Pedido de arrependimento (simulado): dentro do prazo do preset, grava o protocolo e muda o status para "cancelado". */
@@ -76,7 +94,15 @@ function dataFromPreset(id: string): DemoData {
     orders: preset.orders,
     coupons: preset.coupons,
   });
-  return { presetId: preset.id, ...clone, orders: clone.orders.map(withHistory), cart: [], checkout: { ...EMPTY_CHECKOUT } };
+  return {
+    presetId: preset.id,
+    ...clone,
+    orders: clone.orders.map(withHistory),
+    cart: [],
+    checkout: { ...EMPTY_CHECKOUT },
+    quoteList: [],
+    quotes: structuredClone(preset.quotes ?? []),
+  };
 }
 
 /**
@@ -128,9 +154,39 @@ export function createDemoStore(presetId: string) {
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? applyStatus(o, status, now) : o)) }));
         return true;
       },
+      addToQuote: (productId, qty = 1) => set((s) => ({ quoteList: addToList(s.quoteList, productId, qty) })),
+      setQuoteQty: (productId, qty) =>
+        set((s) => ({ quoteList: s.quoteList.map((i) => (i.productId === productId ? { ...i, qty: clampQty(qty) } : i)) })),
+      setQuoteNote: (productId, note) =>
+        set((s) => ({ quoteList: s.quoteList.map((i) => (i.productId === productId ? { ...i, note: clampNote(note) } : i)) })),
+      removeFromQuote: (productId) => set((s) => ({ quoteList: s.quoteList.filter((i) => i.productId !== productId) })),
+      submitQuote: (contact, now = new Date()) => {
+        const { quoteList, products, quotes } = get();
+        const items = quoteList.flatMap((i) => {
+          const p = products.find((x) => x.id === i.productId);
+          return p ? [{ productId: p.id, name: p.name, sku: p.sku, qty: i.qty, note: i.note }] : [];
+        });
+        if (items.length === 0) return null;
+        const request: QuoteRequest = {
+          id: makeProtocol(now, new Set(quotes.map((q) => q.id))),
+          createdAt: now.toISOString(),
+          status: "nova",
+          items,
+          contact,
+          history: [{ status: "nova", at: now.toISOString() }],
+        };
+        set((s) => ({ quotes: [request, ...s.quotes], quoteList: [] }));
+        return request;
+      },
+      changeQuoteStatus: (id, status, now = new Date()) => {
+        const q = get().quotes.find((x) => x.id === id);
+        if (!q || !isValidQuoteTransition(q.status, status)) return false;
+        set((s) => ({ quotes: s.quotes.map((x) => (x.id === id ? applyQuoteStatus(x, status, now) : x)) }));
+        return true;
+      },
       requestRegret: (orderId, email, now = new Date()) => {
         const { orders, config } = get();
-        const result = evaluateRegret(orders, orderId, email, config.policies.regretDays, now);
+        const result = evaluateRegret(orders, orderId, email, config.policies.regretDays ?? 0, now);
         if (result.kind === "ok") {
           const regret = { protocol: result.protocol, requestedAt: now.toISOString() };
           set((s) => ({
@@ -150,8 +206,8 @@ export function createDemoStore(presetId: string) {
       storage: createJSONStorage(() => safeStorage),
       // Hidratação manual (no cliente, após montar) para evitar mismatch com o SSR.
       skipHydration: true,
-      partialize: ({ presetId, config, categories, products, orders, coupons, cart, checkout }) => ({
-        presetId, config, categories, products, orders, coupons, cart, checkout,
+      partialize: ({ presetId, config, categories, products, orders, coupons, cart, checkout, quoteList, quotes }) => ({
+        presetId, config, categories, products, orders, coupons, cart, checkout, quoteList, quotes,
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<DemoData> | undefined;
@@ -195,11 +251,14 @@ export function useDemoStore<T>(selector: (state: DemoState) => T): T {
 /** Migração do estado salvo (exportada para teste). Devolve {} para formatos que não dá para aproveitar. */
 export function migrateState(persisted: unknown, version: number, presetId: string): Partial<DemoData> {
   const saved = persisted as Partial<DemoData> | undefined;
-  if (version !== 5 || !saved || saved.presetId !== presetId || !saved.config) return {};
+  if ((version !== 5 && version !== 6) || !saved || saved.presetId !== presetId || !saved.config) return {};
   const fresh = getPreset(presetId)!;
   return {
     ...saved,
     config: { ...structuredClone(fresh.config), name: saved.config.name, theme: saved.config.theme },
     orders: (saved.orders ?? []).map(withHistory),
+    // v7: modo orçamento (lista e solicitações). Lojas de venda não usam, mas o estado salvo passa a tê-los.
+    quoteList: saved.quoteList ?? [],
+    quotes: saved.quotes ?? structuredClone(fresh.quotes ?? []),
   };
 }

@@ -93,8 +93,8 @@ describe("store: mudança de status", () => {
 });
 
 describe("migração do estado salvo (v5 → v6)", () => {
-  it("a versão do formato subiu para 6", () => {
-    expect(STORAGE_VERSION).toBe(6);
+  it("a versão do formato subiu para 7", () => {
+    expect(STORAGE_VERSION).toBe(7);
   });
 
   it("mantém os pedidos (e ganham histórico), o carrinho e o catálogo; config volta a ser a do preset, com nome e tema editados", () => {

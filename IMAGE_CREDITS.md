@@ -73,3 +73,23 @@ Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset 
 | `public/images/presets/forno-da-vila/categoria-paes.webp` | https://unsplash.com/photos/6c65NYGVv5k | Joshua Woroniecki | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/categoria-doces.webp` | https://unsplash.com/photos/e6Vv4S9Pvrk | Orkun Orcan | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/categoria-bebidas.webp` | https://unsplash.com/photos/_PaXoN4_2s0 | Charity Beth Long | [Unsplash License](https://unsplash.com/license) |
+
+## Arca Infláveis (ilustrações originais)
+
+O preset **Arca Infláveis** não usa fotos: nenhuma foto de licença comercial com crédito mostrava os produtos do nicho (reservatórios flexíveis, bolsas de içamento, boias, infláveis), então todas as imagens são **ilustrações vetoriais originais em SVG**, desenhadas para o preset com a paleta dele. Não há imagem de terceiros. Quando houver fotos dos produtos do cliente, elas substituem estas.
+
+| Arquivo | Origem | Autor | Licença |
+|---|---|---|---|
+| `public/images/presets/arca-inflaveis/banner.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/blimp.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/boia-cilindrica.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/boia-de-demarcacao.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/bolsa-de-icamento.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/eventos-e-marketing.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/industria-e-agro.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/inflavel-tematico.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/portico-inflavel.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/replica-inflavel.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/reservatorio-aberto.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/reservatorio-flexivel-fechado.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/saco-para-teste-de-carga.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |

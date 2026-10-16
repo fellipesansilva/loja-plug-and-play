@@ -30,7 +30,7 @@ describe.each(presets.map((p) => [p.id, p] as const))("conformidade do preset %s
     expect(() => assertValidPreset(bad)).toThrow(/config\.legal\.document/);
   });
 
-  it("H2 · arrependimento de 5 dias derruba o build; 7 ou mais passam", () => {
+  it.skipIf(preset.config.modules.orcamento?.enabled === true)("H2 · arrependimento de 5 dias derruba o build; 7 ou mais passam", () => {
     const bad = clone(preset);
     bad.config.policies.regretDays = 5;
     expect(() => assertValidPreset(bad)).toThrow(/regretDays[\s\S]*7 dias/);

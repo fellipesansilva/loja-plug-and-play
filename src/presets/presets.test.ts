@@ -10,7 +10,10 @@ const expectedFreeShipping: Record<string, number> = {
   "forno-da-vila": 8000,
 };
 
-describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) => {
+/** Presets de venda (preço, carrinho e checkout). O preset em orçamento (Arca) tem os próprios testes em arca.test.ts. */
+const sales = presets.filter((p) => !p.config.modules.orcamento?.enabled);
+
+describe.each(sales.map((p) => [p.id, p] as const))("preset %s", (id, preset) => {
   it("tem 16–20 produtos em ≥ 3 categorias", () => {
     expect(preset.products.length).toBeGreaterThanOrEqual(16);
     expect(preset.products.length).toBeLessThanOrEqual(20);
@@ -116,7 +119,8 @@ describe.each(presets.map((p) => [p.id, p] as const))("preset %s", (id, preset) 
   });
 
   it("policies.regret afirma o direito de arrependimento de 7 dias (CDC, art. 49)", () => {
-    const { regret, regretDays } = preset.config.policies;
+    const { regretDays } = preset.config.policies;
+    const regret = preset.config.policies.regret ?? "";
     expect(regret).toMatch(/7 dias/);
     expect(regret.toLowerCase()).toContain("arrependimento");
     expect(regretDays).toBe(7);
@@ -227,8 +231,8 @@ describe("valores monetários em centavos inteiros", () => {
     }
     expect(values.length).toBeGreaterThan(0);
     for (const v of values) expect(Number.isInteger(v)).toBe(true);
-    // preços plausíveis em centavos (nenhum preço de produto abaixo de R$ 1,00)
-    for (const p of preset.products) expect(p.price).toBeGreaterThanOrEqual(100);
+    // preços plausíveis em centavos (nenhum preço de produto abaixo de R$ 1,00), exceto loja em orçamento (sem preço)
+    if (!preset.config.modules.orcamento?.enabled) for (const p of preset.products) expect(p.price).toBeGreaterThanOrEqual(100);
   });
 });
 

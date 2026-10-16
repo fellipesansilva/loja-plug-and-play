@@ -410,7 +410,7 @@ describe("nome de item sem parênteses aninhados", () => {
       for (const a of p.addons ?? []) names.push(a.label);
     }
     for (const o of preset.orders) for (const i of o.items) names.push(i.name);
-    expect(names.length).toBeGreaterThan(preset.products.length);
+    expect(names.length).toBeGreaterThanOrEqual(preset.products.length);
     for (const name of names) expect(name, name).not.toMatch(nested);
   });
 

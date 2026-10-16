@@ -1,4 +1,4 @@
-import { ProductView } from "@/components/store/ProductView";
+import { ProductRoute } from "@/components/store/ProductRoute";
 import { presets } from "@/presets";
 
 // Pré-gera todos os produtos de todos os presets; o preset vem do segmento pai.
@@ -12,5 +12,5 @@ export function generateStaticParams() {
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return <ProductView slug={slug} />;
+  return <ProductRoute slug={slug} />;
 }

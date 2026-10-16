@@ -14,8 +14,10 @@ import { getPreset, presetBySlug, resolvePresetKey } from "@/presets";
 const STORE_ROUTES = new Set([
   "busca",
   "carrinho",
+  "condicoes-comerciais",
   "categoria",
   "checkout",
+  "orcamento",
   "pedido",
   "privacidade",
   "produto",

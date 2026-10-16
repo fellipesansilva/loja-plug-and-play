@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Réplica inflável de uma lata gigante, para ações de marca">
+<title>Réplica inflável de uma lata gigante, para ações de marca</title>
+<rect width="800" height="600" fill="#E8F0F2"/>
+<ellipse cx="400" cy="500" rx="300" ry="26" fill="#C7D6DA"/>
+<rect x="270" y="110" width="260" height="360" rx="40" fill="#F2B705"/>
+<rect x="270" y="190" width="260" height="170" fill="#0F4C5C"/>
+<path d="M310 275 H490" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+<path d="M330 310 H470" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.6"/>
+<ellipse cx="400" cy="112" rx="130" ry="26" fill="#FFD95A"/>
+<ellipse cx="400" cy="108" rx="60" ry="10" fill="#9DB2B8"/>
+<rect x="290" y="130" width="28" height="320" rx="14" fill="#FFFFFF" opacity="0.28"/>
+</svg>

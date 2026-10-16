@@ -40,7 +40,7 @@ describe("leitor de CSV", () => {
   });
 });
 
-describe.each(presets.map((p) => [p.id, p] as const))("importação CSV · %s", (_id, preset) => {
+describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled).map((p) => [p.id, p] as const))("importação CSV · %s", (_id, preset) => {
   let n = 0;
   const ctx = (over: Partial<ImportContext> = {}): ImportContext => ({
     products: preset.products,

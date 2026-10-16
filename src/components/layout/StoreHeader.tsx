@@ -7,9 +7,14 @@ import { AnnouncementBar } from "@/components/store/AnnouncementBar";
 import { CartIcon, CloseIcon, MenuIcon, SearchIcon } from "@/components/store/Icons";
 import { useDemoStore } from "@/store/demo-store";
 
-const links = [
+const saleLinks = [
   { href: "/sobre", label: "Sobre" },
   { href: "/trocas-e-devolucoes", label: "Trocas e devoluções" },
+  { href: "/privacidade", label: "Privacidade" },
+];
+const quoteLinks = [
+  { href: "/sobre", label: "Sobre" },
+  { href: "/condicoes-comerciais", label: "Condições comerciais" },
   { href: "/privacidade", label: "Privacidade" },
 ];
 
@@ -69,10 +74,13 @@ export function StoreHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const name = useDemoStore((s) => s.config.name);
   const wordmark = useDemoStore((s) => s.config.wordmark);
-  const cartLabel = useDemoStore((s) => s.config.cartLabel ?? "Carrinho");
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
+  const links = quote ? quoteLinks : saleLinks;
+  const cartLabel = useDemoStore((s) => (s.config.modules.orcamento?.enabled ? (s.config.quote?.listLabel ?? "Lista de orçamento") : (s.config.cartLabel ?? "Carrinho")));
   const searchLayout = useDemoStore((s) => s.config.layout.search);
   const categories = useDemoStore((s) => s.categories);
-  const count = useDemoStore((s) => s.cart.reduce((sum, l) => sum + l.qty, 0));
+  // Loja em orçamento: o contador é o número de itens diferentes da lista.
+  const count = useDemoStore((s) => (s.config.modules.orcamento?.enabled ? s.quoteList.length : s.cart.reduce((sum, l) => sum + l.qty, 0)));
 
   return (
     <header className="bg-background">
@@ -111,14 +119,14 @@ export function StoreHeader() {
               </button>
             )}
             <Link
-              href="/carrinho"
+              href={quote ? "/orcamento" : "/carrinho"}
               className={`${iconButton} relative`}
               aria-label={`${cartLabel}, ${count} ${count === 1 ? "item" : "itens"}`}
             >
               <CartIcon />
               {count > 0 && (
                 <span
-                  data-testid="cart-count"
+                  data-testid={quote ? "quote-count" : "cart-count"}
                   className="absolute right-0 top-0 inline-flex min-w-5 items-center justify-center rounded-button bg-primary px-xs text-xs font-bold text-background"
                 >
                   {count}

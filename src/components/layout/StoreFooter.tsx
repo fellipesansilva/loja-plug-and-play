@@ -8,6 +8,7 @@ const linkClass = "inline-flex min-h-11 items-center underline";
 
 export function StoreFooter() {
   const { name, legal } = useDemoStore((s) => s.config);
+  const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
   const { reopen } = useConsent();
   return (
     <footer className="mt-xl border-t border-border bg-footer-bg" data-testid="store-footer">
@@ -29,12 +30,20 @@ export function StoreFooter() {
           <StoreLink href="/sobre" className={linkClass}>
             Sobre
           </StoreLink>
-          <StoreLink href="/trocas-e-devolucoes" className={linkClass}>
-            Trocas e devoluções
-          </StoreLink>
-          <StoreLink href="/arrependimento" className={linkClass}>
-            Desistir da compra
-          </StoreLink>
+          {quote ? (
+            <StoreLink href="/condicoes-comerciais" className={linkClass}>
+              Condições comerciais
+            </StoreLink>
+          ) : (
+            <>
+              <StoreLink href="/trocas-e-devolucoes" className={linkClass}>
+                Trocas e devoluções
+              </StoreLink>
+              <StoreLink href="/arrependimento" className={linkClass}>
+                Desistir da compra
+              </StoreLink>
+            </>
+          )}
           <StoreLink href="/privacidade" className={linkClass}>
             Política de Privacidade
           </StoreLink>
@@ -42,7 +51,7 @@ export function StoreFooter() {
             Preferências de cookies
           </button>
         </nav>
-        <p className="mt-sm">Loja de demonstração — os dados desta identificação são fictícios e nenhum pedido real é processado.</p>
+        <p className="mt-sm">Loja de demonstração — os dados desta identificação são fictícios e nenhum {quote ? "pedido de orçamento" : "pedido"} real é processado.</p>
       </div>
     </footer>
   );
