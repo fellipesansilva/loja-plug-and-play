@@ -22,6 +22,8 @@ export function Dimensionador({ product }: { product: Product }) {
   const [dias, setDias] = useState(cfg?.diasMin ?? 1);
   const [adicionado, setAdicionado] = useState(false);
   const [erroAdd, setErroAdd] = useState<string | null>(null);
+  /** Motivo mostrado quando o cliente clica em adicionar sem sugestão válida; some assim que a sugestão passa a existir. */
+  const [aviso, setAviso] = useState<string | null>(null);
 
   useEffect(() => {
     if (!adicionado) return;
@@ -39,7 +41,11 @@ export function Dimensionador({ product }: { product: Product }) {
   const maior = Math.max(...linha.capacidades);
 
   function adicionar() {
-    if (sugestao.tipo === "sem-consumo") return;
+    if (sugestao.tipo === "sem-consumo") {
+      setAviso("Informe o consumo diário.");
+      return;
+    }
+    setAviso(null);
     const nota = observacaoDimensionador(sugestao, consumo, dias, cfg!.unidadeConsumo);
     const r = addConfiguredToQuote(product.id, nota, sugestao.tipo === "varios" ? sugestao.quantidade : 1);
     if (!r.ok) {
@@ -73,6 +79,7 @@ export function Dimensionador({ product }: { product: Product }) {
               onChange={(e) => {
                 setConsumoTexto(e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, CONSUMO_MAX_DIGITOS));
                 setErroAdd(null);
+                setAviso(null);
               }}
               data-testid="dim-consumo"
               className="mt-xs h-11 w-full rounded-md border border-border bg-background px-sm text-base"
@@ -106,7 +113,14 @@ export function Dimensionador({ product }: { product: Product }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-md rounded-md bg-surface p-md" aria-live="polite" data-testid="dim-resultado">
-          {sugestao.tipo === "sem-consumo" && <p className="text-muted">Informe o consumo diário</p>}
+          {sugestao.tipo === "sem-consumo" &&
+            (aviso ? (
+              <p className="font-bold text-danger" data-testid="dim-aviso">
+                {aviso}
+              </p>
+            ) : (
+              <p className="text-muted">Informe o consumo diário</p>
+            ))}
           {sugestao.tipo !== "sem-consumo" && (
             <>
               <p className="text-sm text-muted">

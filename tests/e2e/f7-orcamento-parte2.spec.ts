@@ -160,17 +160,47 @@ test.describe("Parte 2 · dimensionador de reservatório", () => {
     const erros: string[] = [];
     page.on("pageerror", (e) => erros.push(e.message));
     const lista = () => page.evaluate(() => JSON.stringify(window.__demoStore!.getState().quoteList));
+    const regiao = page.getByTestId("dim-resultado");
+    await expect(regiao).toHaveAttribute("aria-live", "polite");
     const antes = await lista();
+    // antes de clicar só há a dica; o aviso aparece ao clicar sem sugestão, dentro da região aria-live
+    await expect(page.getByTestId("dim-aviso")).toHaveCount(0);
     await page.getByTestId("dim-adicionar").click();
+    await expect(regiao).toContainText("Informe o consumo diário");
+    await expect(regiao.getByTestId("dim-aviso")).toHaveText("Informe o consumo diário.");
     expect(await lista()).toBe(antes);
+    // consumo zero: o aviso é refeito ao clicar de novo
     await page.getByTestId("dim-consumo").fill("0");
-    await expect(page.getByTestId("dim-resultado")).toContainText("Informe o consumo diário");
+    await expect(page.getByTestId("dim-aviso")).toHaveCount(0);
     await page.getByTestId("dim-adicionar").click();
+    await expect(regiao.getByTestId("dim-aviso")).toHaveText("Informe o consumo diário.");
     expect(await lista()).toBe(antes);
     await expect(page.getByTestId("dim-adicionar")).toHaveText("Adicionar sugestão ao orçamento");
     await expect(page.getByTestId("dim-erro")).toHaveCount(0);
     expect(JSON.parse(antes)).toEqual([]);
     expect(erros).toEqual([]);
+  });
+
+  test("depois do aviso, informar 1.500 L/dia faz o aviso sumir e o item entra na lista normalmente", async ({ page }) => {
+    await arca(page, "/produto/reservatorio-flexivel-fechado");
+    const regiao = page.getByTestId("dim-resultado");
+    await page.getByTestId("dim-adicionar").click();
+    await expect(regiao.getByTestId("dim-aviso")).toHaveText("Informe o consumo diário.");
+    await page.getByTestId("dim-consumo").fill("1500");
+    await page.getByTestId("dim-dias").fill("3");
+    await expect(page.getByTestId("dim-aviso")).toHaveCount(0);
+    await expect(regiao.getByTestId("dim-sugestao")).toHaveText("Reservatório Flexível Fechado de 5.000 L");
+    await expect(regiao).not.toContainText("Informe o consumo diário");
+    await page.getByTestId("dim-adicionar").click();
+    await expect(page.getByTestId("dim-aviso")).toHaveCount(0);
+    await expect(page.getByTestId("dim-adicionar")).toHaveText("Adicionado ✓");
+    const lista = await page.evaluate(() => window.__demoStore!.getState().quoteList);
+    expect(lista).toHaveLength(1);
+    expect(lista[0]).toMatchObject({ productId: "arc-001", qty: 1, note: "5.000 L · para 4.500 L (1.500 L/dia × 3 dias)", configurado: true });
+    // limpar o consumo de novo volta à dica, sem aviso antigo
+    await page.getByTestId("dim-consumo").fill("");
+    await expect(page.getByTestId("dim-aviso")).toHaveCount(0);
+    await expect(regiao).toContainText("Informe o consumo diário");
   });
 
   test("reservatório aberto usa a lista própria (sem o modelo de 1.000 L)", async ({ page }) => {
