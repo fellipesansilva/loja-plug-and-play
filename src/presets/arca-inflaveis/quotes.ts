@@ -17,7 +17,7 @@ export const quotes: QuoteRequest[] = [
     "ORC-20260318-K7Q2X",
     "2026-03-18T10:15:00-03:00",
     "nova",
-    [line("arc-001", 2, "Para água de irrigação, 20.000 litros cada. Terreno plano, acesso por caminhão."), line("arc-005", 6, "Cor laranja, 60 cm, com olhal.")],
+    [line("arc-005", 6, "Cor laranja, 60 cm, com olhal, para sinalizar os tanques de criação."), line("arc-006", 4, "Cilíndrica, 3 m de comprimento, com argolas para encadear.")],
     {
       name: "Marina Teixeira (demo)",
       company: "Fazenda Boa Água (fictícia)",
@@ -25,7 +25,7 @@ export const quotes: QuoteRequest[] = [
       whatsapp: "(19) 90000-0101",
       city: "Ribeirão Preto",
       state: "SP",
-      application: "Agro e irrigação",
+      application: "Náutica e demarcação",
       message: "Preciso do prazo de produção e das condições de frete até a fazenda.",
     },
     [],
@@ -51,7 +51,7 @@ export const quotes: QuoteRequest[] = [
     "ORC-20260312-T9C3D",
     "2026-03-12T11:00:00-03:00",
     "orcamento_enviado",
-    [line("arc-004", 3, "Ensaio de ponte rolante de 10 t, três sacos de 3,5 t."), line("arc-003", 1, "Içar um conjunto de 800 kg, 4 m de profundidade.")],
+    [line("arc-004", 3, "Ensaio de ponte rolante de 10 t, três sacos de 3,5 t, com alça e válvula de esvaziamento rápido.")],
     {
       name: "Helena Prado (demo)",
       company: "Metalúrgica Prado (fictícia)",
@@ -68,7 +68,7 @@ export const quotes: QuoteRequest[] = [
     "ORC-20260305-P2L6V",
     "2026-03-05T09:25:00-03:00",
     "ganho",
-    [line("arc-008", 1, "Blimp de 6 m para a inauguração, azul-petróleo e amarelo."), line("arc-010", 2, "Mascote da loja, 3 m de altura.")],
+    [line("arc-008", 1, "Blimp de 6 m para a inauguração, azul-petróleo e amarelo."), line("arc-007", 1, "Pórtico de 6 m de vão, na entrada do estacionamento.")],
     {
       name: "Otávio Reis (demo)",
       company: "Supermercado Central (fictício)",
@@ -85,7 +85,7 @@ export const quotes: QuoteRequest[] = [
     "ORC-20260302-W8H1Z",
     "2026-03-02T13:50:00-03:00",
     "perdido",
-    [line("arc-002", 1, "Piscina de contenção de 8 m de diâmetro.")],
+    [line("arc-006", 8, "Barreira de contenção flutuante de 40 m, em módulos de 5 m.")],
     {
       name: "Sérgio Lacerda (demo)",
       email: "sergio@example.com",

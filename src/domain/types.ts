@@ -76,7 +76,13 @@ export type ImageSource = {
 };
 
 /** Imagem com texto alternativo (vindo do preset). `sources` é opcional: sem ele a imagem é um arquivo único (`src`). */
-export type Image = { src: string; alt: string; sources?: ImageSource[] };
+export type Image = {
+  src: string;
+  alt: string;
+  sources?: ImageSource[];
+  /** Só para a foto principal da home: gera um <link rel="preload"> com o mesmo srcset do <picture>. */
+  preload?: boolean;
+};
 
 /** Bloco da home. A ordem do array `homeBlocks` é a ordem na página. */
 export type HomeBlock =

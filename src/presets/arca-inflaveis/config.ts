@@ -8,7 +8,7 @@ export const config: StoreConfig = {
   logo: "/placeholder?l=Arca%20Inflaveis&c=0f4c5c",
   seo: {
     titleTemplate: "%s · Arca Infláveis",
-    description: "Reservatórios flexíveis, boias e infláveis promocionais sob medida. Monte sua lista e peça um orçamento.",
+    description: "Boias, sacos para teste de carga e infláveis promocionais sob medida. Monte sua lista e peça um orçamento.",
   },
   layout: { search: "bar", categoryTile: "rect", listing: "grid", product: "classic" },
   homeBlocks: [
@@ -18,9 +18,9 @@ export const config: StoreConfig = {
       enabled: true,
       image: bannerImage,
       eyebrow: "Fabricante sob medida",
-      title: "Infláveis e reservatórios na medida do seu projeto",
+      title: "Infláveis e boias na medida do seu projeto",
       subtitle: "Escolha os produtos, descreva a aplicação e peça seu orçamento.",
-      ctaLabel: "Ver reservatórios e boias",
+      ctaLabel: "Ver boias e testes de carga",
       ctaHref: "/categoria/industria-e-agro",
       secondaryCtaLabel: "Eventos e marketing",
       secondaryCtaHref: "/categoria/eventos-e-marketing",
@@ -39,7 +39,7 @@ export const config: StoreConfig = {
       title: "Mais pedidos",
       linkLabel: "Ver indústria e agro",
       linkHref: "/categoria/industria-e-agro",
-      productIds: ["arc-001", "arc-007", "arc-008", "arc-004", "arc-005", "arc-010", "arc-003", "arc-009"],
+      productIds: ["arc-007", "arc-008", "arc-004", "arc-005", "arc-006"],
     },
   ],
   attributeDefs: [
@@ -136,7 +136,7 @@ export const config: StoreConfig = {
         "Frete FOB: o transporte sai da nossa fábrica por conta do comprador, na transportadora que ele escolher ou na que indicarmos. (Texto de demonstração.)",
     },
     about:
-      "A Arca Infláveis é um fabricante fictício de reservatórios flexíveis, boias e infláveis promocionais, criado para demonstrar a loja em modo orçamento da plataforma de loja virtual plug and play.",
+      "A Arca Infláveis é um fabricante fictício de boias, sacos para teste de carga e infláveis promocionais, criado para demonstrar a loja em modo orçamento da plataforma de loja virtual plug and play.",
     privacy: {
       dataCollected: [
         "Nome, empresa (opcional), e-mail, WhatsApp, cidade e UF de entrega, informados no pedido de orçamento.",

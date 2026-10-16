@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import type { Image } from "@/domain/types";
 import { toSrcSet } from "@/lib/image-sources";
 
@@ -9,6 +10,12 @@ import { toSrcSet } from "@/lib/image-sources";
  */
 export function ResponsiveBanner({ image }: { image: Image }) {
   const sources = image.sources ?? [];
+  // Preload da foto principal (opt-in por preset: `image.preload`), com o MESMO srcset, sizes e media do <picture>: um download só.
+  if (image.preload) {
+    for (const s of sources) {
+      preload(s.avif[s.avif.length - 1].src, { as: "image", imageSrcSet: toSrcSet(s.avif), imageSizes: s.sizes, media: s.media, type: "image/avif", fetchPriority: "high" });
+    }
+  }
   return (
     <picture>
       {sources.flatMap((s) => [

@@ -74,22 +74,19 @@ Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset 
 | `public/images/presets/forno-da-vila/categoria-doces.webp` | https://unsplash.com/photos/e6Vv4S9Pvrk | Orkun Orcan | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/forno-da-vila/categoria-bebidas.webp` | https://unsplash.com/photos/_PaXoN4_2s0 | Charity Beth Long | [Unsplash License](https://unsplash.com/license) |
 
-## Arca Infláveis (ilustrações originais)
+## Arca Infláveis (fotos com tratamento editorial)
 
-O preset **Arca Infláveis** não usa fotos: nenhuma foto de licença comercial com crédito mostrava os produtos do nicho (reservatórios flexíveis, bolsas de içamento, boias, infláveis), então todas as imagens são **ilustrações vetoriais originais em SVG**, desenhadas para o preset com a paleta dele. Não há imagem de terceiros. Quando houver fotos dos produtos do cliente, elas substituem estas.
+As fotos da Arca vêm do **Unsplash** e do **Pexels** (licenças que permitem uso comercial, sem exigir atribuição; os créditos são cortesia e registro). Todas passaram pelo mesmo tratamento, como um ensaio de marca: recorte 4:3 com o produto centralizado, balanço de branco levemente frio, contraste e nitidez moderados, saturação contida e um véu azul-petróleo nas sombras. Os arquivos `banner-*.avif` e `banner-*.webp` são recortes e tamanhos derivados do `banner.webp` (mesma foto e mesmo crédito). Nenhuma foto se repete no preset, e nenhuma mostra marca ou logo em destaque.
 
-| Arquivo | Origem | Autor | Licença |
+| Arquivo | URL de origem | Autor | Licença |
 |---|---|---|---|
-| `public/images/presets/arca-inflaveis/banner.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/blimp.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/boia-cilindrica.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/boia-de-demarcacao.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/bolsa-de-icamento.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/eventos-e-marketing.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/industria-e-agro.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/inflavel-tematico.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/portico-inflavel.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/replica-inflavel.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/reservatorio-aberto.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/reservatorio-flexivel-fechado.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
-| `public/images/presets/arca-inflaveis/saco-para-teste-de-carga.svg` | Desenho original deste projeto | Projeto Loja Plug and Play | Uso livre no projeto |
+| `public/images/presets/arca-inflaveis/banner.webp` | https://unsplash.com/photos/3qVc5SJtUxU | Nerissa J | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/arca-inflaveis/categoria-industria-e-agro.webp` | https://www.pexels.com/photo/39184288/ | Jon Champaigne | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/categoria-eventos-e-marketing.webp` | https://www.pexels.com/photo/30500328/ | Miguel Angel Cabañas | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/saco-para-teste-de-carga.webp` | https://www.pexels.com/photo/6005876/ | Anoop VS | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/boia-de-demarcacao.webp` | https://unsplash.com/photos/dnXVrFuM3c8 | Girma Nigusse | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/arca-inflaveis/boia-cilindrica.webp` | https://www.pexels.com/photo/30693963/ | Jan van der Wolf | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/portico-inflavel.webp` | https://unsplash.com/photos/bssA-XRpH3s | david Griffiths | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/arca-inflaveis/blimp-inflavel.webp` | https://www.pexels.com/photo/38566907/ | Jimmyk photos | [Pexels License](https://www.pexels.com/license/) |
+
+Reservatórios flexíveis, bolsas de içamento, réplicas e infláveis temáticos saíram do catálogo da Arca porque não há foto de licença livre que mostre o produto (ou só há fotos de personagens e marcas de terceiros). Voltam quando o cliente tiver fotos próprias.

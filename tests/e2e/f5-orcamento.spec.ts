@@ -5,7 +5,7 @@ import { ARCA, arca, expect, setupArca } from "./orcamento-helpers";
 
 setupArca();
 
-const PAGES = ["", "/categoria/industria-e-agro", "/categoria/eventos-e-marketing", "/produto/reservatorio-flexivel-fechado", "/produto/blimp-inflavel", "/busca?q=boia", "/sobre", "/condicoes-comerciais", "/privacidade"];
+const PAGES = ["", "/categoria/industria-e-agro", "/categoria/eventos-e-marketing", "/produto/saco-para-teste-de-carga", "/produto/blimp-inflavel", "/busca?q=boia", "/sobre", "/condicoes-comerciais", "/privacidade"];
 
 test.describe("H1 · módulo orçamento: loja sem preço", () => {
   test("nenhum 'R$' na loja inteira (HTML do servidor e tela depois de carregar)", async ({ page, request }) => {
@@ -24,7 +24,7 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
 
   test("cards, produto e busca não têm preço, parcelas nem 'esgotado'; a ordenação por preço não existe", async ({ page }) => {
     await arca(page, "/categoria/industria-e-agro");
-    await expect(page.getByTestId("product-card")).toHaveCount(6);
+    await expect(page.getByTestId("product-card")).toHaveCount(3);
     await expect(page.getByTestId("product-card").first()).not.toContainText(/R\$|\d+x|Pix|Esgotado/);
     await expect(page.getByTestId("product-price")).toHaveCount(0);
     const options = await page.locator("select").first().locator("option").allTextContents();
@@ -40,7 +40,7 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
   });
 
   test("o produto tem 'Adicionar ao orçamento' (texto do preset), ficha técnica em tabela e aplicações em etiquetas", async ({ page }) => {
-    await arca(page, "/produto/reservatorio-flexivel-fechado");
+    await arca(page, "/produto/saco-para-teste-de-carga");
     const addLabel = await page.evaluate(() => window.__demoStore!.getState().config.quote!.addLabel);
     expect(addLabel).toBe("Adicionar ao orçamento");
     await expect(page.getByRole("button", { name: addLabel })).toBeVisible();
@@ -48,8 +48,8 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
     const table = page.getByTestId("spec-table");
     await expect(table).toBeVisible();
     await expect(table.getByRole("rowheader")).toHaveText(["Material", "Medidas", "Capacidade", "Válvulas"]);
-    await expect(table).toContainText("Lona de PVC");
-    await expect(page.getByTestId("applications").getByRole("listitem")).toHaveText(["Agro e irrigação", "Indústria e saneamento"]);
+    await expect(table).toContainText("Poliéster com cobertura de PVC");
+    await expect(page.getByTestId("applications").getByRole("listitem")).toHaveText(["Construção e içamento de cargas", "Indústria e saneamento"]);
   });
 
   test("carrinho, checkout, pedido, arrependimento e trocas não existem na Arca: 404 de verdade", async ({ request }) => {
@@ -127,7 +127,7 @@ const addFromProduct = async (page: import("@playwright/test").Page, slug: strin
 
 test.describe("H2 · lista de orçamento", () => {
   test("adiciona 3 itens, edita quantidade e observação, recarrega e mantém", async ({ page }) => {
-    await addFromProduct(page, "reservatorio-flexivel-fechado");
+    await addFromProduct(page, "saco-para-teste-de-carga");
     await addFromProduct(page, "boia-de-demarcacao", 3);
     await addFromProduct(page, "blimp-inflavel");
     // o contador do cabeçalho conta os itens diferentes
@@ -142,7 +142,7 @@ test.describe("H2 · lista de orçamento", () => {
     await expect(lines.nth(1).getByTestId("quote-line-qty")).toHaveValue("3");
 
     // quantidade: botões e campo numérico
-    await lines.nth(0).getByRole("button", { name: "Aumentar quantidade de Reservatório Flexível Fechado" }).click();
+    await lines.nth(0).getByRole("button", { name: "Aumentar quantidade de Saco para Teste de Carga" }).click();
     await expect(lines.nth(0).getByTestId("quote-line-qty")).toHaveValue("2");
     await lines.nth(1).getByTestId("quote-line-qty").fill("12");
     await expect(lines.nth(1).getByTestId("quote-line-qty")).toHaveValue("12");
@@ -150,7 +150,7 @@ test.describe("H2 · lista de orçamento", () => {
     await expect(lines.nth(2).getByRole("button", { name: "Diminuir quantidade de Blimp Inflável" })).toBeDisabled();
 
     // observação por item
-    await lines.nth(0).getByLabel("Observações de Reservatório Flexível Fechado").fill("20.000 litros, água de irrigação, terreno plano");
+    await lines.nth(0).getByLabel("Observações de Saco para Teste de Carga").fill("20.000 litros, água de irrigação, terreno plano");
     await lines.nth(1).getByLabel("Observações de Boia de Demarcação").fill("Laranja, 60 cm, com olhal");
     await expect(lines.nth(0).getByTestId("quote-note-count")).toHaveText("47/500");
 
@@ -159,7 +159,7 @@ test.describe("H2 · lista de orçamento", () => {
     await expect(lines).toHaveCount(3);
     await expect(lines.nth(0).getByTestId("quote-line-qty")).toHaveValue("2");
     await expect(lines.nth(1).getByTestId("quote-line-qty")).toHaveValue("12");
-    await expect(lines.nth(0).getByLabel("Observações de Reservatório Flexível Fechado")).toHaveValue("20.000 litros, água de irrigação, terreno plano");
+    await expect(lines.nth(0).getByLabel("Observações de Saco para Teste de Carga")).toHaveValue("20.000 litros, água de irrigação, terreno plano");
     await expect(lines.nth(1).getByLabel("Observações de Boia de Demarcação")).toHaveValue("Laranja, 60 cm, com olhal");
     await expect(page.getByTestId("quote-count")).toHaveText("3");
     // guardada no localStorage do preset (outra chave que a das outras lojas)
@@ -220,11 +220,11 @@ const fillQuote = async (page: import("@playwright/test").Page, over: Partial<Re
 };
 
 const seedList = async (page: import("@playwright/test").Page) => {
-  await addFromProduct(page, "reservatorio-flexivel-fechado", 2);
+  await addFromProduct(page, "saco-para-teste-de-carga", 2);
   await addFromProduct(page, "boia-de-demarcacao", 6);
   await page.goto(`${ARCA}/orcamento`);
   await page.waitForFunction(() => !!window.__demoStore);
-  await page.getByLabel("Observações de Reservatório Flexível Fechado").fill("20.000 litros, terreno plano");
+  await page.getByLabel("Observações de Saco para Teste de Carga").fill("20.000 litros, terreno plano");
   await page.getByLabel("Observações de Boia de Demarcação").fill("Laranja, 60 cm, com olhal");
 };
 
@@ -273,7 +273,7 @@ test.describe("H3 · envio do pedido de orçamento", () => {
     expect(q.id).toBe(id);
     expect(q.status).toBe("nova");
     expect(q.items.map((i) => [i.name, i.qty, i.note])).toEqual([
-      ["Reservatório Flexível Fechado", 2, "20.000 litros, terreno plano"],
+      ["Saco para Teste de Carga", 2, "20.000 litros, terreno plano"],
       ["Boia de Demarcação", 6, "Laranja, 60 cm, com olhal"],
     ]);
     expect(q.contact).toMatchObject({ name: "Ana Souza", company: "Fazenda Boa Água", email: "ana@example.com", whatsapp: "(19) 91234-5678", city: "Campinas", state: "SP", application: "Agro e irrigação" });
@@ -309,7 +309,7 @@ test.describe("H3 · envio do pedido de orçamento", () => {
     await expect(dialog.getByRole("heading")).toHaveText("Mensagem para o WhatsApp");
     const message = await page.getByTestId("whatsapp-message").innerText();
     expect(message).toContain("Arca Infláveis");
-    expect(message).toContain("1. Reservatório Flexível Fechado (ARC-RFF-001) — 2 unidades");
+    expect(message).toContain("1. Saco para Teste de Carga (ARC-STC-004) — 2 unidades");
     expect(message).toContain("Observações: 20.000 litros, terreno plano");
     expect(message).toContain("2. Boia de Demarcação (ARC-BDM-005) — 6 unidades");
     expect(message).toContain("Observações: Laranja, 60 cm, com olhal");
@@ -339,7 +339,7 @@ test.describe("H3 · envio do pedido de orçamento", () => {
     expect(opened).toHaveLength(1);
     expect(opened[0].startsWith("https://wa.me/5519988887777?text=")).toBe(true);
     const text = decodeURIComponent(opened[0].split("?text=")[1]);
-    expect(text).toContain("Reservatório Flexível Fechado");
+    expect(text).toContain("Saco para Teste de Carga");
     expect(text).toContain("Laranja, 60 cm, com olhal");
   });
 
@@ -419,7 +419,7 @@ test.describe("H4 · orçamentos no painel", () => {
     await expect(page.getByTestId("contact-application")).toHaveText("Agro e irrigação");
     await expect(page.getByTestId("contact-message")).toContainText("Preciso do prazo e do frete.");
     await expect(page.getByTestId("quote-item")).toHaveCount(2);
-    await expect(page.getByTestId("quote-item").first()).toContainText("2× Reservatório Flexível Fechado");
+    await expect(page.getByTestId("quote-item").first()).toContainText("2× Saco para Teste de Carga");
     await expect(page.getByTestId("quote-item-note").first()).toHaveText("Observações: 20.000 litros, terreno plano");
     await expect(page.getByTestId("history-entry")).toHaveCount(1);
     await expect(page.getByTestId("history-entry").first()).toContainText("Nova");
@@ -539,10 +539,10 @@ test.describe("H4 · orçamentos no painel", () => {
     await expect(page.getByTestId("import-done")).toContainText("2 criados, 1 atualizado");
     const state = await page.evaluate(() => {
       const ps = window.__demoStore!.getState().products;
-      return { n: ps.length, upd: ps.find((p) => p.sku === "ARC-RFF-001")!, created: ps.find((p) => p.sku === "ARC-IMP-001")! };
+      return { n: ps.length, upd: ps.find((p) => p.sku === "ARC-STC-004")!, created: ps.find((p) => p.sku === "ARC-IMP-001")! };
     });
     expect(state.n).toBe(before + 2);
-    expect(state.upd).toMatchObject({ name: "Reservatório Flexível Fechado Atualizado", price: 0 });
+    expect(state.upd).toMatchObject({ name: "Saco para Teste de Carga Atualizado", price: 0 });
     expect(state.upd.attributes.length).toBeGreaterThan(0); // atributos mantidos quando a planilha não traz valor
     expect(state.created).toMatchObject({ price: 0, stock: 0, name: "Reservatório de Teste" });
     await page.goto(`${ARCA}/produto/reservatorio-de-teste`);

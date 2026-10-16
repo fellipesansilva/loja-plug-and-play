@@ -1,4 +1,4 @@
 sku,nome,preco,estoque,categoria,descricao,material,medidas,capacidade,valvula
 ARC-IMP-001,Reservatório de Teste,,,industria-e-agro,Reservatório criado por importação,Lona de PVC,Sob medida,"10.000 litros",Enchimento e saída
 ARC-IMP-002,Pórtico de Teste,,,eventos-e-marketing,Pórtico criado por importação,Poliéster com PVC,Vão de 5 m,,Ventilador contínuo
-ARC-RFF-001,Reservatório Flexível Fechado Atualizado,,,industria-e-agro,Descrição atualizada pela importação,,,,
+ARC-STC-004,Saco para Teste de Carga Atualizado,,,industria-e-agro,Descrição atualizada pela importação,,,,

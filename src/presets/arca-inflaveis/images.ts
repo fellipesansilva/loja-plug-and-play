@@ -1,19 +1,40 @@
-import type { Image } from "@/domain/types";
+import type { Image, ImageSource } from "@/domain/types";
 
 /**
- * Ilustrações originais em SVG (vetores simples, na paleta do preset), em public/images/presets/arca-inflaveis/.
- * Não são fotos: o preset não usa imagem de terceiros. Créditos e justificativa em IMAGE_CREDITS.md.
+ * Fotos reais (Unsplash e Pexels, licença de uso comercial) com o mesmo tratamento de "ensaio de marca": recorte 4:3
+ * com o produto centralizado, balanço de branco levemente frio, contraste e nitidez moderados, saturação contida e um
+ * véu azul-petróleo nas sombras. Arquivos em public/images/presets/arca-inflaveis/; autores e licenças em IMAGE_CREDITS.md.
  */
 const DIR = "/images/presets/arca-inflaveis";
 
-export const art = (file: string, alt: string): Image => ({ src: `${DIR}/${file}.svg`, alt });
+export const photo = (file: string, alt: string): Image => ({ src: `${DIR}/${file}.webp`, alt });
 
-export const bannerImage: Image = art(
-  "banner",
-  "Ilustração de um blimp, um pórtico inflável e um reservatório flexível sobre fundo azul-petróleo",
-);
+const candidates = (prefix: string, widths: number[], ext: "avif" | "webp") => widths.map((width) => ({ src: `${DIR}/${prefix}-${width}.${ext}`, width }));
+
+const bannerSources: ImageSource[] = [
+  {
+    media: "(max-width: 767px)",
+    sizes: "100vw",
+    avif: candidates("banner-m", [480, 640, 768, 960], "avif"),
+    webp: candidates("banner-m", [480, 640, 768, 960], "webp"),
+  },
+  {
+    media: "(min-width: 768px)",
+    sizes: "100vw",
+    avif: candidates("banner-d", [1280, 1920], "avif"),
+    webp: candidates("banner-d", [1280, 1920], "webp"),
+  },
+];
+
+export const bannerImage: Image = {
+  src: `${DIR}/banner.webp`,
+  alt: "Tenda inflável em bolha transparente montada em um campo, com túneis infláveis dos dois lados",
+  /** Recortes responsivos (celular 3:4 e desktop 16:9) em AVIF e WebP; `src` é o reserva (WebP de desktop). */
+  sources: bannerSources,
+  preload: true,
+};
 
 export const categoryImages: Record<string, Image> = {
-  "industria-e-agro": art("industria-e-agro", "Ilustração de um reservatório flexível em uma propriedade rural"),
-  "eventos-e-marketing": art("eventos-e-marketing", "Ilustração de um pórtico inflável e um blimp em um evento ao ar livre"),
+  "industria-e-agro": photo("categoria-industria-e-agro", "Tanque de água redondo sobre um reboque, em um campo rural"),
+  "eventos-e-marketing": photo("categoria-eventos-e-marketing", "Figura inflável iluminada de um personagem em um desfile noturno"),
 };
