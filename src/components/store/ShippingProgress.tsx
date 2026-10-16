@@ -23,7 +23,7 @@ export function ShippingProgress() {
     <section
       aria-label="Frete grátis"
       data-testid="shipping-progress"
-      className="mx-auto w-full max-w-5xl px-md py-sm"
+      className="mx-auto w-full max-w-page px-md py-sm"
     >
       <div className="rounded-lg border border-border bg-surface p-md">
         <div className="flex flex-wrap items-center justify-between gap-sm">

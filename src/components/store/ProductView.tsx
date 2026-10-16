@@ -35,7 +35,7 @@ export function ProductView({ slug }: { slug: string }) {
 
   if (!product) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title="Produto" />
         <h1 className="text-2xl">{hydrated ? "Produto não encontrado" : "Carregando…"}</h1>
         {hydrated && (
@@ -195,7 +195,7 @@ function ProductDetails({ product }: { product: Product }) {
   if (sheet) {
     const stepper = "inline-flex size-11 items-center justify-center rounded-full border border-border bg-background disabled:opacity-40";
     return (
-      <article className="mx-auto w-full max-w-5xl" data-layout="sheet">
+      <article className="mx-auto w-full max-w-page" data-layout="sheet">
         <PageTitle title={product.name} />
         <div className="md:grid md:grid-cols-2 md:gap-lg md:px-md md:pt-md">
           <ProductGallery images={product.images} tall>
@@ -269,7 +269,7 @@ function ProductDetails({ product }: { product: Product }) {
 
         {/* Barra fixa de compra: gruda no rodapé da tela e para ao fim do artigo, sem cobrir o rodapé da loja. */}
         <div className="sticky bottom-0 z-30 border-t border-border bg-surface px-md py-sm" style={{ transform: "translateY(calc(var(--cookie-banner-h, 0px) * -1))" }}>
-          <div className="mx-auto flex w-full max-w-5xl items-center gap-sm">
+          <div className="mx-auto flex w-full max-w-page items-center gap-sm">
             <div className="flex items-center gap-xs" role="group" aria-label="Quantidade">
               <button
                 type="button"
@@ -310,7 +310,7 @@ function ProductDetails({ product }: { product: Product }) {
   }
 
   return (
-    <article className="mx-auto w-full max-w-5xl pb-lg">
+    <article className="mx-auto w-full max-w-page pb-lg">
       <PageTitle title={product.name} />
       <div className="px-md py-sm">
         <button

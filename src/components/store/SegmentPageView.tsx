@@ -2,6 +2,7 @@
 
 import { PageTitle } from "@/components/store/PageTitle";
 import { StoreLink as Link } from "@/components/store/StoreLink";
+import type { Image as ImageData } from "@/domain/types";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { useListedProducts } from "@/store/use-listed-products";
@@ -29,22 +30,30 @@ export function SegmentPageView({ kind, slug }: { kind: keyof typeof KIND; slug:
 
   if (!entry) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title={copy.eyebrow} />
         <h1 className="text-2xl">{hydrated ? `${copy.eyebrow} não encontrado` : "Carregando…"}</h1>
       </section>
     );
   }
+  const image = (entry as { image?: ImageData }).image;
   const products = entry.productIds.flatMap((id) => listed.find((p) => p.id === id) ?? []);
 
   return (
     <>
       <PageTitle title={entry.label} />
-      <section className="relative h-[320px] w-full overflow-hidden bg-primary md:h-[420px]" data-testid="segment-hero">
-        <StoreImage image={entry.image} sizes="100vw" lcp />
-        <div className="scrim-bottom absolute inset-0" />
-        <div className="absolute inset-x-0 bottom-0">
-          <div className="mx-auto w-full max-w-5xl px-md pb-lg text-background">
+      <section
+        className={`relative w-full overflow-hidden bg-primary ${image ? "h-[320px] md:h-[420px]" : ""}`}
+        data-testid="segment-hero"
+      >
+        {image && (
+          <>
+            <StoreImage image={image} sizes="100vw" lcp />
+            <div className="scrim-bottom absolute inset-0" />
+          </>
+        )}
+        <div className={image ? "absolute inset-x-0 bottom-0" : "py-xl"}>
+          <div className="mx-auto w-full max-w-page px-md pb-lg text-background">
             <nav aria-label="Você está em" className="text-sm">
               <ol className="flex flex-wrap items-center gap-xs">
                 <li>
@@ -62,7 +71,7 @@ export function SegmentPageView({ kind, slug }: { kind: keyof typeof KIND; slug:
         </div>
       </section>
 
-      <section id="produtos" aria-labelledby="bloco-produtos" className="mx-auto w-full max-w-5xl px-md py-xl">
+      <section id="produtos" aria-labelledby="bloco-produtos" className="mx-auto w-full max-w-page px-md py-xl">
         <h2 id="bloco-produtos" className="text-3xl md:text-4xl">
           {copy.productsTitle}
         </h2>

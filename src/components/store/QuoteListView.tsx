@@ -37,7 +37,7 @@ export function QuoteListView() {
 
   if (lines.length === 0) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title={title} />
         <h1 className="text-3xl">{title}</h1>
         {sent ? (
@@ -72,7 +72,7 @@ export function QuoteListView() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title={title} />
       <h1 className="text-3xl">{title}</h1>
       <p className="mt-xs max-w-[40rem] text-muted">{intro}</p>

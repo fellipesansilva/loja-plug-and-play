@@ -199,7 +199,7 @@ export function CartView() {
 
   if (lines.length === 0) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title={label} />
         <h1 className="text-3xl">{label}</h1>
         {hydrated ? (
@@ -228,7 +228,7 @@ export function CartView() {
   const { selected } = pricing;
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title={label} />
       <h1 className="text-3xl">{label}</h1>
       <div className="mt-md flex flex-col gap-lg md:grid md:grid-cols-[1fr_22rem] md:items-start">

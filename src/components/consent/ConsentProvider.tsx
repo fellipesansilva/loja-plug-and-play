@@ -133,7 +133,7 @@ function CookieBanner({
       data-cookie-banner=""
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-md py-md shadow-lg"
     >
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-sm md:flex-row md:items-center md:gap-md">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-sm md:flex-row md:items-center md:gap-md">
         <p className="flex-1 text-sm text-text">
           {notice}{" "}
           <StoreLink href="/privacidade" className="underline">

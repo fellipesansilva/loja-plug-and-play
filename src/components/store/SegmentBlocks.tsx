@@ -18,7 +18,7 @@ export function Band({ id, tone = "light", children }: { id: string; tone?: Tone
       data-tone={tone}
       className={`w-full scroll-mt-md ${dark ? "bg-primary text-background" : "bg-background text-text"}`}
     >
-      <div className="mx-auto w-full max-w-5xl px-md py-xl">{children}</div>
+      <div className="mx-auto w-full max-w-page px-md py-xl">{children}</div>
     </section>
   );
 }
@@ -66,25 +66,34 @@ function PhotoTile({
   );
 }
 
+/** Card tipográfico (sem foto): título, frase e número de produtos; alterna azul-petróleo e amarelo. */
 export function NeedsBlock({ block }: { block: BlockOf<"needs"> }) {
   const needs = useDemoStore((s) => s.config.needs);
   if (!needs?.length) return null;
   return (
     <Band id={block.id} tone={block.tone}>
       <Heading id={block.id} eyebrow={block.eyebrow} title={block.title} tone={block.tone} />
-      <ul className="mt-lg grid grid-cols-2 gap-sm md:grid-cols-4 md:gap-md" data-testid="needs">
-        {needs.map((n) => (
-          <li key={n.slug}>
-            <PhotoTile
-              href={`/necessidade/${n.slug}`}
-              label={n.label}
-              text={n.description}
-              image={n.image}
-              sizes="(min-width: 1024px) 256px, 50vw"
-              ratio="aspect-[4/5]"
-            />
-          </li>
-        ))}
+      <ul className="mt-lg grid grid-cols-1 gap-sm sm:grid-cols-2 md:gap-md lg:grid-cols-4" data-testid="needs">
+        {needs.map((n, i) => {
+          const yellow = i % 2 === 1;
+          return (
+            <li key={n.slug} className="flex">
+              <Link
+                href={`/necessidade/${n.slug}`}
+                data-variant={yellow ? "secondary" : "primary"}
+                className={`group flex min-h-56 w-full flex-col justify-between gap-md rounded-md p-md transition-opacity hover:opacity-90 ${yellow ? "bg-secondary text-text focus-visible:outline-text" : "bg-primary text-background focus-visible:outline-secondary"}`}
+              >
+                <span className="flex flex-col gap-xs">
+                  <span className="font-heading text-5xl font-bold uppercase leading-none">{n.label}</span>
+                  <span className="text-sm">{n.description}</span>
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest" data-testid="need-count">
+                  {n.productIds.length} {n.productIds.length === 1 ? "produto" : "produtos"}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </Band>
   );

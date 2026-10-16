@@ -1,20 +1,11 @@
 import type { Category, Product } from "@/domain/types";
 import { attrs, slugify } from "../helpers";
-import { categoryImages, photo } from "./images";
+import { photo } from "./images";
 
+// Sem foto de categoria: a Arca entra por necessidade e setor (config.needs e config.sectors), não por tiles de categoria.
 export const categories: Category[] = [
-  {
-    id: "industria-e-agro",
-    slug: "industria-e-agro",
-    name: "Indústria e agro",
-    image: categoryImages["industria-e-agro"],
-  },
-  {
-    id: "eventos-e-marketing",
-    slug: "eventos-e-marketing",
-    name: "Eventos e marketing",
-    image: categoryImages["eventos-e-marketing"],
-  },
+  { id: "industria-e-agro", slug: "industria-e-agro", name: "Indústria e agro" },
+  { id: "eventos-e-marketing", slug: "eventos-e-marketing", name: "Eventos e marketing" },
 ];
 
 type Input = {
@@ -227,7 +218,7 @@ export const products: Product[] = [
     sku: "ARC-PIN-007",
     categoryId: "eventos-e-marketing",
     image: "portico-inflavel",
-    alt: "Arco inflável azul e vermelho com a palavra FINISH, visto de baixo contra o céu",
+    alt: "Entrada inflável azul com estrelas e a palavra WELCOME, em frente a uma igreja, com visitantes ao redor",
     description:
       "Arco inflável para largadas, chegadas e entradas de evento, com faixas laterais e espaço para a marca. Fica de pé com um ventilador contínuo e vem com estacas e sacos de lastro para fixar em grama ou asfalto.",
     applications: ["Eventos e feiras", "Publicidade e ações de marca"],

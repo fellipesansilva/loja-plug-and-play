@@ -12,6 +12,11 @@ test.describe("Arca · redesenho por blocos", () => {
     await expect(page.getByRole("link", { name: "Pedir orçamento" }).first()).toHaveAttribute("href", "/arca/orcamento");
     await expect(page.getByTestId("needs").getByRole("link")).toHaveCount(4);
     await expect(page.getByTestId("needs").getByRole("link").first()).toHaveAttribute("href", "/arca/necessidade/armazenar");
+    // cards tipográficos: sem foto nem ícone, alternando azul-petróleo e amarelo, com o número de produtos
+    await expect(page.getByTestId("needs").locator("img, svg")).toHaveCount(0);
+    const variants = await page.getByTestId("needs").getByRole("link").evaluateAll((els) => els.map((e) => e.getAttribute("data-variant")));
+    expect(variants).toEqual(["primary", "secondary", "primary", "secondary"]);
+    await expect(page.getByTestId("need-count").first()).toHaveText("2 produtos");
     await expect(page.getByTestId("sectors").getByRole("link")).toHaveCount(6);
     await expect(page.getByTestId("sectors").getByRole("link").first()).toHaveAttribute("href", "/arca/setor/agro");
     // números e projetos marcados como demonstração
@@ -19,6 +24,11 @@ test.describe("Arca · redesenho por blocos", () => {
     await expect(page.getByText("Números fictícios")).toBeVisible();
     await expect(page.getByTestId("case-card")).toHaveCount(3);
     await expect(page.getByText("Projetos de demonstração")).toBeVisible();
+    // cada case tem foto própria, e nenhuma foto da home se repete
+    const srcs = await page.locator("main img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).getAttribute("src")));
+    const cases = await page.getByTestId("case-card").locator("img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).getAttribute("src")));
+    expect(cases).toHaveLength(3);
+    expect(new Set(srcs).size, srcs.join(", ")).toBe(srcs.length);
     // processo em 4 passos, com a prévia gratuita em destaque
     await expect(page.getByTestId("process").getByRole("listitem")).toHaveCount(4);
     await expect(page.getByTestId("process").getByText("Prévia gratuita")).toBeVisible();
@@ -31,6 +41,7 @@ test.describe("Arca · redesenho por blocos", () => {
   test("cada necessidade e cada setor tem página com os produtos da aplicação; setor tem um case", async ({ page }) => {
     await arca(page, "/necessidade/icar-e-testar");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Içar e testar");
+    await expect(page.getByTestId("segment-hero").locator("img")).toHaveCount(0);
     await expect(page.getByTestId("product-card")).toHaveCount(2);
     await arca(page, "/setor/construcao");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Construção");
@@ -69,6 +80,56 @@ test.describe("Arca · redesenho por blocos", () => {
     await expect(links).toHaveCount(2);
     await links.first().click();
     await expect(page).toHaveURL(/\/arca\/setor\/construcao$/);
+  });
+
+  test("cada setor tem página com foto, produtos e um case", async ({ page }) => {
+    for (const slug of ["agro", "construcao", "oleo-e-gas", "defesa-civil-e-incendio", "eventos-esportivos", "marketing"]) {
+      await arca(page, `/setor/${slug}`);
+      await expect(page.getByTestId("segment-hero").locator("img"), slug).toHaveCount(1);
+      expect(await page.getByTestId("product-card").count(), slug).toBeGreaterThanOrEqual(2);
+      await expect(page.getByTestId("case-card"), slug).toHaveCount(1);
+    }
+  });
+
+  test("diagramação: contêiner único de 1200 px centralizado (cabeçalho, busca, títulos e grades), faixas de ponta a ponta, sem sobra à direita", async ({ page }) => {
+    for (const vw of [400, 840, 1280, 1440]) {
+      await page.setViewportSize({ width: vw, height: 900 });
+      await arca(page);
+      const inner = Math.min(vw, 1200);
+      const edge = Math.round((vw - inner) / 2);
+      const boxes = await page.evaluate(() => {
+        const box = (el: Element | null) => {
+          const r = el!.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.right)];
+        };
+        return {
+          header: box(document.querySelector("header .max-w-page")),
+          sectors: box(document.querySelector('[data-testid="sectors"]')),
+          needs: box(document.querySelector('[data-testid="needs"]')),
+          featured: box(document.querySelector("#destaques ul")),
+          band: box(document.querySelector("section[data-tone='dark']")),
+          scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      });
+      expect(boxes.scroll, `${vw}`).toBeLessThanOrEqual(0);
+      expect(boxes.band, `faixa ${vw}`).toEqual([0, vw]);
+      for (const name of ["header", "sectors", "needs", "featured"] as const) {
+        const [l, r] = boxes[name];
+        // conteúdo centralizado, com a mesma margem à esquerda e à direita, e nunca mais largo que 1200 px
+        expect(Math.abs(l - (vw - r)), `${name} ${vw}`).toBeLessThanOrEqual(1);
+        expect(r - l, `${name} ${vw}`).toBeLessThanOrEqual(1200);
+        if (vw >= 1280 && name !== "header") expect(l, `${name} ${vw}`).toBe(edge + 16);
+      }
+    }
+  });
+
+  test("'Mais pedidos' fecha as linhas: 4 cards em 4 colunas no desktop e em 2 no celular", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await arca(page);
+    const cols = (await page.locator("#destaques ul").getAttribute("data-cols"))!;
+    const cards = await page.locator("#destaques [data-testid='product-card']").count();
+    expect(cards % Number(cols)).toBe(0);
+    expect(cards % 2).toBe(0);
   });
 
   test("celular 400 px: 'Adicionar ao orçamento' fica fixo na base da tela e a página não rola de lado; no desktop não fica fixo", async ({ page }) => {

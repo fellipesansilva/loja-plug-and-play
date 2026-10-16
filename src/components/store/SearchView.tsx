@@ -16,7 +16,7 @@ export function SearchView() {
   const results = useMemo(() => searchProducts(products, term), [products, term]);
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title={term ? `Busca: ${term}` : "Busca"} />
       <h1 className="text-3xl">{term ? `Resultados para “${term}”` : "Busca"}</h1>
 

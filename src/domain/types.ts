@@ -151,7 +151,7 @@ export type Tone = "dark" | "light";
 /** Setor atendido (loja em orçamento): página `/setor/<slug>` com os produtos da aplicação e um case. */
 export type Sector = { slug: string; label: string; description: string; image: Image; productIds: string[]; caseId?: string };
 /** Necessidade do cliente: página `/necessidade/<slug>` com os produtos que a atendem. */
-export type Need = { slug: string; label: string; description: string; image: Image; productIds: string[] };
+export type Need = { slug: string; label: string; description: string; productIds: string[] };
 /** Projeto entregue (demonstração). */
 export type CaseStudy = { id: string; title: string; city: string; productId: string; result: string; image: Image; sectorSlug?: string };
 
@@ -296,7 +296,8 @@ export const MIN_DEFECT_DAYS: Record<Durability, number> = { nonDurable: 30, dur
 /** Prazo mínimo legal do direito de arrependimento (CDC, art. 49), em dias. */
 export const MIN_REGRET_DAYS = 7;
 
-export type Category = { id: string; slug: string; name: string; image: Image };
+/** `image` é opcional: o bloco de categorias da home usa um tile tipográfico quando a loja não tem foto da categoria. */
+export type Category = { id: string; slug: string; name: string; image?: Image };
 
 export type Attribute = { key: string; label: string; value: string };
 

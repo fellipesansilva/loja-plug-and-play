@@ -32,16 +32,8 @@ const bannerSources: ImageSource[] = [
 
 export const bannerImage: Image = {
   src: `${DIR}/banner.webp`,
-  alt: "Fileira de pessoas esticando um grande reservatório flexível bege em terreno aberto, o que dá a escala do produto",
+  alt: "Dois reservatórios flexíveis brancos, cheios, estendidos no chão ao lado de um caminhão-tanque, o que dá a escala do produto",
   /** Recortes responsivos (celular 3:4 e desktop 16:9) em AVIF e WebP; `src` é o reserva (WebP de desktop). */
   sources: bannerSources,
   preload: true,
-};
-
-export const categoryImages: Record<string, Image> = {
-  "industria-e-agro": photo("categoria-industria-e-agro", "Tanque de água redondo sobre um reboque, em um campo rural"),
-  "eventos-e-marketing": photo(
-    "categoria-eventos-e-marketing",
-    "Entrada inflável azul com estrelas e a palavra WELCOME, em frente a uma igreja, com visitantes ao redor",
-  ),
 };

@@ -25,11 +25,11 @@ function BannerBlock({ block }: { block: BlockOf<"banner"> }) {
       {block.image.sources?.length ? (
         <ResponsiveBanner image={block.image} />
       ) : (
-        <StoreImage image={block.image} sizes={card ? "(min-width: 1024px) 1024px, 100vw" : "100vw"} lcp />
+        <StoreImage image={block.image} sizes={card ? "(min-width: 1224px) 1176px, 100vw" : "100vw"} lcp />
       )}
       <div className="scrim-bottom absolute inset-0" />
       <div className="absolute inset-x-0 bottom-0">
-        <div className={`mx-auto w-full max-w-5xl text-background ${card ? "p-md pb-lg" : "px-md pb-lg"}`}>
+        <div className={`mx-auto w-full max-w-page text-background ${card ? "p-md pb-lg" : "px-md pb-lg"}`}>
           {block.badge && (
             <p className="mb-sm inline-flex items-center gap-2 rounded-button bg-highlight-bg px-3 py-1 text-xs font-bold text-highlight-text">
               <span aria-hidden="true" className="size-2 rounded-full bg-primary" />
@@ -66,7 +66,7 @@ function BannerBlock({ block }: { block: BlockOf<"banner"> }) {
 
   if (card) {
     return (
-      <section id={block.id} aria-label={block.title} className="mx-auto w-full max-w-5xl px-3 pt-3">
+      <section id={block.id} aria-label={block.title} className="mx-auto w-full max-w-page px-3 pt-3">
         <div className="relative h-[480px] overflow-hidden rounded-xl">{content}</div>
       </section>
     );
@@ -85,7 +85,7 @@ function CategoriesBlock({ block }: { block: BlockOf<"categories"> }) {
   const heading = block.title ?? "Categorias";
 
   return (
-    <section id={block.id} aria-labelledby={`bloco-${block.id}`} className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section id={block.id} aria-labelledby={`bloco-${block.id}`} className="mx-auto w-full max-w-page px-md py-lg">
       <h2 id={`bloco-${block.id}`} className="text-2xl">
         {heading}
       </h2>
@@ -95,11 +95,11 @@ function CategoriesBlock({ block }: { block: BlockOf<"categories"> }) {
             <Link href={`/categoria/${c.slug}`} className="flex flex-col items-center gap-sm text-center">
               {tile === "circle" ? (
                 <span className="relative size-24 overflow-hidden rounded-full border border-border bg-surface">
-                  <StoreImage image={c.image} sizes="96px" />
+                  {c.image && <StoreImage image={c.image} sizes="96px" />}
                 </span>
               ) : (
                 <span className="relative block aspect-[3/4] w-full overflow-hidden rounded-md bg-surface">
-                  <StoreImage image={c.image} sizes="(min-width: 768px) 25vw, 33vw" />
+                  {c.image && <StoreImage image={c.image} sizes="(min-width: 768px) 25vw, 33vw" />}
                 </span>
               )}
               <span className="text-sm font-medium text-text">{c.name}</span>
@@ -113,7 +113,7 @@ function CategoriesBlock({ block }: { block: BlockOf<"categories"> }) {
 
 function ChipsBlock({ block }: { block: BlockOf<"chips"> }) {
   return (
-    <section id={block.id} className="mx-auto w-full max-w-5xl px-md pt-md">
+    <section id={block.id} className="mx-auto w-full max-w-page px-md pt-md">
       <CategoryChips items={block.items.map((item, i) => ({ ...item, active: i === 0 }))} />
     </section>
   );
@@ -127,13 +127,13 @@ function SpotlightBlock({ block }: { block: BlockOf<"spotlight"> }) {
   const href = `/produto/${product.slug}`;
 
   return (
-    <section id={block.id} aria-labelledby={`bloco-${block.id}`} className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section id={block.id} aria-labelledby={`bloco-${block.id}`} className="mx-auto w-full max-w-page px-md py-lg">
       <h2 id={`bloco-${block.id}`} className="text-2xl">
         {block.title}
       </h2>
       <article data-testid="spotlight" className="mt-md rounded-lg border border-border bg-surface p-3">
         <Link href={href} className="relative block h-[230px] overflow-hidden rounded-md bg-border">
-          <StoreImage image={product.images[0]} sizes="(min-width: 1024px) 1024px, 100vw" />
+          <StoreImage image={product.images[0]} sizes="(min-width: 1200px) 1200px, 100vw" />
           {badge && (
             <span className="absolute left-3 top-3 rounded-button bg-highlight-bg px-3 py-1 text-xs font-bold text-highlight-text">
               {badge}
@@ -162,7 +162,7 @@ function FeaturedBlock({ block }: { block: BlockOf<"featured"> }) {
       id={block.id}
       aria-labelledby={`bloco-${block.id}`}
       data-tone="light"
-      className="mx-auto w-full max-w-5xl scroll-mt-md px-md py-lg"
+      className="mx-auto w-full max-w-page scroll-mt-md px-md py-lg"
     >
       <div className="flex items-baseline justify-between gap-md">
         <h2 id={`bloco-${block.id}`} className="text-2xl">

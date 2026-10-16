@@ -14,7 +14,7 @@ export function imageFileProblem(file: { name: string; type: string; size: numbe
 export function presetImagePool(preset: Pick<Preset, "products" | "categories">): Image[] {
   const seen = new Set<string>();
   const out: Image[] = [];
-  for (const image of [...preset.products.flatMap((p) => p.images), ...preset.categories.map((c) => c.image)]) {
+  for (const image of [...preset.products.flatMap((p) => p.images), ...preset.categories.flatMap((c) => c.image ?? [])]) {
     if (seen.has(image.src)) continue;
     seen.add(image.src);
     out.push(image);

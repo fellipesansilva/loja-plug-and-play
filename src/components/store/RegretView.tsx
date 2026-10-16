@@ -38,7 +38,7 @@ export function RegretView() {
   const done = result?.kind === "ok" || result?.kind === "already";
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title="Desistir da compra" />
       <h1 className="text-3xl">Desistir da compra</h1>
       <p className="mt-sm text-muted">

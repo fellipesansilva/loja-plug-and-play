@@ -10,7 +10,7 @@ const pick = (widths: number[], needed: number) => widths.find((w) => w >= neede
 
 /** Largura exibida do banner (px CSS) no preset deste build: faixa de ponta a ponta (Trama) ou card com margem (Forno). */
 const shownWidth = (viewport: number) => {
-  if (currentPreset() === FORNO) return viewport >= 1024 ? 1000 : viewport - 24;
+  if (currentPreset() === FORNO) return Math.min(viewport, 1200) - 24;
   return viewport;
 };
 const presetDir = () => (currentPreset() === FORNO ? "forno-da-vila" : "trama-studio");

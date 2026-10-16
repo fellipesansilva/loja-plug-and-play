@@ -34,7 +34,7 @@ export function QuoteProductView({ slug }: { slug: string }) {
 
   if (!product) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title="Produto" />
         <h1 className="text-2xl">{hydrated ? "Produto não encontrado" : "Carregando…"}</h1>
       </section>
@@ -54,7 +54,7 @@ export function QuoteProductView({ slug }: { slug: string }) {
 
   return (
     <div className="max-md:pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
-      <article className="mx-auto w-full max-w-5xl px-md py-lg" data-layout="quote">
+      <article className="mx-auto w-full max-w-page px-md py-lg" data-layout="quote">
         <PageTitle title={product.name} />
         {category && (
           <nav aria-label="Você está em" className="mb-md text-sm">
@@ -199,7 +199,7 @@ export function QuoteProductView({ slug }: { slug: string }) {
       )}
 
       {product.attributes.length > 0 && (
-        <div className="mx-auto w-full max-w-5xl px-md py-xl">
+        <div className="mx-auto w-full max-w-page px-md py-xl">
           <section aria-labelledby="ficha">
             <h2 id="ficha" className="text-xl">
               Ficha técnica
