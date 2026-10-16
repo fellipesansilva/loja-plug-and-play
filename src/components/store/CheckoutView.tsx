@@ -143,7 +143,7 @@ export function CheckoutView() {
 
   if (placing) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <h1 className="text-3xl">Finalizando…</h1>
       </section>
     );
@@ -152,7 +152,7 @@ export function CheckoutView() {
   if (pricing.lines.length === 0 || (!pricing.allDigital && !pricing.selected)) {
     const empty = pricing.lines.length === 0;
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title="Checkout" />
         <h1 className="text-3xl">Checkout</h1>
         {hydrated ? (
@@ -311,7 +311,7 @@ function CheckoutFlow({ pricing, onPlacing }: { pricing: ReturnType<typeof useCa
     ) : null;
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title="Checkout" />
       <h1 className="text-3xl">Checkout</h1>
       <StepIndicator steps={steps} current={step} />

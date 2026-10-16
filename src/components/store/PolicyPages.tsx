@@ -7,7 +7,7 @@ import { useDemoStore } from "@/store/demo-store";
 
 function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title={title} />
       <h1 className="text-3xl">{title}</h1>
       <div className="mt-md flex flex-col gap-lg">{children}</div>

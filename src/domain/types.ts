@@ -121,7 +121,39 @@ export type HomeBlock =
       linkLabel: string;
       linkHref: string;
       productIds: string[];
-    };
+    }
+  /** Entrada por necessidade (usa `config.needs`: cada necessidade leva a uma página com os produtos dela). */
+  | { id: string; type: "needs"; enabled: boolean; tone?: Tone; eyebrow?: string; title: string }
+  /** Entrada por setor (usa `config.sectors`: cada setor tem página com os produtos da aplicação e um case). */
+  | { id: string; type: "sectors"; enabled: boolean; tone?: Tone; eyebrow?: string; title: string }
+  /** Indicadores. Os valores são do preset e vêm marcados (`note`, ex.: "Números fictícios, apenas demonstração"). */
+  | { id: string; type: "stats"; enabled: boolean; tone?: Tone; title?: string; items: { value: string; label: string }[]; note?: string }
+  /** Projetos entregues (usa `config.cases`; `caseIds` define quais e a ordem). */
+  | { id: string; type: "cases"; enabled: boolean; tone?: Tone; eyebrow?: string; title: string; caseIds: string[]; note?: string }
+  /** Processo em passos, com um destaque opcional (ex.: "prévia gratuita"). */
+  | {
+      id: string;
+      type: "process";
+      enabled: boolean;
+      tone?: Tone;
+      eyebrow?: string;
+      title: string;
+      /** Passo com este número ganha destaque (1 = primeiro). */
+      highlight?: { step: number; label: string };
+      steps: { title: string; text: string }[];
+    }
+  /** Chamada final. */
+  | { id: string; type: "cta"; enabled: boolean; tone?: Tone; title: string; text?: string; ctaLabel: string; ctaHref: string };
+
+/** Fundo da seção: "dark" usa a cor primária; "light" (padrão) o fundo da loja. */
+export type Tone = "dark" | "light";
+
+/** Setor atendido (loja em orçamento): página `/setor/<slug>` com os produtos da aplicação e um case. */
+export type Sector = { slug: string; label: string; description: string; image: Image; productIds: string[]; caseId?: string };
+/** Necessidade do cliente: página `/necessidade/<slug>` com os produtos que a atendem. */
+export type Need = { slug: string; label: string; description: string; productIds: string[] };
+/** Projeto entregue (demonstração). */
+export type CaseStudy = { id: string; title: string; city: string; productId: string; result: string; image: Image; sectorSlug?: string };
 
 export type AttributeSelector = "pill" | "swatch" | "list";
 
@@ -196,6 +228,10 @@ export type StoreConfig = {
   /** Retirada no local: prazo exibido na faixa de aviso (ex.: "20 min") e rótulo do status "enviado" nos pedidos de retirada (ex.: "Pronto para retirada"). */
   pickup?: { leadTime: string; readyLabel: string };
   homeBlocks: HomeBlock[];
+  /** Entradas por necessidade, setor e projetos entregues (opcionais; só a Arca usa por enquanto). */
+  needs?: Need[];
+  sectors?: Sector[];
+  cases?: CaseStudy[];
   attributeDefs: AttributeDef[];
   shipping: ShippingConfig;
   /** Identificação da loja, exibida no rodapé (todos os campos são obrigatórios: ver validatePreset). */
@@ -260,7 +296,8 @@ export const MIN_DEFECT_DAYS: Record<Durability, number> = { nonDurable: 30, dur
 /** Prazo mínimo legal do direito de arrependimento (CDC, art. 49), em dias. */
 export const MIN_REGRET_DAYS = 7;
 
-export type Category = { id: string; slug: string; name: string; image: Image };
+/** `image` é opcional: o bloco de categorias da home usa um tile tipográfico quando a loja não tem foto da categoria. */
+export type Category = { id: string; slug: string; name: string; image?: Image };
 
 export type Attribute = { key: string; label: string; value: string };
 
@@ -299,6 +336,10 @@ export type Product = {
   badges?: string[];
   /** Aplicações do produto (etiquetas na página; ex.: "Agro", "Eventos"). */
   applications?: string[];
+  /** Setores do produto (slugs de `config.sectors`): viram links para as páginas de setor. */
+  sectorSlugs?: string[];
+  /** Até 3 benefícios com número (ex.: "20 min" / "para instalar"), na página do produto. */
+  benefits?: { value: string; label: string }[];
   /** Padrão: `true`. Inativo some da loja (lista, busca, home e página do produto), mas continua no painel. */
   active?: boolean;
 };

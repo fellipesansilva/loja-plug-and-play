@@ -251,6 +251,17 @@ export function useDemoStore<T>(selector: (state: DemoState) => T): T {
 /** Migração do estado salvo (exportada para teste). Devolve {} para formatos que não dá para aproveitar. */
 export function migrateState(persisted: unknown, version: number, presetId: string): Partial<DemoData> {
   const saved = persisted as Partial<DemoData> | undefined;
+  if (version === 7 && saved && saved.presetId === presetId && saved.config) {
+    // v8: blocos de segmento (necessidades, setores, cases) e produtos novos da loja em orçamento. Loja de venda: o estado segue como está.
+    const current = getPreset(presetId)!;
+    if (current.config.modules.orcamento?.enabled !== true) return saved;
+    return {
+      ...saved,
+      config: { ...structuredClone(current.config), name: saved.config.name, theme: saved.config.theme },
+      categories: structuredClone(current.categories),
+      products: structuredClone(current.products),
+    };
+  }
   if ((version !== 5 && version !== 6) || !saved || saved.presetId !== presetId || !saved.config) return {};
   const fresh = getPreset(presetId)!;
   return {

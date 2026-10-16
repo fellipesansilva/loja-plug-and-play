@@ -35,6 +35,9 @@
 
   --aspect-product: var(--t-ratio-product);
 
+  /* Largura única do conteúdo (cabeçalho, busca, títulos e grades): max-w-page. */
+  --container-page: 75rem;
+
   --spacing-xs: var(--t-space-xs);
   --spacing-sm: var(--t-space-sm);
   --spacing-md: var(--t-space-md);

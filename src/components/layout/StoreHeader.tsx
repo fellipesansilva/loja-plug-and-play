@@ -86,7 +86,7 @@ export function StoreHeader() {
     <header className="bg-background">
       <AnnouncementBar />
       <div className="border-b border-border">
-        <div className="mx-auto grid w-full max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-sm px-md py-sm">
+        <div className="mx-auto grid w-full max-w-page grid-cols-[auto_1fr_auto] items-center gap-sm px-md py-sm">
           <button
             type="button"
             className={`${iconButton} md:hidden`}
@@ -136,12 +136,12 @@ export function StoreHeader() {
           </div>
         </div>
         {searchLayout === "icon" && searchOpen && (
-          <div id="busca-cabecalho" className="mx-auto w-full max-w-5xl px-md pb-sm">
+          <div id="busca-cabecalho" className="mx-auto w-full max-w-page px-md pb-sm">
             <SearchForm pill={false} autoFocus />
           </div>
         )}
         {searchLayout === "bar" && (
-          <div className="mx-auto w-full max-w-5xl px-md pb-sm">
+          <div className="mx-auto w-full max-w-page px-md pb-sm">
             <SearchForm pill />
           </div>
         )}
@@ -151,7 +151,7 @@ export function StoreHeader() {
         aria-label="Menu principal"
         className={`${menuOpen ? "block" : "hidden"} border-b border-border md:block`}
       >
-        <ul className="mx-auto flex w-full max-w-5xl flex-col px-md py-xs md:flex-row md:flex-wrap md:gap-md">
+        <ul className="mx-auto flex w-full max-w-page flex-col px-md py-xs md:flex-row md:flex-wrap md:gap-md">
           {categories.map((c) => (
             <li key={c.id}>
               <Link

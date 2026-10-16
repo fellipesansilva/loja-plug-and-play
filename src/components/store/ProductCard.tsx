@@ -73,8 +73,14 @@ export function ProductGrid({ products }: { products: Product[] }) {
       </ul>
     );
   }
+  // Colunas que fecham as linhas: 4 (ou 3, se a quantidade fecha melhor); no celular, 2.
+  const cols = products.length % 4 !== 0 && products.length % 3 === 0 ? 3 : 4;
   return (
-    <ul className="grid grid-cols-2 gap-x-md gap-y-lg md:grid-cols-4">
+    <ul
+      className="grid grid-cols-2 gap-x-md gap-y-lg md:[grid-template-columns:repeat(var(--grid-cols),minmax(0,1fr))]"
+      style={{ "--grid-cols": cols } as React.CSSProperties}
+      data-cols={cols}
+    >
       {products.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}

@@ -13,7 +13,7 @@ export function StoreFooter() {
   return (
     <footer className="mt-xl border-t border-border bg-footer-bg" data-testid="store-footer">
       {/* pb-20: espaço no fim da página para o botão Demo (fixo no canto) não cobrir texto */}
-      <div className="mx-auto w-full max-w-5xl px-md pb-20 pt-lg text-sm text-footer-text">
+      <div className="mx-auto w-full max-w-page px-md pb-20 pt-lg text-sm text-footer-text">
         <p className="font-bold" data-testid="footer-name">
           {legal.name || name}
         </p>

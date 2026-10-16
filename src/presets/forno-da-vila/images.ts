@@ -51,7 +51,7 @@ export const bannerImage: Image = {
     },
     {
       "media": "(min-width: 768px)",
-      "sizes": "(min-width: 1024px) 1000px, calc(100vw - 24px)",
+      "sizes": "(min-width: 1224px) 1176px, calc(100vw - 24px)",
       "avif": [
         {
           "src": "/images/presets/forno-da-vila/banner-d-1280.avif",

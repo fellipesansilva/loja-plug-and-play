@@ -74,7 +74,7 @@ export function CategoryView({ slug }: { slug: string }) {
 
   if (!category) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title="Categoria" />
         <h1 className="text-2xl">{hydrated ? "Categoria não encontrada" : "Carregando…"}</h1>
         {hydrated && (
@@ -97,7 +97,7 @@ export function CategoryView({ slug }: { slug: string }) {
   };
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-md py-lg">
+    <section className="mx-auto w-full max-w-page px-md py-lg">
       <PageTitle title={category.name} />
       {listing === "menu" && (
         <div className="mb-md">

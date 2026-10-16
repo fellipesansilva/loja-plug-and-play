@@ -76,17 +76,27 @@ Os placeholders SVG (`/placeholder`) continuam sendo usados por qualquer preset 
 
 ## Arca Infláveis (fotos com tratamento editorial)
 
-As fotos da Arca vêm do **Unsplash** e do **Pexels** (licenças que permitem uso comercial, sem exigir atribuição; os créditos são cortesia e registro). Todas passaram pelo mesmo tratamento, como um ensaio de marca: recorte 4:3 com o produto centralizado, balanço de branco levemente frio, contraste e nitidez moderados, saturação contida e um véu azul-petróleo nas sombras. Os arquivos `banner-*.avif` e `banner-*.webp` são recortes e tamanhos derivados do `banner.webp` (mesma foto e mesmo crédito). Nenhuma foto se repete no preset, e nenhuma mostra marca ou logo em destaque.
+As fotos da Arca vêm do **Unsplash**, do **Pexels** (licenças que permitem uso comercial, sem exigir atribuição) e do **Wikimedia Commons** (domínio público, obras do governo dos EUA, ou Creative Commons). Todas passaram pelo mesmo tratamento, como um ensaio de marca: recorte, balanço de branco levemente frio, contraste e nitidez moderados, saturação contida e um véu azul-petróleo nas sombras. Os arquivos `banner-*.avif` e `banner-*.webp` são recortes e tamanhos derivados do `banner.webp` (mesma foto e mesmo crédito). Nenhuma foto mostra marca ou logo em destaque, personagem de terceiros, cena militar ou rosto em destaque, e nenhuma se repete no preset (nem em outro recorte). As categorias não têm foto: a Arca entra por necessidade (cards tipográficos) e por setor.
+
+**Licenças CC BY-SA (Commons).** As fotos marcadas `CC BY-SA` exigem atribuição ao autor (a coluna Autor) e que a obra derivada (aqui, o recorte com tratamento de cor) seja compartilhada sob a mesma licença: ao republicar o arquivo, mantenha o crédito e a licença [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) ou [4.0](https://creativecommons.org/licenses/by-sa/4.0/), conforme a coluna Licença. As de domínio público não exigem nada, mas o crédito fica registrado.
 
 | Arquivo | URL de origem | Autor | Licença |
 |---|---|---|---|
-| `public/images/presets/arca-inflaveis/banner.webp` | https://unsplash.com/photos/3qVc5SJtUxU | Nerissa J | [Unsplash License](https://unsplash.com/license) |
-| `public/images/presets/arca-inflaveis/categoria-industria-e-agro.webp` | https://www.pexels.com/photo/39184288/ | Jon Champaigne | [Pexels License](https://www.pexels.com/license/) |
-| `public/images/presets/arca-inflaveis/categoria-eventos-e-marketing.webp` | https://www.pexels.com/photo/30500328/ | Miguel Angel Cabañas | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/banner.webp` | https://commons.wikimedia.org/wiki/File:FEMA_-_15879_-_Photograph_by_Marvin_Nauman_taken_on_09-15-2005_in_Louisiana.jpg | Marvin Nauman | Domínio público |
+| `public/images/presets/arca-inflaveis/reservatorio-flexivel-fechado.webp` | https://commons.wikimedia.org/wiki/File:Flexible_tank_for_fire_protection.jpg | Cjp24 | CC BY-SA 3.0 |
+| `public/images/presets/arca-inflaveis/reservatorio-aberto.webp` | https://commons.wikimedia.org/wiki/File:Flexible_tank_for_fire_protection_(empty).jpg | Cjp24 | CC BY-SA 4.0 |
+| `public/images/presets/arca-inflaveis/bolsa-de-icamento.webp` | https://commons.wikimedia.org/wiki/File:Small_lift_bag_P4270039.JPG | Peter Southwood | CC BY-SA 3.0 |
 | `public/images/presets/arca-inflaveis/saco-para-teste-de-carga.webp` | https://www.pexels.com/photo/6005876/ | Anoop VS | [Pexels License](https://www.pexels.com/license/) |
 | `public/images/presets/arca-inflaveis/boia-de-demarcacao.webp` | https://unsplash.com/photos/dnXVrFuM3c8 | Girma Nigusse | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/arca-inflaveis/boia-cilindrica.webp` | https://www.pexels.com/photo/30693963/ | Jan van der Wolf | [Pexels License](https://www.pexels.com/license/) |
-| `public/images/presets/arca-inflaveis/portico-inflavel.webp` | https://unsplash.com/photos/bssA-XRpH3s | david Griffiths | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/arca-inflaveis/portico-inflavel.webp` | https://www.pexels.com/photo/39005328/ | nguy-n-thanh-d-g | [Pexels License](https://www.pexels.com/license/) |
 | `public/images/presets/arca-inflaveis/blimp-inflavel.webp` | https://www.pexels.com/photo/38566907/ | Jimmyk photos | [Pexels License](https://www.pexels.com/license/) |
-
-Reservatórios flexíveis, bolsas de içamento, réplicas e infláveis temáticos saíram do catálogo da Arca porque não há foto de licença livre que mostre o produto (ou só há fotos de personagens e marcas de terceiros). Voltam quando o cliente tiver fotos próprias.
+| `public/images/presets/arca-inflaveis/setor-agro.webp` | https://www.pexels.com/photo/12815284/ | lio-voo-262755153 | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/setor-construcao.webp` | https://www.pexels.com/photo/40091137/ | zhengyang-tian | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/setor-oleo-e-gas.webp` | https://www.pexels.com/photo/16830015/ | anoop1992 | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/setor-defesa-civil.webp` | https://commons.wikimedia.org/wiki/File:Green_Ridge_Fire_(20130731-FS-UNK-0003).jpg | USDAgov | Domínio público |
+| `public/images/presets/arca-inflaveis/setor-eventos-esportivos.webp` | https://www.pexels.com/photo/38656924/ | margo-evardson-2158292018 | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/setor-marketing.webp` | https://www.pexels.com/photo/38566928/ | jimmykphotos | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/case-agro.webp` | https://www.pexels.com/photo/12815288/ | lio-voo-262755153 | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/case-icamento.webp` | https://www.pexels.com/photo/5504388/ | mike-van-schoonderwalt-1884800 | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/arca-inflaveis/case-eventos.webp` | https://unsplash.com/photos/bssA-XRpH3s | david Griffiths | [Unsplash License](https://unsplash.com/license) |

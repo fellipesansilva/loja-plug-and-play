@@ -93,6 +93,42 @@ export function validatePreset(preset: Preset): string[] {
   // H5 · cookies
   need(filled(policies?.cookies?.notice) && filled(policies?.cookies?.version), "config.policies.cookies", "informe o texto e a versão do aviso de cookies");
 
+  // Blocos de segmento (necessidades, setores, números, cases, processo): referências íntegras e dados de demonstração marcados.
+  const cfg = preset.config;
+  const productIds = new Set(preset.products.map((x) => x.id));
+  const sectorSlugs = new Set((cfg.sectors ?? []).map((x) => x.slug));
+  const caseIds = new Set((cfg.cases ?? []).map((x) => x.id));
+  const unknown = (ids: string[] | undefined, set: Set<string>) => (ids ?? []).filter((id) => !set.has(id));
+  for (const b of cfg.homeBlocks) {
+    if (b.type === "needs") need((cfg.needs?.length ?? 0) > 0, `config.homeBlocks.${b.id}`, "o bloco precisa de config.needs");
+    if (b.type === "sectors") need(sectorSlugs.size > 0, `config.homeBlocks.${b.id}`, "o bloco precisa de config.sectors");
+    if (b.type === "cases") {
+      need(b.caseIds.length > 0 && unknown(b.caseIds, caseIds).length === 0, `config.homeBlocks.${b.id}.caseIds`, "informe projetos existentes em config.cases");
+      need(filled(b.note), `config.homeBlocks.${b.id}.note`, "marque os projetos como demonstração");
+    }
+    if (b.type === "stats") {
+      need(b.items.length >= 3 && b.items.length <= 4 && b.items.every((i) => filled(i.value) && filled(i.label)), `config.homeBlocks.${b.id}.items`, "informe 3 ou 4 indicadores");
+      need(filled(b.note), `config.homeBlocks.${b.id}.note`, "marque os números como fictícios");
+    }
+    if (b.type === "process") {
+      const stepOk = !b.highlight || (b.highlight.step >= 1 && b.highlight.step <= b.steps.length);
+      need(b.steps.length >= 2 && stepOk, `config.homeBlocks.${b.id}`, "informe 2 ou mais passos e um destaque que aponte para um deles");
+    }
+  }
+  for (const n of cfg.needs ?? []) need(n.productIds.length > 0 && unknown(n.productIds, productIds).length === 0, `config.needs.${n.slug}.productIds`, "informe produtos existentes");
+  for (const x of cfg.sectors ?? []) {
+    need(x.productIds.length > 0 && unknown(x.productIds, productIds).length === 0, `config.sectors.${x.slug}.productIds`, "informe produtos existentes");
+    need(!x.caseId || caseIds.has(x.caseId), `config.sectors.${x.slug}.caseId`, "projeto inexistente");
+  }
+  for (const c of cfg.cases ?? []) {
+    need(productIds.has(c.productId), `config.cases.${c.id}.productId`, "produto inexistente");
+    need(!c.sectorSlug || sectorSlugs.has(c.sectorSlug), `config.cases.${c.id}.sectorSlug`, "setor inexistente");
+  }
+  for (const x of preset.products) {
+    need(unknown(x.sectorSlugs, sectorSlugs).length === 0, `products.${x.id}.sectorSlugs`, "setor inexistente");
+    need((x.benefits?.length ?? 0) <= 3, `products.${x.id}.benefits`, "no máximo 3 benefícios");
+  }
+
   return problems;
 }
 

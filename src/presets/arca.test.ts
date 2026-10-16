@@ -19,9 +19,9 @@ describe("preset Arca Infláveis (modo orçamento)", () => {
     expect(validatePreset(arca)).toEqual([]);
   });
 
-  it("tem 2 categorias e 5 produtos (só os que têm foto real), sem preço, sem variação e sem pedidos nem cupons", () => {
+  it("tem 2 categorias e 8 produtos (só os que têm foto real), sem preço, sem variação e sem pedidos nem cupons", () => {
     expect(arca.categories.map((c) => c.name)).toEqual(["Indústria e agro", "Eventos e marketing"]);
-    expect(arca.products).toHaveLength(5);
+    expect(arca.products).toHaveLength(8);
     const used = new Set(arca.products.map((p) => p.categoryId));
     for (const c of arca.categories) expect(used.has(c.id)).toBe(true);
     for (const p of arca.products) {
@@ -37,27 +37,38 @@ describe("preset Arca Infláveis (modo orçamento)", () => {
 
   it("os nomes cobrem o nicho pedido", () => {
     const names = arca.products.map((p) => p.name.toLowerCase()).join(" | ");
-    for (const term of ["saco para teste de carga", "boia de demarcação", "boia cilíndrica", "pórtico inflável", "blimp"]) {
+    for (const term of ["reservatório flexível fechado", "reservatório aberto", "bolsa de içamento", "saco para teste de carga", "boia de demarcação", "boia cilíndrica", "pórtico inflável", "blimp"]) {
       expect(names, term).toContain(term);
     }
   });
 
-  it("toda imagem é uma foto WebP que existe em public/, tem texto alternativo, consta em IMAGE_CREDITS.md e nenhuma se repete", () => {
+  it("toda imagem é uma foto WebP que existe em public/, tem texto alternativo, consta em IMAGE_CREDITS.md e nenhuma se repete (nem em outro recorte)", () => {
     const credits = fs.readFileSync(path.join(root, "IMAGE_CREDITS.md"), "utf8");
     const banner = arca.config.homeBlocks.flatMap((b) => (b.type === "banner" ? [b.image] : []));
-    const all = [...banner, ...arca.categories.map((c) => c.image), ...arca.products.flatMap((p) => p.images)];
-    for (const img of all) {
+    const catalog = [...banner, ...arca.categories.flatMap((c) => c.image ?? []), ...arca.products.flatMap((p) => p.images)];
+    // banner, produtos, setores e projetos: cada foto aparece uma vez só no preset.
+    const segment = [...(arca.config.sectors ?? []), ...(arca.config.cases ?? [])].map((x) => x.image);
+    for (const img of [...catalog, ...segment]) {
       expect(img.alt.trim().length).toBeGreaterThan(0);
       expect(img.src.endsWith(".webp"), img.src).toBe(true);
       expect(fs.existsSync(path.join(root, "public", img.src)), img.src).toBe(true);
       expect(fs.statSync(path.join(root, "public", img.src)).size, img.src).toBeLessThanOrEqual(200 * 1024);
       expect(credits, img.src).toContain(img.src);
     }
-    const srcs = all.map((i) => i.src);
+    const srcs = [...catalog, ...segment].map((i) => i.src);
     expect(new Set(srcs).size).toBe(srcs.length);
     // nenhuma ilustração SVG sobrou no preset
     const dir = path.join(root, "public/images/presets/arca-inflaveis");
     expect(fs.readdirSync(dir).filter((f) => f.endsWith(".svg"))).toEqual([]);
+  });
+
+  it("nenhuma foto da Arca vem da mesma origem que outra (a mesma foto em outro recorte também conta como repetida)", () => {
+    const credits = fs.readFileSync(path.join(root, "IMAGE_CREDITS.md"), "utf8");
+    const section = credits.slice(credits.indexOf("## Arca Infláveis"));
+    const rows = [...section.matchAll(/^\| `public\/images\/presets\/arca-inflaveis\/([^`]+)` \| (\S+) \|/gm)].map((m) => ({ file: m[1], origin: m[2] }));
+    expect(rows.length).toBeGreaterThanOrEqual(18);
+    const origins = rows.map((r) => r.origin);
+    expect(new Set(origins).size, origins.join(", ")).toBe(origins.length);
   });
 
   it("o banner é responsivo (celular e desktop, AVIF e WebP), com os arquivos existentes e dentro do limite", () => {

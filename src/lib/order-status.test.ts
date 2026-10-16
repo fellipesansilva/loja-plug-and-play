@@ -93,8 +93,8 @@ describe("store: mudança de status", () => {
 });
 
 describe("migração do estado salvo (v5 → v6)", () => {
-  it("a versão do formato subiu para 7", () => {
-    expect(STORAGE_VERSION).toBe(7);
+  it("a versão do formato subiu para 8", () => {
+    expect(STORAGE_VERSION).toBe(8);
   });
 
   it("mantém os pedidos (e ganham histórico), o carrinho e o catálogo; config volta a ser a do preset, com nome e tema editados", () => {
@@ -116,6 +116,25 @@ describe("migração do estado salvo (v5 → v6)", () => {
     expect(m.config!.name).toBe("Meu Forno");
     expect(m.config!.pickup).toEqual(forno.config.pickup);
     expect(m.config!.pickup!.readyLabel).toBe("Pronto para retirada");
+  });
+
+  it("v7 → v8: loja em orçamento recebe o catálogo novo e mantém a lista e as solicitações; loja de venda segue como está", () => {
+    const arca = presets.find((x) => x.id === "arca-inflaveis")!;
+    const old = {
+      presetId: arca.id,
+      config: { ...structuredClone(arca.config), name: "Minha Arca", needs: undefined, sectors: undefined },
+      categories: arca.categories,
+      products: arca.products.slice(0, 5),
+      quoteList: [{ productId: "arc-004", qty: 2, note: "" }],
+      quotes: [],
+    };
+    const m = migrateState(old, 7, arca.id);
+    expect(m.config!.name).toBe("Minha Arca");
+    expect(m.config!.sectors).toHaveLength(6);
+    expect(m.products).toHaveLength(arca.products.length);
+    expect(m.quoteList).toEqual(old.quoteList);
+    const sales = { presetId: forno.id, config: forno.config, products: forno.products.slice(0, 2) };
+    expect(migrateState(sales, 7, forno.id)).toBe(sales);
   });
 
   it("formato que não dá para aproveitar (outra versão, outro preset, vazio) é descartado", () => {

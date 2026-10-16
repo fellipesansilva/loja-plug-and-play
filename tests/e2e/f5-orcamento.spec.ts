@@ -24,7 +24,7 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
 
   test("cards, produto e busca não têm preço, parcelas nem 'esgotado'; a ordenação por preço não existe", async ({ page }) => {
     await arca(page, "/categoria/industria-e-agro");
-    await expect(page.getByTestId("product-card")).toHaveCount(3);
+    await expect(page.getByTestId("product-card")).toHaveCount(6);
     await expect(page.getByTestId("product-card").first()).not.toContainText(/R\$|\d+x|Pix|Esgotado/);
     await expect(page.getByTestId("product-price")).toHaveCount(0);
     const options = await page.locator("select").first().locator("option").allTextContents();

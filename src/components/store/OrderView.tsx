@@ -111,7 +111,7 @@ export function OrderView({ id }: { id: string }) {
 
   if (!order) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-md py-lg">
+      <section className="mx-auto w-full max-w-page px-md py-lg">
         <PageTitle title="Pedido" />
         <h1 className="text-3xl">{hydrated ? "Pedido não encontrado" : "Carregando…"}</h1>
         {hydrated && (

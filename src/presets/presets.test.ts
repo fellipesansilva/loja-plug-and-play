@@ -168,7 +168,7 @@ describe.each(sales.map((p) => [p.id, p] as const))("preset %s", (id, preset) =>
     const root = path.resolve(import.meta.dirname, "../..");
     const credits = fs.readFileSync(path.join(root, "IMAGE_CREDITS.md"), "utf8");
     const banners = preset.config.homeBlocks.flatMap((b) => (b.type === "banner" ? [b.image] : []));
-    const images = [...banners, ...preset.categories.map((c) => c.image), ...preset.products.flatMap((p) => p.images)];
+    const images = [...banners, ...preset.categories.flatMap((c) => c.image ?? []), ...preset.products.flatMap((p) => p.images)];
     expect(images.length).toBeGreaterThan(0);
     for (const img of images) {
       expect(img.alt.trim().length).toBeGreaterThan(0);
