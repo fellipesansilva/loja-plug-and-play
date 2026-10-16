@@ -244,7 +244,7 @@ export function CartView() {
                   <StoreImage image={product.images[0]} sizes="80px" />
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <Link href={`/produto/${product.slug}`} className="font-bold leading-snug">
+                  <Link href={`/produto/${product.slug}`} className="inline-block py-1 font-bold leading-snug">
                     {product.name}
                   </Link>
                   {variantLabel && <p className="text-sm text-muted">{variantLabel}</p>}
@@ -289,8 +289,15 @@ export function CartView() {
                         <PlusIcon />
                       </button>
                     </div>
-                    <p className="font-extrabold" data-testid="line-total">
-                      {formatBRL(total)}
+                    <p className="text-right font-extrabold">
+                      <span data-testid="line-total" className={availability.status === "ok" ? "" : "text-muted line-through"}>
+                        {formatBRL(total)}
+                      </span>
+                      {availability.status !== "ok" && (
+                        <span data-testid="line-excluded" className="block text-xs font-medium text-muted">
+                          não incluído no total
+                        </span>
+                      )}
                     </p>
                   </div>
                   <button

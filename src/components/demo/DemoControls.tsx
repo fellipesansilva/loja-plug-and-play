@@ -85,7 +85,7 @@ export function DemoControls() {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="rounded-lg bg-secondary px-md py-sm text-sm font-bold text-text shadow-lg"
+        className="min-h-11 rounded-lg bg-secondary px-lg text-sm font-bold text-text shadow-lg"
       >
         {open ? "Fechar demo" : "Demo"}
       </button>

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Money } from "@/domain/types";
-import { cartBlockers, cartIsAllDigital, physicalSubtotal, resolveLines } from "@/lib/cart";
+import { billableLines, cartBlockers, cartIsAllDigital, physicalSubtotal, resolveLines } from "@/lib/cart";
 import { applyCoupon } from "@/lib/coupon";
 import { quoteShipping, type ShippingQuote } from "@/lib/shipping";
 import { computeTotals, type PaymentMethod } from "@/lib/totals";
@@ -27,9 +27,11 @@ export function useCartPricing() {
 
   const lines = useMemo(() => resolveLines(cart, products), [cart, products]);
   const blockers = cartBlockers(lines);
-  const subtotal = lines.reduce((sum, l) => sum + l.total, 0);
-  const physical = physicalSubtotal(lines);
-  const allDigital = cartIsAllDigital(lines);
+  // Item indisponível (ou com estoque menor que a quantidade) não entra no subtotal, no frete nem no total.
+  const billable = billableLines(lines);
+  const subtotal = billable.reduce((sum, l) => sum + l.total, 0);
+  const physical = physicalSubtotal(billable);
+  const allDigital = cartIsAllDigital(billable);
 
   // O cupom é revalidado a cada mudança do carrinho (ex.: o mínimo deixa de ser atingido).
   const coupon = checkout.couponCode ? applyCoupon(checkout.couponCode, coupons, subtotal) : null;

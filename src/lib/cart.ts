@@ -27,12 +27,12 @@ export function cartCount(cart: CartLine[]): number {
   return cart.reduce((sum, l) => sum + l.qty, 0);
 }
 
-/** Subtotal do carrinho (linhas de produtos que não existem mais no catálogo são ignoradas). */
+/**
+ * Subtotal do carrinho. Só entram as linhas disponíveis: produto removido do catálogo, inativo, sem estoque ou com
+ * estoque menor que a quantidade ficam de fora (e, por isso, também do frete grátis).
+ */
 export function cartSubtotal(cart: CartLine[], products: Product[]): Money {
-  return cart.reduce((sum, line) => {
-    const product = products.find((p) => p.id === line.productId);
-    return product ? sum + lineTotal(product, line) : sum;
-  }, 0);
+  return billableLines(resolveLines(cart, products)).reduce((sum, l) => sum + l.total, 0);
 }
 
 export type FreeShippingProgress =
@@ -140,6 +140,11 @@ export function resolveLines(cart: CartLine[], products: Product[]): ResolvedLin
       },
     ];
   });
+}
+
+/** Linhas que entram no subtotal, no frete e no total: as disponíveis. */
+export function billableLines(lines: ResolvedLine[]): ResolvedLine[] {
+  return lines.filter((l) => l.availability.status === "ok");
 }
 
 /** Linhas que impedem de finalizar: indisponíveis ou com estoque menor que a quantidade. */

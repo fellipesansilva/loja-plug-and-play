@@ -20,6 +20,10 @@ const settings = [
   { href: "/painel/configuracoes/preset", label: "Preset" },
 ];
 
+/**
+ * Menu do painel. No celular vira uma faixa horizontal compacta, com rolagem lateral (o nome da loja já está na tela
+ * seguinte e a faixa "Painel de demonstração" identifica o painel); a partir de md é o menu lateral.
+ */
 export function PainelSidebar() {
   const { slug } = usePreset();
   const pathname = stripPresetPrefix(slug, usePathname());
@@ -31,23 +35,25 @@ export function PainelSidebar() {
       aria-label="Menu lateral do painel"
       className="w-full border-b border-border bg-surface md:w-60 md:shrink-0 md:border-b-0 md:border-r"
     >
-      <p className="px-md pt-md font-heading text-lg font-bold text-primary">{name}</p>
-      <p className="px-md text-xs text-muted">Painel administrativo</p>
-      <nav aria-label="Menu do painel" className="p-sm">
-        <ul className="flex flex-row flex-wrap gap-xs md:flex-col">
+      <div className="hidden md:block">
+        <p className="px-md pt-md font-heading text-lg font-bold text-primary">{name}</p>
+        <p className="px-md text-xs text-muted">Painel administrativo</p>
+      </div>
+      <nav aria-label="Menu do painel" className="px-sm py-xs md:p-sm">
+        <ul className="flex flex-row items-center gap-xs overflow-x-auto [scrollbar-width:none] md:flex-col md:items-stretch md:overflow-visible">
           {items.map((i) => {
             const active = i.label === "Configurações" ? inSettings : pathname.startsWith(i.href);
             return (
-              <li key={i.label}>
+              <li key={i.label} className="shrink-0 md:shrink">
                 <Link
                   href={i.href}
                   aria-current={active ? "page" : undefined}
-                  className={`block rounded-md px-md py-sm ${active ? "bg-primary text-surface" : "text-text hover:bg-background"}`}
+                  className={`flex min-h-11 items-center rounded-md px-md ${active ? "bg-primary text-surface" : "text-text hover:bg-background"}`}
                 >
                   {i.label}
                 </Link>
                 {i.label === "Configurações" && inSettings && (
-                  <ul className="ml-md mt-xs flex flex-col gap-xs">
+                  <ul className="ml-md mt-xs hidden flex-col gap-xs md:flex">
                     {settings.map((s) => (
                       <li key={s.href}>
                         <Link href={s.href} className="block px-sm py-xs text-sm text-muted hover:text-primary">
@@ -60,6 +66,14 @@ export function PainelSidebar() {
               </li>
             );
           })}
+          {inSettings &&
+            settings.map((s) => (
+              <li key={s.href} className="shrink-0 md:hidden">
+                <Link href={s.href} className="flex min-h-11 items-center rounded-md px-sm text-sm text-muted">
+                  {s.label}
+                </Link>
+              </li>
+            ))}
         </ul>
       </nav>
     </aside>

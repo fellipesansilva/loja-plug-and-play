@@ -1,7 +1,7 @@
 "use client";
 
 import { StoreLink as Link } from "@/components/store/StoreLink";
-import { cartCount, cartSubtotal, freeShippingProgress } from "@/lib/cart";
+import { billableLines, cartCount, freeShippingProgress, resolveLines } from "@/lib/cart";
 import { formatBRL } from "@/lib/money";
 import { useDemoStore } from "@/store/demo-store";
 import { useCartWords } from "./useCartWords";
@@ -13,8 +13,9 @@ export function ShippingProgress() {
   const freteGratis = useDemoStore((s) => s.config.modules.freteGratis);
   const words = useCartWords();
 
-  const subtotal = cartSubtotal(cart, products);
-  const progress = freeShippingProgress(subtotal, cartCount(cart), freteGratis);
+  const billable = billableLines(resolveLines(cart, products));
+  const subtotal = billable.reduce((sum, l) => sum + l.total, 0);
+  const progress = freeShippingProgress(subtotal, cartCount(billable.map((l) => l.line)), freteGratis);
   if (progress.state === "hidden") return null;
 
   const reached = progress.state === "reached";

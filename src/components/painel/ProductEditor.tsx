@@ -278,7 +278,7 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
               onFiles(e.target.files);
               e.target.value = "";
             }}
-            className="mt-xs block w-full text-sm"
+            className="mt-xs block h-11 w-full text-sm"
           />
           <p className="mt-xs text-xs text-muted">A imagem fica guardada neste navegador.</p>
         </div>

@@ -11,7 +11,7 @@ function DemoBanner() {
   return (
     <div
       data-testid="painel-demo-banner"
-      className="sticky top-0 z-40 bg-text px-md py-xs text-center text-sm font-bold text-background"
+      className="sticky top-0 z-40 bg-text px-md py-[2px] text-center text-xs font-bold text-background md:py-xs md:text-sm"
     >
       Painel de demonstração
     </div>
@@ -27,7 +27,7 @@ export function PainelShell({ children }: { children: React.ReactNode }) {
       <>
         <DemoBanner />
         <StorageFullAlert />
-        <main>{children}</main>
+        <main className="pb-20">{children}</main>
       </>
     );
   }
@@ -37,7 +37,7 @@ export function PainelShell({ children }: { children: React.ReactNode }) {
       <StorageFullAlert />
       <div className="flex min-h-screen flex-col md:flex-row">
         <PainelSidebar />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 pb-20">{children}</main>
       </div>
     </>
   );

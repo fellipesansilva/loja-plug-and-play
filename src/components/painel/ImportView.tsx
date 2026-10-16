@@ -119,7 +119,7 @@ export function ImportView() {
             accept=".csv,text/csv"
             data-testid="import-file"
             onChange={(e) => void onFile(e.target.files?.[0])}
-            className="mt-xs block w-full text-sm"
+            className="mt-xs block h-11 w-full text-sm"
           />
         </div>
       </div>

@@ -83,14 +83,23 @@ function OrderSummary({ pricing, method }: { pricing: ReturnType<typeof useCartP
         <span data-testid="summary-total">{formatBRL(totals.total)}</span>
       </summary>
       <ul className="mt-sm flex flex-col gap-xs text-sm">
-        {pricing.lines.map(({ line, product, variantLabel, addons, total }) => (
+        {pricing.lines.map(({ line, product, variantLabel, addons, total, availability }) => (
           <li key={line.lineId} className="flex justify-between gap-md">
             <span>
               {line.qty}× {product.name}
               {variantLabel ? ` · ${variantLabel}` : ""}
               {addons.length > 0 && <span className="block text-muted">+ {addons.map((a) => a.label).join(", ")}</span>}
             </span>
-            <span>{formatBRL(total)}</span>
+            <span className={availability.status === "ok" ? "" : "text-right text-muted"}>
+              {availability.status === "ok" ? (
+                formatBRL(total)
+              ) : (
+                <>
+                  <s>{formatBRL(total)}</s>
+                  <span className="block text-xs">não incluído no total</span>
+                </>
+              )}
+            </span>
           </li>
         ))}
       </ul>

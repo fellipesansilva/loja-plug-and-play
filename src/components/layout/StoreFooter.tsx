@@ -11,14 +11,15 @@ export function StoreFooter() {
   const { reopen } = useConsent();
   return (
     <footer className="mt-xl border-t border-border bg-footer-bg" data-testid="store-footer">
-      <div className="mx-auto w-full max-w-5xl px-md py-lg text-sm text-footer-text">
+      {/* pb-20: espaço no fim da página para o botão Demo (fixo no canto) não cobrir texto */}
+      <div className="mx-auto w-full max-w-5xl px-md pb-20 pt-lg text-sm text-footer-text">
         <p className="font-bold" data-testid="footer-name">
           {legal.name || name}
         </p>
         <p data-testid="footer-document">{legal.document}</p>
         <p data-testid="footer-address">{legal.address}</p>
         <p>
-          <a href={`mailto:${legal.email}`} className="underline" data-testid="footer-email">
+          <a href={`mailto:${legal.email}`} className="inline-flex min-h-6 items-center underline" data-testid="footer-email">
             {legal.email}
           </a>
           {" · "}

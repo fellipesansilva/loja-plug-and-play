@@ -29,11 +29,11 @@ export function OrdersList() {
   const shown = filterOrders(orders, status, term);
 
   return (
-    <section className="px-md py-lg">
+    <section className="px-md py-md md:py-lg">
       <PageTitle title="Pedidos" />
-      <h1 className="text-3xl">Pedidos</h1>
+      <h1 className="text-2xl md:text-3xl">Pedidos</h1>
 
-      <form role="search" aria-label="Filtrar pedidos" onSubmit={(e) => e.preventDefault()} className="mt-md grid gap-md md:max-w-[40rem] md:grid-cols-2">
+      <form role="search" aria-label="Filtrar pedidos" onSubmit={(e) => e.preventDefault()} className="mt-sm grid grid-cols-2 gap-sm md:mt-md md:max-w-[40rem] md:gap-md">
         <div>
           <label htmlFor="ped-busca" className="text-sm font-bold">
             Buscar por número ou cliente
@@ -66,9 +66,14 @@ export function OrdersList() {
       ) : (
         <ul className="mt-sm flex flex-col gap-sm" data-testid="orders-list">
           {shown.map((o) => (
-            <li key={o.id} className="rounded-lg border border-border bg-surface p-md" data-testid="order-row" data-order-id={o.id}>
+            <li
+              key={o.id}
+              className="relative rounded-lg border border-border bg-surface p-md focus-within:ring-2 focus-within:ring-primary"
+              data-testid="order-row"
+              data-order-id={o.id}
+            >
               <div className="flex flex-wrap items-baseline justify-between gap-sm">
-                <StoreLink href={`/painel/pedidos/${encodeURIComponent(o.id)}`} className="font-bold text-primary underline" data-testid="order-link">
+                <StoreLink href={`/painel/pedidos/${encodeURIComponent(o.id)}`} className="font-bold text-primary underline after:absolute after:inset-0 after:content-['']" data-testid="order-link">
                   {o.id}
                 </StoreLink>
                 <span className="rounded-button border border-border px-sm py-xs text-sm font-bold" data-testid="order-row-status">
