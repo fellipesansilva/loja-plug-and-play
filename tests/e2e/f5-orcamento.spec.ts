@@ -204,3 +204,149 @@ test.describe("H2 · lista de orçamento", () => {
     await expect(page.getByTestId("quote-empty")).toBeVisible();
   });
 });
+
+const fillQuote = async (page: import("@playwright/test").Page, over: Partial<Record<"name" | "company" | "email" | "whatsapp" | "city" | "state" | "message", string>> = {}, application = "Agro e irrigação") => {
+  const v = { name: "Ana Souza", company: "Fazenda Boa Água", email: "ana@example.com", whatsapp: "19912345678", city: "Campinas", state: "sp", message: "Preciso do prazo e do frete.", ...over };
+  await page.locator("#chk-quoteName").fill(v.name);
+  await page.locator("#chk-quoteCompany").fill(v.company);
+  await page.locator("#chk-quoteEmail").fill(v.email);
+  await page.locator("#chk-quoteWhatsapp").fill(v.whatsapp);
+  await page.locator("#chk-quoteCity").fill(v.city);
+  await page.locator("#chk-quoteState").fill(v.state);
+  await page.getByLabel("Aplicação").selectOption(application);
+  await page.getByLabel("Mensagem (opcional)").fill(v.message);
+};
+
+const seedList = async (page: import("@playwright/test").Page) => {
+  await addFromProduct(page, "reservatorio-flexivel-fechado", 2);
+  await addFromProduct(page, "boia-de-demarcacao", 6);
+  await page.goto(`${ARCA}/orcamento`);
+  await page.waitForFunction(() => !!window.__demoStore);
+  await page.getByLabel("Observações de Reservatório Flexível Fechado").fill("20.000 litros, terreno plano");
+  await page.getByLabel("Observações de Boia de Demarcação").fill("Laranja, 60 cm, com olhal");
+};
+
+const stubOpen = (page: import("@playwright/test").Page) =>
+  page.addInitScript(() => {
+    (window as unknown as { __opened: string[] }).__opened = [];
+    window.open = ((url?: string | URL) => {
+      (window as unknown as { __opened: string[] }).__opened.push(String(url));
+      return null;
+    }) as typeof window.open;
+  });
+
+test.describe("H3 · envio do pedido de orçamento", () => {
+  test("o formulário tem os campos pedidos, o aviso de dados com link para a privacidade e nenhuma caixa de 'concordo'", async ({ page }) => {
+    await seedList(page);
+    const form = page.getByTestId("quote-form");
+    for (const label of ["Nome", "Empresa (opcional)", "E-mail", "WhatsApp", "Cidade de entrega", "UF", "Aplicação", "Mensagem (opcional)"]) {
+      await expect(form.getByLabel(label, { exact: true })).toBeVisible();
+    }
+    const options = await form.getByLabel("Aplicação").locator("option").allTextContents();
+    const fromPreset = await page.evaluate(() => window.__demoStore!.getState().config.quote!.applications);
+    expect(options).toEqual(["Escolha a aplicação", ...fromPreset]);
+    const notice = page.getByTestId("quote-data-notice");
+    await expect(notice).toContainText("só para responder ao seu pedido de orçamento");
+    await expect(notice.getByRole("link", { name: "Política de Privacidade" })).toHaveAttribute("href", "/arca/privacidade");
+    await expect(form.locator('input[type="checkbox"]')).toHaveCount(0);
+    await expect(form).not.toContainText(/concordo|aceito/i);
+  });
+
+  test("enviar: protocolo, lista vazia, solicitação gravada com itens, observações e contato", async ({ page }) => {
+    await seedList(page);
+    const before = await page.evaluate(() => window.__demoStore!.getState().quotes.length);
+    await fillQuote(page);
+    await page.getByTestId("quote-submit").click();
+    const protocol = page.getByTestId("quote-protocol");
+    await expect(protocol).toHaveText(/^ORC-\d{8}-[0-9A-Z]{5}$/);
+    await expect(page.getByTestId("quote-sent")).toContainText("Esta é uma simulação");
+    const id = (await protocol.textContent())!;
+    const state = await page.evaluate(() => {
+      const s = window.__demoStore!.getState();
+      return { list: s.quoteList, quotes: s.quotes };
+    });
+    expect(state.list).toEqual([]);
+    expect(state.quotes).toHaveLength(before + 1);
+    const q = state.quotes[0];
+    expect(q.id).toBe(id);
+    expect(q.status).toBe("nova");
+    expect(q.items.map((i) => [i.name, i.qty, i.note])).toEqual([
+      ["Reservatório Flexível Fechado", 2, "20.000 litros, terreno plano"],
+      ["Boia de Demarcação", 6, "Laranja, 60 cm, com olhal"],
+    ]);
+    expect(q.contact).toMatchObject({ name: "Ana Souza", company: "Fazenda Boa Água", email: "ana@example.com", whatsapp: "(19) 91234-5678", city: "Campinas", state: "SP", application: "Agro e irrigação" });
+    await expect(page.getByTestId("quote-count")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("quote-empty")).toBeVisible();
+    await expect(page.getByTestId("quote-protocol")).toHaveCount(0);
+  });
+
+  test("campos obrigatórios com erro no campo, foco no primeiro e nada enviado", async ({ page }) => {
+    await seedList(page);
+    const before = await page.evaluate(() => window.__demoStore!.getState().quotes.length);
+    await page.getByTestId("quote-submit").click();
+    await expect(page.getByTestId("quote-form-errors")).toBeVisible();
+    for (const field of ["quoteName", "quoteEmail", "quoteWhatsapp", "quoteCity", "quoteState"]) await expect(page.locator(`#chk-${field}`)).toHaveAttribute("aria-invalid", "true");
+    await expect(page.getByLabel("Aplicação")).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator("#chk-quoteName")).toBeFocused();
+    expect(await page.evaluate(() => window.__demoStore!.getState().quotes.length)).toBe(before);
+    expect(await page.evaluate(() => window.__demoStore!.getState().quoteList.length)).toBe(2);
+    // empresa e mensagem são opcionais
+    await fillQuote(page, { company: "", message: "" });
+    await page.getByTestId("quote-submit").click();
+    await expect(page.getByTestId("quote-protocol")).toBeVisible();
+  });
+
+  test("WhatsApp na demo: janela com a mensagem pronta (itens, quantidades, observações) e Copiar; nenhum link para wa.me", async ({ page }) => {
+    await stubOpen(page);
+    await seedList(page);
+    await page.locator("#chk-quoteName").fill("Ana Souza");
+    await page.getByTestId("quote-whatsapp").click();
+    const dialog = page.getByTestId("whatsapp-dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("heading")).toHaveText("Mensagem para o WhatsApp");
+    const message = await page.getByTestId("whatsapp-message").innerText();
+    expect(message).toContain("Arca Infláveis");
+    expect(message).toContain("1. Reservatório Flexível Fechado (ARC-RFF-001) — 2 unidades");
+    expect(message).toContain("Observações: 20.000 litros, terreno plano");
+    expect(message).toContain("2. Boia de Demarcação (ARC-BDM-005) — 6 unidades");
+    expect(message).toContain("Observações: Laranja, 60 cm, com olhal");
+    expect(message).toContain("Nome: Ana Souza");
+    await expect(dialog.getByRole("button", { name: "Copiar" })).toBeVisible();
+    await dialog.getByRole("button", { name: "Copiar" }).click();
+    await expect(dialog).toContainText("Copiado!");
+    await expect(dialog).toContainText("nenhuma conversa foi aberta");
+    expect(await page.content()).not.toContain("wa.me");
+    expect(await page.evaluate(() => (window as unknown as { __opened: string[] }).__opened)).toEqual([]);
+    expect(await page.locator('a[href*="wa.me"], a[href*="whatsapp"]').count()).toBe(0);
+    // Esc fecha; a lista continua intacta (o WhatsApp não envia nem esvazia)
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    expect(await page.evaluate(() => window.__demoStore!.getState().quoteList.length)).toBe(2);
+  });
+
+  test("com número real (isReal), o botão abre o wa.me com a mensagem", async ({ page }) => {
+    await stubOpen(page);
+    await seedList(page);
+    await page.evaluate(() => {
+      window.__demoStore!.setState((st) => ({ config: { ...st.config, quote: { ...st.config.quote!, whatsapp: { number: "5519988887777", isReal: true } } } }));
+    });
+    await page.getByTestId("quote-whatsapp").click();
+    await expect(page.getByTestId("whatsapp-dialog")).toHaveCount(0);
+    const opened = await page.evaluate(() => (window as unknown as { __opened: string[] }).__opened);
+    expect(opened).toHaveLength(1);
+    expect(opened[0].startsWith("https://wa.me/5519988887777?text=")).toBe(true);
+    const text = decodeURIComponent(opened[0].split("?text=")[1]);
+    expect(text).toContain("Reservatório Flexível Fechado");
+    expect(text).toContain("Laranja, 60 cm, com olhal");
+  });
+
+  test("a confirmação mostra o protocolo no celular de 400 px sem rolagem horizontal", async ({ page }) => {
+    await page.setViewportSize({ width: 400, height: 800 });
+    await seedList(page);
+    await fillQuote(page);
+    await page.getByTestId("quote-submit").click();
+    await expect(page.getByTestId("quote-protocol")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  });
+});
