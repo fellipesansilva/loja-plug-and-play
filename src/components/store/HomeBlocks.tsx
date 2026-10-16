@@ -12,6 +12,7 @@ import { ProductGrid } from "./ProductCard";
 import { useQuoteMode } from "./useQuoteWords";
 import { ResponsiveBanner } from "./ResponsiveBanner";
 import { QuickAddButton } from "./ProductMenuItem";
+import { CasesBlock, CtaBlock, NeedsBlock, ProcessBlock, SectorsBlock, StatsBlock } from "./SegmentBlocks";
 import { ShippingProgress } from "./ShippingProgress";
 import { StoreImage } from "./StoreImage";
 
@@ -160,6 +161,7 @@ function FeaturedBlock({ block }: { block: BlockOf<"featured"> }) {
     <section
       id={block.id}
       aria-labelledby={`bloco-${block.id}`}
+      data-tone="light"
       className="mx-auto w-full max-w-5xl scroll-mt-md px-md py-lg"
     >
       <div className="flex items-baseline justify-between gap-md">
@@ -200,6 +202,18 @@ export function HomeBlocks() {
             return <FeaturedBlock key={block.id} block={block} />;
           case "shippingProgress":
             return <ShippingProgress key={block.id} />;
+          case "needs":
+            return <NeedsBlock key={block.id} block={block} />;
+          case "sectors":
+            return <SectorsBlock key={block.id} block={block} />;
+          case "stats":
+            return <StatsBlock key={block.id} block={block} />;
+          case "cases":
+            return <CasesBlock key={block.id} block={block} />;
+          case "process":
+            return <ProcessBlock key={block.id} block={block} />;
+          case "cta":
+            return <CtaBlock key={block.id} block={block} />;
         }
       })}
     </>
