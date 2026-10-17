@@ -3,6 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import type { Image } from "@/domain/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "./Icons";
+import { LcpImage } from "./LcpImage";
 import { StoreImage } from "./StoreImage";
 
 const SIZES = "(min-width: 768px) 50vw, 100vw";
@@ -11,9 +12,12 @@ const SIZES = "(min-width: 768px) 50vw, 100vw";
 export function ProductGallery({
   images,
   tall = false,
+  gutterRem = 0,
   children,
 }: {
   images: Image[];
+  /** Recuo lateral da página no celular, em rem (a Arca tem 2; Trama e Forno, 0): entra no sizes da foto do LCP. */
+  gutterRem?: number;
   /** Foto de ponta a ponta com altura fixa (página em folha), em vez da proporção do produto. */
   tall?: boolean;
   /** Controles sobrepostos à foto (voltar, favoritar). */
@@ -51,7 +55,7 @@ export function ProductGallery({
             key={img.src}
             className={`relative w-full shrink-0 snap-center overflow-hidden bg-surface ${tall ? "h-[420px] md:h-[520px]" : "aspect-product"}`}
           >
-            <StoreImage image={img} sizes={SIZES} lcp={i === 0} variants={false} />
+            {i === 0 ? <LcpImage image={img} gutterRem={gutterRem} fallbackSizes={SIZES} /> : <StoreImage image={img} sizes={SIZES} variants={false} />}
           </li>
         ))}
       </ul>
