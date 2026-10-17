@@ -95,9 +95,8 @@ export const productImages: Record<string, Image[]> = {
     { src: "/images/presets/trama-studio/blusa-cropped-algodao-3.webp", alt: "Camiseta branca e saia preta, vistas de costas" },
   ],
   "ts-003": [
-    { src: "/images/presets/trama-studio/calca-alfaiataria-1.webp", alt: "Calça de alfaiataria azul-marinho em manequim" },
-    { src: "/images/presets/trama-studio/calca-alfaiataria-2.webp", alt: "Calça ampla de linho vermelha" },
-    { src: "/images/presets/trama-studio/calca-alfaiataria-3.webp", alt: "Calça de corte reto verde-oliva, vista da cintura para baixo" },
+    { src: "/images/presets/trama-studio/calca-alfaiataria-2.webp", alt: "Calça de perna reta em linho vermelho, em fundo branco" },
+    { src: "/images/presets/trama-studio/calca-alfaiataria-3.webp", alt: "Calça de corte reto caramelo, vista da cintura para baixo" },
   ],
   "ts-004": [
     { src: "/images/presets/trama-studio/saia-plissada-1.webp", alt: "Saia plissada clara combinada com blusa preta, junto ao mar" },
