@@ -3,7 +3,11 @@ import { imageOriginals } from "./image-originals.generated";
 /** Larguras (px) das versões menores de cada foto (scripts/image-variants.mjs): <nome>-360.webp e <nome>-640.webp. */
 export const IMAGE_VARIANT_WIDTHS = [360, 640] as const;
 
+/** Variante de densidade alta (celular de densidade 2 ou mais): <nome>-960.webp, gerada por scripts/image-variants.mjs só para foto pesada. */
+export const IMAGE_VARIANT_HI_WIDTH = 960;
+
 const PRESET_PHOTO = /^(\/images\/presets\/[^/]+\/(?!banner)[^/]+?)\.webp$/;
+const VARIANT_FILE = /-(360|640|960)\.webp$/;
 
 /**
  * srcset da foto de um preset (arquivo em /images/presets/<loja>/<nome>.webp, fora os banners): o navegador baixa a versão que cobre o espaço
@@ -11,7 +15,7 @@ const PRESET_PHOTO = /^(\/images\/presets\/[^/]+\/(?!banner)[^/]+?)\.webp$/;
  */
 export function imageSrcSet(src: string): string | undefined {
   const m = PRESET_PHOTO.exec(src);
-  if (!m || /-(360|640)\.webp$/.test(src)) return undefined;
+  if (!m || VARIANT_FILE.test(src)) return undefined;
   return IMAGE_VARIANT_WIDTHS.map((w) => `${m[1]}-${w}.webp ${w}w`).join(", ");
 }
 
@@ -35,22 +39,26 @@ export type LcpPlan = { src: string; fallback: string; phone: LcpSource; wide: L
 
 /**
  * Plano da foto do LCP da galeria: `srcset` e `sizes` do celular e das telas largas.
- * - Celular: só as variantes (360 e 640). Mesmo em tela de densidade alta a menor que cobre é a de 640; o original (1200 px) nunca é baixado.
- * - Telas largas: variantes e o original com a sua largura real, para a tela de densidade alta continuar nítida.
+ * - Celular: só as variantes (360, 640 e 960); o original nunca é baixado. Densidade 1 usa a de 640 (380 px de tela); densidade 2 ou mais usa a
+ *   de 960 (760 px físicos, com folga). Em original mais estreito que 960 px (Trama, 900 px) a "de 960" tem a largura do original: o manifesto
+ *   guarda a largura real do arquivo (`w960`).
+ * - Telas largas (a partir de 768 px): variantes de 360 e 640 e o original com a sua largura real, para a tela de densidade alta continuar nítida.
  * Devolve null (a foto segue como está, sem variantes) quando não é foto de preset, não consta no manifesto ou é leve.
  */
 export function lcpImagePlan(src: string, gutterRem = 0): LcpPlan | null {
   const m = PRESET_PHOTO.exec(src);
   const original = imageOriginals[src];
-  if (!m || /-(360|640)\.webp$/.test(src) || !original || original.bytes < IMAGE_VARIANT_MIN_BYTES) return null;
+  if (!m || VARIANT_FILE.test(src) || !original || original.bytes < IMAGE_VARIANT_MIN_BYTES) return null;
   const variants = IMAGE_VARIANT_WIDTHS.filter((w) => w < original.width).map((w) => ({ url: `${m[1]}-${w}.webp`, w }));
   if (variants.length === 0) return null;
+  const hi = original.w960 ? { url: `${m[1]}-${IMAGE_VARIANT_HI_WIDTH}.webp`, w: original.w960 } : null;
+  const phoneList = hi && hi.w > variants[variants.length - 1].w ? [...variants, hi] : variants;
   const toSet = (list: { url: string; w: number }[]) => list.map((v) => `${v.url} ${v.w}w`).join(", ");
   const columnRem = 2 * PAGE_SIDE_PADDING_REM + COLUMN_GAP_REM;
   return {
     src,
-    fallback: variants[variants.length - 1].url,
-    phone: { media: PHONE_MEDIA, srcSet: toSet(variants), sizes: gutterRem > 0 ? `calc(100vw - ${gutterRem}rem)` : "100vw" },
+    fallback: phoneList[phoneList.length - 1].url,
+    phone: { media: PHONE_MEDIA, srcSet: toSet(phoneList), sizes: gutterRem > 0 ? `calc(100vw - ${gutterRem}rem)` : "100vw" },
     wide: { media: WIDE_MEDIA, srcSet: toSet([...variants, { url: src, w: original.width }]), sizes: `calc((min(100vw, ${PAGE_MAX_REM}rem) - ${columnRem}rem) / 2)` },
   };
 }
