@@ -1,3 +1,4 @@
+import { extraModuleProblems } from "@/lib/extras";
 import { contrastIssues, parseHex } from "@/theme/contrast";
 import { MIN_DEFECT_DAYS, MIN_REGRET_DAYS, type Modules, type Preset } from "@/domain/types";
 
@@ -177,6 +178,9 @@ export function validatePreset(preset: Preset): string[] {
       need(filled(d.unidadeConsumo), "config.orcamentoBlocks.dimensionador.unidadeConsumo", "informe a unidade (ex.: L/dia)");
     }
   }
+
+  // Módulos do diferencial (bot, WhatsApp, depoimentos, newsletter): dependências, textos e depoimento real com autorização.
+  for (const p of extraModuleProblems(cfg)) problems.push(p);
 
   // Tema do painel: só opções aprovadas (cor principal, destaque e fontes); o tema atual tem que estar entre elas e passar no contraste.
   const tc = cfg.themeChoices;

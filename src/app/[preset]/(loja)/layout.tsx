@@ -1,4 +1,5 @@
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
+import { StoreExtras } from "@/components/extras/StoreExtras";
 import { StoreHeader } from "@/components/layout/StoreHeader";
 import { StoreFooter } from "@/components/layout/StoreFooter";
 
@@ -11,6 +12,7 @@ export default function LojaLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1">{children}</main>
         <StoreFooter />
       </div>
+      <StoreExtras />
     </ConsentProvider>
   );
 }

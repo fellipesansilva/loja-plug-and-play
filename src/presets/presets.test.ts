@@ -8,6 +8,7 @@ import { presets } from "./index";
 const expectedFreeShipping: Record<string, number> = {
   "trama-studio": 19900,
   "forno-da-vila": 8000,
+  orbita: 29900,
 };
 
 /** Presets de venda (preço, carrinho e checkout). O preset em orçamento (Arca) tem os próprios testes em arca.test.ts. */
@@ -145,6 +146,11 @@ describe.each(sales.map((p) => [p.id, p] as const))("preset %s", (id, preset) =>
     const root = path.resolve(import.meta.dirname, "../..");
     const banner = preset.config.homeBlocks.find((b) => b.type === "banner");
     if (banner?.type !== "banner") throw new Error("sem banner");
+    // Preset sem foto licenciada (Órbita) usa o placeholder local no banner até haver foto: não há arquivos responsivos para conferir.
+    if (!banner.image.sources) {
+      expect(banner.image.src.startsWith("/placeholder")).toBe(true);
+      return;
+    }
     const sources = banner.image.sources ?? [];
     expect(sources.map((s) => s.media)).toEqual(["(max-width: 767px)", "(min-width: 768px)"]);
     for (const source of sources) {

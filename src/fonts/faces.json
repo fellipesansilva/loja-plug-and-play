@@ -65,5 +65,29 @@
       "--font-barlow-condensed": "Barlow Condensed",
       "--font-barlow": "Barlow"
     }
+  },
+  "orbita": {
+    "faces": [
+      {
+        "family": "Manrope",
+        "file": "manrope-latin.woff2",
+        "weight": "400 700"
+      },
+      {
+        "family": "Barlow",
+        "file": "barlow-400.woff2",
+        "weight": "400"
+      },
+      {
+        "family": "Barlow",
+        "file": "barlow-700.woff2",
+        "weight": "700",
+        "preload": false
+      }
+    ],
+    "vars": {
+      "--font-manrope": "Manrope",
+      "--font-barlow": "Barlow"
+    }
   }
 }

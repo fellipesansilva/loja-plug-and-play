@@ -168,5 +168,65 @@ export const fallbackFaces: Record<string, FallbackFace[]> = {
       "lineGap": 0,
       "fallback": "Arial Bold"
     }
+  ],
+  "orbita": [
+    {
+      "family": "Manrope",
+      "weight": 400,
+      "local": [
+        "Arial",
+        "Liberation Sans",
+        "Helvetica"
+      ],
+      "sizeAdjust": 101.86,
+      "ascent": 104.65,
+      "descent": 29.45,
+      "lineGap": 0,
+      "fallback": "Arial"
+    },
+    {
+      "family": "Manrope",
+      "weight": 700,
+      "local": [
+        "Arial Bold",
+        "Arial-BoldMT",
+        "Liberation Sans Bold",
+        "Helvetica Bold"
+      ],
+      "sizeAdjust": 100.86,
+      "ascent": 105.69,
+      "descent": 29.74,
+      "lineGap": 0,
+      "fallback": "Arial Bold"
+    },
+    {
+      "family": "Barlow",
+      "weight": 400,
+      "local": [
+        "Arial",
+        "Liberation Sans",
+        "Helvetica"
+      ],
+      "sizeAdjust": 95.48,
+      "ascent": 104.73,
+      "descent": 20.95,
+      "lineGap": 0,
+      "fallback": "Arial"
+    },
+    {
+      "family": "Barlow",
+      "weight": 700,
+      "local": [
+        "Arial Bold",
+        "Arial-BoldMT",
+        "Liberation Sans Bold",
+        "Helvetica Bold"
+      ],
+      "sizeAdjust": 92.44,
+      "ascent": 108.18,
+      "descent": 21.64,
+      "lineGap": 0,
+      "fallback": "Arial Bold"
+    }
   ]
 };

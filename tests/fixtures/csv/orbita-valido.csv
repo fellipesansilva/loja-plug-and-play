@@ -1,0 +1,4 @@
+﻿sku;nome;preco;estoque;categoria;descricao;tamanho;cor;conexao
+ORB-IMP-001;Fone Importado;129,90;8;audio;Fone importado com cancelamento de ruido;Pro;Grafite;Bluetooth 5.3
+ORB-IMP-002;Cabo Importado;79,90;12;acessorios;Cabo importado trancado;Padrão;Prata;USB-C
+ORB-CBO;Cabo USB-C Atualizado;199,90;9;acessorios;Cabo com novo acabamento;Padrão;Prata;USB-C

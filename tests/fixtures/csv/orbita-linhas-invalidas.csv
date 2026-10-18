@@ -1,0 +1,9 @@
+sku;nome;preco;estoque;categoria;descricao;tamanho;cor;conexao
+ORB-OK-001;Peça Boa;99,90;5;audio;Linha válida;Pro;Grafite;Bluetooth 5.3
+;Sem SKU;50,00;1;audio;;;;
+ORB-ERR-PRECO;Preço Ruim;abc;1;audio;;;;
+ORB-ERR-ESTOQUE;Estoque Ruim;50,00;-2;audio;;;;
+ORB-ERR-CAT;Categoria Ruim;50,00;1;inexistente;;;;
+ORB-OK-001;Repetida;60,00;1;audio;;;;
+ORB-CBO;Cabo Atualizado;249,90;12;acessorios;Atualizado pela importação;Padrão;Prata;USB-C
+ORB ERR SKU;SKU Com Espaço;50,00;1;audio;;;;
