@@ -8,33 +8,13 @@ import { QUOTE_MAX_QTY, clampQty } from "@/lib/quote";
 import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { MinusIcon, PlusIcon } from "./Icons";
-import dynamic from "next/dynamic";
-import { useAfterLcp } from "@/lib/after-lcp";
+import { Dimensionador } from "@/components/orcamento/Dimensionador";
+import { PorticoConfigurador } from "@/components/orcamento/PorticoConfigurador";
 import { Band, CaseCard, Heading } from "./SegmentBlocks";
 import { ProductGallery } from "./ProductGallery";
 import { useQuoteWords } from "./useQuoteWords";
 
-// As ferramentas do orçamento ficam abaixo da primeira tela: o código delas só é pedido depois que a foto principal foi pintada
-// (useAfterLcp), para não disputar banda com o LCP. Até lá o espaço fica reservado com a altura das ferramentas (sem salto de layout).
-// Alturas medidas nas páginas (400 a 1440 px): configurador 851 a 806 px no celular e 593 a 566 px no desktop; dimensionador 550 e 358 px.
-// Ficam um pouco abaixo da altura real: o que muda de lugar quando a ferramenta chega está abaixo da primeira tela.
-const PORTICO_SLOT = "min-h-[50rem] md:min-h-[35rem]";
-const DIMENSIONADOR_SLOT = "min-h-[34rem] md:min-h-[22rem]";
-
-function ToolSlot({ className }: { className: string }) {
-  return <div aria-hidden="true" data-testid="ferramenta-reservada" className={className} />;
-}
-
-const Dimensionador = dynamic(() => import("@/components/orcamento/Dimensionador").then((m) => m.Dimensionador), {
-  ssr: false,
-  loading: () => <ToolSlot className={DIMENSIONADOR_SLOT} />,
-});
-const PorticoConfigurador = dynamic(() => import("@/components/orcamento/PorticoConfigurador").then((m) => m.PorticoConfigurador), {
-  ssr: false,
-  loading: () => <ToolSlot className={PORTICO_SLOT} />,
-});
-
-const stepper ="inline-flex size-11 items-center justify-center rounded-full border border-border bg-background disabled:opacity-40";
+const stepper = "inline-flex size-11 items-center justify-center rounded-full border border-border bg-background disabled:opacity-40";
 
 /** Página do produto da loja em orçamento: sem preço; ficha técnica em tabela, aplicações em etiquetas e botão para a lista. */
 export function QuoteProductView({ slug }: { slug: string }) {
@@ -46,7 +26,6 @@ export function QuoteProductView({ slug }: { slug: string }) {
   const cases = useDemoStore((s) => s.config.cases);
   const blocks = useDemoStore((s) => s.config.orcamentoBlocks);
   const words = useQuoteWords();
-  const toolsReady = useAfterLcp();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -206,9 +185,9 @@ export function QuoteProductView({ slug }: { slug: string }) {
       </article>
 
       {/* Ferramentas do orçamento (config.orcamentoBlocks): só quando ligadas e para o produto-alvo de cada uma. */}
-    {blocks?.ativos && blocks.porticoConfigurador?.alvoProduto === product.id && (toolsReady ? <PorticoConfigurador product={product} /> : <ToolSlot className={PORTICO_SLOT} />)}
+    {blocks?.ativos && blocks.porticoConfigurador?.alvoProduto === product.id && <PorticoConfigurador product={product} />}
     {blocks?.ativos && blocks.dimensionador && (blocks.dimensionador.fechado.produto === product.id || blocks.dimensionador.aberto.produto === product.id) && (
-      toolsReady ? <Dimensionador product={product} /> : <ToolSlot className={DIMENSIONADOR_SLOT} />
+      <Dimensionador product={product} />
     )}
 
     {product.benefits && product.benefits.length > 0 && (

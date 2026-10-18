@@ -1,7 +1,7 @@
 import { type Page } from "@playwright/test";
 import { test, expect, ORIGIN, TRAMA } from "./helpers";
 
-// Fatia de desempenho do LCP: a foto principal baixa antes das fontes (Arca), das ferramentas do orçamento (Arca) e das fotos dos cards
+// Fatia de desempenho do LCP: a foto principal baixa antes das fontes (Arca) e das fotos dos cards
 // (Trama). Para ordenar de forma determinística, o teste atrasa a foto principal e confere o que foi pedido enquanto ela não chega.
 // Roda uma vez (projeto trama), com endereços completos.
 test.beforeEach(async ({ page }, testInfo) => {
@@ -12,7 +12,6 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 const PHOTO_DELAY_MS = 1800;
-const TOOL_CHUNK = /\/_next\/static\/.*\.js$/;
 
 type Marks = { requests: { path: string; at: number }[]; photoDoneAt: number; t0: number };
 
@@ -75,51 +74,9 @@ test.describe("H1 · fontes da Arca depois da foto principal", () => {
         await page.goto(`${ORIGIN}/arca/produto/${slug}`, { waitUntil: "load" });
         await expect.poll(() => marks.photoDoneAt, { timeout: 10_000 }).toBeLessThan(Infinity);
         await page.waitForTimeout(3000);
-        await expect(page.getByTestId("ferramenta-reservada")).toHaveCount(0); // a ferramenta já ocupou o lugar
         expect(await clsOf(page), `CLS de ${slug}`).toBeLessThan(0.001);
       });
     }
-  }
-});
-
-test.describe("H2 · ferramentas do orçamento depois da foto principal (Arca)", () => {
-  test("pórtico: o espaço do configurador fica reservado; o código só é pedido depois da foto; 'Orçar' funciona desde o início", async ({ page }) => {
-    const errors: string[] = [];
-    page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-    page.on("pageerror", (e) => errors.push(e.message));
-    const marks = await trackWithDelayedPhoto(page, /portico-inflavel-(360|640|960)\.webp/);
-    await page.setViewportSize({ width: 400, height: 800 });
-    await page.goto(`${ORIGIN}/arca/produto/portico-inflavel`, { waitUntil: "commit" });
-    await page.getByTestId("ferramenta-reservada").waitFor({ state: "attached" });
-    // antes da foto: lugar reservado, sem o configurador
-    await expect(page.getByTestId("ferramenta-reservada")).toHaveCount(1);
-    await expect(page.getByTestId("portico-configurador")).toHaveCount(0);
-    const reserved = await page.getByTestId("ferramenta-reservada").evaluate((e) => e.getBoundingClientRect().height);
-    expect(reserved).toBeGreaterThan(700);
-    // o botão do orçamento já responde com a foto ainda baixando
-    await page.getByTestId("add-to-quote").click();
-    await expect(page.getByTestId("quote-added")).toBeVisible();
-    // depois da foto: o configurador chega no lugar reservado
-    await expect(page.getByTestId("portico-configurador")).toBeVisible({ timeout: 10_000 });
-    expect(marks.photoDoneAt).toBeLessThan(Infinity);
-    const late = marks.requests.filter((r) => TOOL_CHUNK.test(r.path) && r.at >= marks.photoDoneAt - 20);
-    expect(late.length, "o código do configurador foi pedido depois da foto").toBeGreaterThan(0);
-    await expect(page.getByTestId("ferramenta-reservada")).toHaveCount(0);
-    expect(errors).toEqual([]);
-  });
-
-  for (const slug of ["reservatorio-flexivel-fechado", "reservatorio-aberto"]) {
-    test(`${slug}: o dimensionador chega depois da foto e funciona`, async ({ page }) => {
-      const errors: string[] = [];
-      page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-      page.on("pageerror", (e) => errors.push(e.message));
-      await page.goto(`${ORIGIN}/arca/produto/${slug}`, { waitUntil: "load" });
-      const dim = page.getByTestId("dimensionador");
-      await expect(dim).toBeVisible({ timeout: 10_000 });
-      await dim.getByTestId("dim-consumo").fill("5000");
-      await expect(dim.getByTestId("dim-necessario")).toBeVisible();
-      expect(errors).toEqual([]);
-    });
   }
 });
 
