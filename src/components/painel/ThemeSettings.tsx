@@ -6,8 +6,8 @@ import { PageTitle } from "@/components/store/PageTitle";
 import { MIN_TEXT_CONTRAST } from "@/theme/contrast";
 import { tokensToCssVars } from "@/theme/tokens";
 import { defaultThemeIds, describeContrastIssue, themeContrastIssues, themeWithChoice, type ThemeIds } from "@/lib/store-config";
-import { getPreset } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
+import { usePreset } from "@/store/PresetProvider";
 
 const select = "mt-xs h-11 w-full rounded-md border border-border bg-surface px-md text-base";
 
@@ -37,10 +37,9 @@ function ColorGroup({ legend, name, options, value, onChange }: { legend: string
 
 /** Configurações › Tema: cor principal, cor de destaque e fontes, só dentro do que o preset aprovou; a prévia muda na hora. */
 export function ThemeSettings() {
-  const presetId = useDemoStore((s) => s.presetId);
   const overrides = useDemoStore((s) => s.overrides);
   const saveOverrides = useDemoStore((s) => s.saveOverrides);
-  const preset = getPreset(presetId)!;
+  const { preset } = usePreset();
   const base = preset.config;
   const choices = base.themeChoices;
   const saved = overrides.theme ?? (choices ? defaultThemeIds(base) : null);

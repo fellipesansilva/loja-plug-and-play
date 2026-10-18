@@ -4,6 +4,7 @@ import { DemoControls } from "@/components/demo/DemoControls";
 import { deferredFontCssFor, fontCssFor, fontUrlsFor } from "@/fonts";
 import { presetBySlug, presets } from "@/presets";
 import { PresetProvider } from "@/store/PresetProvider";
+import { earlyThemeScript } from "@/theme/early-theme-script";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
 /** Todos os presets são gerados no mesmo build: /trama/..., /forno/... Cada página já nasce no preset dela. */
@@ -26,10 +27,10 @@ export default async function PresetLayout({
   for (const href of fontUrlsFor(preset.shortId)) preload(href, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
 
   return (
-    <PresetProvider presetId={preset.id}>
-      <ThemeProvider fontCss={fontCss} deferredFontCss={deferredFontCssFor(preset.shortId)}>
+    <PresetProvider preset={preset}>
+      <ThemeProvider fontCss={fontCss} deferredFontCss={deferredFontCssFor(preset.shortId)} earlyScript={earlyThemeScript(preset.id)}>
         {children}
-        <DemoControls />
+        <DemoControls presets={presets.map((p) => ({ id: p.id, shortId: p.shortId, name: p.config.name }))} />
       </ThemeProvider>
     </PresetProvider>
   );

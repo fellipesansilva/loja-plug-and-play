@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { QUOTE_NOTE_MAX, type QuoteListItem } from "@/domain/types";
 import { arcaInflaveis as arca } from "@/presets/arca-inflaveis";
+import { fornoDaVila } from "@/presets/forno-da-vila";
 import { createDemoStore, migrateState } from "@/store/demo-store";
 import { STORAGE_VERSION } from "@/store/storage-key";
 import { addToList } from "./quote";
@@ -62,7 +63,7 @@ describe("lista de orçamento com itens configurados", () => {
 
 describe("store: ações pelo id da linha", () => {
   it("quantidade, observação e remoção valem para a linha, não para o produto inteiro", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     s.getState().addToQuote(P);
     expect(s.getState().addConfiguredToQuote(P, "cfg A")).toEqual({ ok: true });
     expect(s.getState().addConfiguredToQuote(P, "cfg B")).toEqual({ ok: true });
@@ -78,7 +79,7 @@ describe("store: ações pelo id da linha", () => {
   });
 
   it("recusa configuração longa sem alterar a lista", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     s.getState().addToQuote(P);
     const r = s.getState().addConfiguredToQuote(P, "y".repeat(501));
     expect(r).toEqual({ ok: false, error: CONFIG_TOO_LONG });
@@ -86,7 +87,7 @@ describe("store: ações pelo id da linha", () => {
   });
 
   it("itens configurados viram linhas separadas na solicitação, com a observação", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     s.getState().addConfiguredToQuote(P, "cor Azul");
     s.getState().addConfiguredToQuote(P, "cor Amarelo");
     const req = s
@@ -115,7 +116,7 @@ describe("migração v8 → v9 da lista", () => {
       quotes: [],
     };
     const antes = structuredClone(v8);
-    const m = migrateState(v8, 8, arca.id);
+    const m = migrateState(v8, 8, arca);
     expect(v8).toEqual(antes); // a migração não altera o estado de entrada
     expect(m.quoteList).toEqual([
       { id: "arc-004", productId: "arc-004", qty: 2, note: "Ensaio de 10 t", configurado: false },
@@ -150,7 +151,7 @@ describe("migração v8 → v9 da lista", () => {
       quoteList: [],
       quotes: structuredClone(arca.quotes ?? []),
     };
-    const m = migrateState(v8, 8, arca.id);
+    const m = migrateState(v8, 8, arca);
     expect(m.quotes).toEqual(arca.quotes);
     expect(m.quotes!.length).toBeGreaterThan(0);
     expect(m.products).toHaveLength(3);
@@ -166,7 +167,7 @@ describe("migração v8 → v9 da lista", () => {
 
   it("loja de venda: estado v8 segue como está (lista vazia normalizada)", () => {
     const forno = { presetId: "forno-da-vila", config: { name: "x" }, products: [] };
-    const m = migrateState(forno, 8, "forno-da-vila");
+    const m = migrateState(forno, 8, fornoDaVila);
     expect(m.quoteList).toEqual([]);
     expect(m.products).toEqual([]);
   });
