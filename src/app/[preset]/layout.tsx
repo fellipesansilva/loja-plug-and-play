@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { preload } from "react-dom";
 import { DemoControls } from "@/components/demo/DemoControls";
-import { fontCssFor, fontUrlsFor } from "@/fonts";
+import { deferredFontCssFor, fontCssFor, fontUrlsFor } from "@/fonts";
 import { presetBySlug, presets } from "@/presets";
 import { PresetProvider } from "@/store/PresetProvider";
 import { ThemeProvider } from "@/theme/ThemeProvider";
@@ -27,7 +27,7 @@ export default async function PresetLayout({
 
   return (
     <PresetProvider presetId={preset.id}>
-      <ThemeProvider fontCss={fontCss}>
+      <ThemeProvider fontCss={fontCss} deferredFontCss={deferredFontCssFor(preset.shortId)}>
         {children}
         <DemoControls />
       </ThemeProvider>

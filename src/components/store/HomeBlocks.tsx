@@ -95,11 +95,11 @@ function CategoriesBlock({ block }: { block: BlockOf<"categories"> }) {
             <Link href={`/categoria/${c.slug}`} className="flex flex-col items-center gap-sm text-center">
               {tile === "circle" ? (
                 <span className="relative size-24 overflow-hidden rounded-full border border-border bg-surface">
-                  {c.image && <StoreImage image={c.image} sizes="96px" />}
+                  {c.image && <StoreImage image={c.image} sizes="96px" defer={block.deferImages} />}
                 </span>
               ) : (
                 <span className="relative block aspect-[3/4] w-full overflow-hidden rounded-md bg-surface">
-                  {c.image && <StoreImage image={c.image} sizes="(min-width: 768px) 25vw, 33vw" />}
+                  {c.image && <StoreImage image={c.image} sizes="(min-width: 768px) 25vw, 33vw" defer={block.deferImages} />}
                 </span>
               )}
               <span className="text-sm font-medium text-text">{c.name}</span>
