@@ -28,8 +28,13 @@ describe("módulos do diferencial: dependência", () => {
     expect(problems({ ...ligado.config, whatsapp: undefined })).toContain("config.whatsapp");
     expect(problems({ ...ligado.config, newsletter: undefined })).toContain("config.newsletter");
     expect(problems({ ...ligado.config, homeBlocks: ligado.config.homeBlocks.filter((b) => b.type !== "testimonials") })).toContain("bloco testimonials");
-    expect(problems(trama.config)).toBe(""); // com os módulos desligados (padrão) nada é exigido
-    expect(problems({ ...trama.config, bot: undefined, whatsapp: undefined, newsletter: undefined })).toBe(""); // e sem os dados também não
+    expect(problems(trama.config)).toBe(""); // a Trama liga os quatro e traz os textos
+    const desligada = withModules(trama.config, { bot: false, whatsapp: false, depoimentos: false, newsletter: false });
+    expect(problems(desligada)).toBe(""); // com os módulos desligados nada é exigido
+    expect(problems({ ...desligada, bot: undefined, whatsapp: undefined, newsletter: undefined })).toBe(""); // nem os textos
+    const forno = getPreset("forno-da-vila")!;
+    expect(forno.config.modules).not.toMatchObject({ bot: true }); // Forno e Arca seguem sem módulos
+    expect([arca.config.modules.bot, arca.config.modules.whatsapp, arca.config.modules.depoimentos, arca.config.modules.newsletter]).not.toContain(true);
   });
 
   it("número de WhatsApp fictício precisa da marca de demonstração, e a mensagem do produto precisa de {produto}", () => {

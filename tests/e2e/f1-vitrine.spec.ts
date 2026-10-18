@@ -7,16 +7,17 @@ const overflowOf = (page: Page) =>
 const cards = (page: Page) => page.getByTestId("product-card");
 
 test.describe("F1-01 · home", () => {
-  test("Trama: blocos na ordem do preset (banner, categorias, destaques com 8 produtos)", async ({ page }) => {
+  test("Trama: blocos na ordem do preset (banner, categorias, destaques com 8 produtos e, com o módulo de depoimentos ligado, os depoimentos)", async ({ page }) => {
     await openAs(page, TRAMA);
-    await expect(page.locator("main h1, main h2")).toHaveCount(3);
+    // os depoimentos (módulo ligado na Trama) entram depois da foto principal; o toHaveCount espera por eles
+    await expect(page.locator("main h1, main h2")).toHaveCount(4);
     await expect(page.locator("main h1")).toHaveCount(1);
     await expect(cards(page)).toHaveCount(8);
     const order = await page.evaluate(() =>
       [...document.querySelectorAll("main section")].map((s) => s.getAttribute("aria-label") ?? s.getAttribute("aria-labelledby")),
     );
     expect(order[0]).not.toMatch(/^bloco-/);
-    expect(order.slice(1)).toEqual(["bloco-categorias", "bloco-destaques"]);
+    expect(order.slice(1)).toEqual(["bloco-categorias", "bloco-destaques", "bloco-depoimentos"]);
   });
 
   test("Trama: faixa de frete grátis, parcelamento visível e selo Esgotado", async ({ page }) => {
@@ -57,8 +58,9 @@ test.describe("F1-01 · home", () => {
         config: { ...s.config, homeBlocks: [...s.config.homeBlocks].reverse() },
       }));
     });
-    const first = await page.locator("main section").first().getAttribute("aria-labelledby");
-    expect(first).toBe("bloco-categorias");
+    // depois de reverter: frete grátis, depoimentos (módulo ligado), destaques (desligado), categorias, banner
+    await expect(page.locator("main section").first()).toHaveAttribute("aria-labelledby", "bloco-depoimentos");
+    await expect(page.locator("main section").nth(1)).toHaveAttribute("aria-labelledby", "bloco-categorias");
   });
 
   test("clicar numa categoria e num card leva à página correspondente", async ({ page }) => {

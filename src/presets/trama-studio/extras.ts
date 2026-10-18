@@ -2,8 +2,9 @@ import type { BotConfig, HomeBlock, NewsletterConfig, WhatsappConfig } from "@/d
 import { formatBRL } from "@/lib/money";
 
 /**
- * Textos e dados dos módulos do diferencial (bot, WhatsApp, depoimentos, newsletter) da Trama. Os módulos nascem DESLIGADOS
- * (config.modules): a vitrine só muda quando o painel liga um deles. Os números das respostas do bot saem dos mesmos valores
+ * Textos e dados dos módulos do diferencial (bot, WhatsApp, depoimentos, newsletter) da Trama. Os módulos nascem LIGADOS na Trama
+ * (config.modules); o painel (Configurações › Módulos) liga e desliga.
+ * Os números das respostas do bot saem dos mesmos valores
  * que a config da loja usa (frete grátis, parcelas, Pix, prazos), passados por quem chama.
  */
 type Numbers = {
