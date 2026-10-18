@@ -103,7 +103,7 @@ export type HomeBlock =
       secondaryCtaLabel?: string;
       secondaryCtaHref?: string;
     }
-  | { id: string; type: "categories"; enabled: boolean; title?: string; categoryIds: string[] }
+  | { id: string; type: "categories"; enabled: boolean; title?: string; categoryIds: string[]; /** Fotos das categorias só começam a baixar depois que a foto principal da página foi pintada. */ deferImages?: boolean }
   | {
       id: string;
       type: "chips";
@@ -121,7 +121,7 @@ export type HomeBlock =
       linkLabel: string;
       linkHref: string;
       productIds: string[];
-      /** Imagens dos cards só são baixadas perto da janela (para blocos abaixo da primeira tela; poupa banda para o LCP). */
+      /** Imagens dos cards só são baixadas perto da janela e depois que a foto principal da página foi pintada (para blocos abaixo da primeira tela; poupa banda para o LCP). */
       deferImages?: boolean;
     }
   /** Entrada por necessidade (usa `config.needs`: cada necessidade leva a uma página com os produtos dela). */

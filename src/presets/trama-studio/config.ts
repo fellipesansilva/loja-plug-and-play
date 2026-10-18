@@ -28,6 +28,7 @@ export const config: StoreConfig = {
       type: "categories",
       enabled: true,
       title: "Compre por categoria",
+      deferImages: true,
       categoryIds: ["feminino", "masculino", "acessorios"],
     },
     {
@@ -35,6 +36,7 @@ export const config: StoreConfig = {
       type: "featured",
       enabled: true,
       title: "Destaques",
+      deferImages: true,
       linkLabel: "Ver todos",
       linkHref: "/categoria/feminino",
       productIds: ["ts-001", "ts-002", "ts-006", "ts-003", "ts-008", "ts-014", "ts-016", "ts-012"],

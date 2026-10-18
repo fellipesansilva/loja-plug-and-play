@@ -36,6 +36,7 @@
     }
   },
   "arca": {
+    "afterLcp": true,
     "faces": [
       {
         "family": "Barlow Condensed",

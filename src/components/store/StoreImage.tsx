@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { Image as ImageData } from "@/domain/types";
+import { useAfterLcp } from "@/lib/after-lcp";
 import { imageSrcSet } from "@/lib/image-variants";
 
 export { IMAGE_VARIANT_WIDTHS, imageSrcSet } from "@/lib/image-variants";
@@ -12,7 +13,8 @@ export { IMAGE_VARIANT_WIDTHS, imageSrcSet } from "@/lib/image-variants";
  * `unoptimized`: placeholders SVG locais não passam pelo otimizador; fotos reais (WebP já
  * dimensionado em public/) também são servidas como estão. `lcp` só para a imagem do LCP.
  *
- * `defer`: imagem abaixo da primeira tela. Só entra na página (e só então é baixada) quando chega a ~300 px da janela.
+ * `defer`: imagem abaixo da primeira tela. Só entra na página (e só então é baixada) quando chega a ~300 px da janela e a foto
+ * principal da página já foi pintada (useAfterLcp).
  * O `loading="lazy"` do navegador não basta: no PageSpeed e no Lighthouse mobile ele baixa todas as imagens da página
  * junto com o banner, e os ~2 MB disputam a banda com a imagem do LCP.
  */
@@ -33,6 +35,7 @@ export function StoreImage({
   className?: string;
 }) {
   const [near, setNear] = useState(!defer || lcp);
+  const afterLcp = useAfterLcp();
   const holder = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -55,7 +58,7 @@ export function StoreImage({
     return () => io.disconnect();
   }, [near]);
 
-  if (!near) return <span ref={holder} aria-hidden="true" className="absolute inset-0" data-deferred-image={image.src} />;
+  if (!near || (defer && !lcp && !afterLcp)) return <span ref={holder} aria-hidden="true" className="absolute inset-0" data-deferred-image={image.src} />;
   const srcSet = !lcp && variants ? imageSrcSet(image.src) : undefined;
   if (srcSet) {
     return (
