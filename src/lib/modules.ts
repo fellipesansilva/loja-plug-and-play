@@ -2,7 +2,7 @@ import type { Modules, Preset, StoreConfig } from "@/domain/types";
 import { quoteSalesConflict, salesModulesOn, validatePreset } from "@/presets/validate";
 
 /** Módulos que o painel liga e desliga (Configurações › Módulos), na ordem da tela. */
-export const MODULE_KEYS = ["orcamento", "retiradaLocal", "freteGratis", "cartao", "parcelamento", "boleto", "descontoPix", "cupom"] as const;
+export const MODULE_KEYS = ["orcamento", "retiradaLocal", "freteGratis", "cartao", "parcelamento", "boleto", "descontoPix", "cupom", "bot", "whatsapp", "depoimentos", "newsletter"] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
 export const MODULE_INFO: Record<ModuleKey, { label: string; help: string }> = {
@@ -14,10 +14,14 @@ export const MODULE_INFO: Record<ModuleKey, { label: string; help: string }> = {
   boleto: { label: "Boleto", help: "Pagamento por boleto no checkout." },
   descontoPix: { label: "Desconto no Pix", help: "Percentual de desconto no pagamento por Pix." },
   cupom: { label: "Cupom de desconto", help: "Campo de cupom no carrinho." },
+  bot: { label: "Atendimento simulado (bot)", help: "Botão de atendimento com respostas prontas do preset (simulação, sem IA). Precisa do WhatsApp." },
+  whatsapp: { label: "WhatsApp", help: "Botão flutuante com a mensagem pronta; na demonstração a mensagem é só para copiar." },
+  depoimentos: { label: "Depoimentos", help: "Seção de depoimentos na home (os da demonstração levam a marca de demonstração)." },
+  newsletter: { label: "Newsletter", help: "Campo de e-mail no rodapé, com consentimento obrigatório." },
 };
 
 /** Dependências: o módulo da chave só funciona com os da lista ligados (ex.: parcelamento é parcelamento no cartão). */
-export const MODULE_DEPENDS_ON: Partial<Record<ModuleKey, ModuleKey[]>> = { parcelamento: ["cartao"] };
+export const MODULE_DEPENDS_ON: Partial<Record<ModuleKey, ModuleKey[]>> = { parcelamento: ["cartao"], bot: ["whatsapp"] };
 
 export const moduleLabel = (key: string): string => MODULE_INFO[key as ModuleKey]?.label ?? key;
 
@@ -32,6 +36,10 @@ export function isModuleOn(m: Modules, key: ModuleKey): boolean {
     case "retiradaLocal": return m.retiradaLocal === true;
     case "boleto": return m.boleto === true;
     case "cupom": return m.cupom === true;
+    case "bot": return m.bot === true;
+    case "whatsapp": return m.whatsapp === true;
+    case "depoimentos": return m.depoimentos === true;
+    case "newsletter": return m.newsletter === true;
     case "freteGratis": return m.freteGratis?.enabled === true;
     case "parcelamento": return m.parcelamento?.enabled === true;
     case "cartao": return m.cartao?.enabled === true;
@@ -46,6 +54,10 @@ export function withModule(m: Modules, key: ModuleKey, on: boolean): Modules {
     case "retiradaLocal": return { ...m, retiradaLocal: on };
     case "boleto": return { ...m, boleto: on };
     case "cupom": return { ...m, cupom: on };
+    case "bot": return { ...m, bot: on };
+    case "whatsapp": return { ...m, whatsapp: on };
+    case "depoimentos": return { ...m, depoimentos: on };
+    case "newsletter": return { ...m, newsletter: on };
     case "freteGratis": return { ...m, freteGratis: { minValue: 0, ...m.freteGratis, enabled: on } };
     case "parcelamento": return { ...m, parcelamento: { maxInstallments: 1, ...m.parcelamento, enabled: on } };
     case "cartao": return { ...m, cartao: { enabled: on } };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useConsent } from "@/components/consent/ConsentProvider";
+import { NewsletterSlot } from "@/components/extras/ExtraSlots";
 import { StoreLink } from "@/components/store/StoreLink";
 import { useDemoStore } from "@/store/demo-store";
 
@@ -14,6 +15,7 @@ export function StoreFooter() {
     <footer className="mt-xl border-t border-border bg-footer-bg" data-testid="store-footer">
       {/* pb-20: espaço no fim da página para o botão Demo (fixo no canto) não cobrir texto */}
       <div className="mx-auto w-full max-w-page px-md pb-20 pt-lg text-sm text-footer-text">
+        <NewsletterSlot />
         <p className="font-bold" data-testid="footer-name">
           {legal.name || name}
         </p>

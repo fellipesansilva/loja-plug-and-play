@@ -293,6 +293,7 @@ describe("homeBlocks", () => {
       "banner",
       "categories",
       "featured",
+      "testimonials", // só aparece com o módulo `depoimentos` ligado (nasce desligado)
       "shippingProgress",
     ]);
     expect(activeHomeBlocks(forno.config.homeBlocks).map((b) => b.type)).toEqual([

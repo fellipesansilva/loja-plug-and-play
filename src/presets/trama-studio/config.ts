@@ -1,5 +1,15 @@
 import type { StoreConfig } from "@/domain/types";
 import { bannerImage } from "./images";
+import { tramaBot, tramaNewsletter, tramaTestimonials, tramaWhatsapp } from "./extras";
+
+// Valores que a config e as respostas do bot repetem (uma fonte só).
+const FREE_SHIPPING_MIN = 19900;
+const MAX_INSTALLMENTS = 6;
+const PIX_PERCENT = 5;
+const REGRET_DAYS = 7;
+const DEFECT_DAYS = 90;
+const ECONOMY_DAYS: [number, number] = [5, 8];
+const EXPRESS_DAYS: [number, number] = [2, 3];
 
 export const config: StoreConfig = {
   name: "Trama Studio",
@@ -41,6 +51,8 @@ export const config: StoreConfig = {
       linkHref: "/categoria/feminino",
       productIds: ["ts-001", "ts-002", "ts-006", "ts-003", "ts-008", "ts-014", "ts-016", "ts-012"],
     },
+    // Só aparece com o módulo `depoimentos` ligado (nasce desligado).
+    tramaTestimonials,
     { id: "frete-gratis", type: "shippingProgress", enabled: true },
   ],
   attributeDefs: [
@@ -64,8 +76,8 @@ export const config: StoreConfig = {
   ],
   shipping: {
     options: [
-      { id: "economico", label: "Econômico", basePrice: 1490, days: [5, 8] },
-      { id: "expresso", label: "Expresso", basePrice: 2490, days: [2, 3] },
+      { id: "economico", label: "Econômico", basePrice: 1490, days: ECONOMY_DAYS },
+      { id: "expresso", label: "Expresso", basePrice: 2490, days: EXPRESS_DAYS },
     ],
     coverage: "national",
   },
@@ -144,21 +156,25 @@ export const config: StoreConfig = {
   },
   modules: {
     retiradaLocal: false,
-    freteGratis: { enabled: true, minValue: 19900 },
-    parcelamento: { enabled: true, maxInstallments: 6, minInstallment: 2000 },
+    freteGratis: { enabled: true, minValue: FREE_SHIPPING_MIN },
+    parcelamento: { enabled: true, maxInstallments: MAX_INSTALLMENTS, minInstallment: 2000 },
     boleto: true,
     cartao: { enabled: true },
-    descontoPix: { enabled: true, percent: 5 },
+    descontoPix: { enabled: true, percent: PIX_PERCENT },
     cupom: true,
     assistenteVirtual: false,
   },
+  // Dados dos módulos do diferencial: os módulos nascem desligados e o painel liga (Configurações › Módulos).
+  bot: tramaBot({ freeShippingMin: FREE_SHIPPING_MIN, maxInstallments: MAX_INSTALLMENTS, pixPercent: PIX_PERCENT, regretDays: REGRET_DAYS, defectDays: DEFECT_DAYS, economyDays: ECONOMY_DAYS, expressDays: EXPRESS_DAYS }),
+  whatsapp: tramaWhatsapp,
+  newsletter: tramaNewsletter,
   policies: {
     regret: "Direito de arrependimento: você pode desistir da compra em até 7 dias após o recebimento.",
-    regretDays: 7,
+    regretDays: REGRET_DAYS,
     regretConditions: "A peça deve estar sem uso, lavagem ou alteração, e com a etiqueta. (Texto de demonstração.)",
     defect: {
       durability: "durable",
-      days: 90,
+      days: DEFECT_DAYS,
       conditions:
         "Se a peça apresentar defeito de fabricação, avise em até 90 dias após o recebimento: trocamos por outra igual ou devolvemos o valor, e o frete da devolução é por nossa conta. (Texto de demonstração.)",
     },

@@ -7,6 +7,7 @@ import { formatBRL } from "@/lib/money";
 import { useDemoStore } from "@/store/demo-store";
 import { isListed } from "@/lib/product";
 import { useListedProducts } from "@/store/use-listed-products";
+import { TestimonialsSlot } from "@/components/extras/ExtraSlots";
 import { CategoryChips } from "./CategoryChips";
 import { ProductGrid } from "./ProductCard";
 import { useQuoteMode } from "./useQuoteWords";
@@ -214,6 +215,8 @@ export function HomeBlocks() {
             return <ProcessBlock key={block.id} block={block} />;
           case "cta":
             return <CtaBlock key={block.id} block={block} />;
+          case "testimonials":
+            return <TestimonialsSlot key={block.id} block={block} />;
         }
       })}
     </>

@@ -59,6 +59,83 @@ export type Modules = {
    * e pede orçamento. Não pode coexistir com nenhum dos módulos de venda acima (validado no build).
    */
   orcamento?: { enabled: boolean };
+  /**
+   * Módulos do diferencial (F6). Todos nascem desligados: preset que não liga o módulo não carrega o código dele.
+   * `bot`: atendimento simulado (precisa de `whatsapp` ligado: a resposta "não sei" oferece o WhatsApp).
+   * `whatsapp`: botão flutuante. `depoimentos`: seção na home. `newsletter`: campo de e-mail no rodapé.
+   */
+  bot?: boolean;
+  whatsapp?: boolean;
+  depoimentos?: boolean;
+  newsletter?: boolean;
+};
+
+/** Tema de resposta do bot: o visitante clica no tema ou escreve uma palavra de `keywords`. Tudo vem do preset (sem IA). */
+export type BotTopic = { id: string; label: string; keywords: string[]; answer: string };
+
+/** Textos e respostas do bot simulado (módulo `bot`). */
+export type BotConfig = {
+  /** Texto do botão que abre a conversa. */
+  openLabel: string;
+  title: string;
+  /** Marca visível na janela ("Simulação"). */
+  badge: string;
+  greeting: string;
+  inputLabel: string;
+  sendLabel: string;
+  closeLabel: string;
+  topics: BotTopic[];
+  /** Resposta fixa para pergunta fora do repertório. */
+  fallback: string;
+  /** Texto do botão que oferece o WhatsApp na resposta fixa. */
+  whatsappOffer: string;
+};
+
+/** WhatsApp da loja (módulo `whatsapp`). Com `isReal` falso (demo) nada abre a conversa: mostra a mensagem pronta para copiar. */
+export type WhatsappConfig = {
+  number: string;
+  isReal: boolean;
+  openLabel: string;
+  title: string;
+  /** Marca visível (ex.: "Demonstração"). */
+  badge: string;
+  /** Mensagem sem produto na página. */
+  greeting: string;
+  /** Mensagem com produto na página; `{produto}` é trocado pelo nome. */
+  productMessage: string;
+  demoNote: string;
+  copyLabel: string;
+  copiedLabel: string;
+  closeLabel: string;
+};
+
+/** Depoimento (módulo `depoimentos`). Sem `real`, é fictício e leva a marca de demonstração. */
+export type Testimonial = {
+  id: string;
+  name: string;
+  city: string;
+  text: string;
+  /** Foto opcional; sem ela aparece a inicial do nome. */
+  photo?: Image;
+  /** Cliente de verdade: só publica com `autorizado: true` (validado no build). */
+  real?: boolean;
+  autorizado?: boolean;
+};
+
+/** Newsletter (módulo `newsletter`). Nada é enviado: o e-mail fica só no navegador (demo). */
+export type NewsletterConfig = {
+  title: string;
+  text: string;
+  /** Marca visível ("Demonstração"). */
+  badge: string;
+  emailLabel: string;
+  consentLabel: string;
+  submitLabel: string;
+  privacyLinkLabel: string;
+  invalidEmail: string;
+  /** Mensagem quando o envio é recusado por falta de consentimento. */
+  refusal: string;
+  success: string;
 };
 
 /** Candidatos de uma imagem responsiva (`width` em px do arquivo). */
@@ -126,6 +203,8 @@ export type HomeBlock =
     }
   /** Entrada por necessidade (usa `config.needs`: cada necessidade leva a uma página com os produtos dela). */
   | { id: string; type: "needs"; enabled: boolean; tone?: Tone; eyebrow?: string; title: string }
+  /** Depoimentos (módulo `depoimentos`): de 3 a 6, cada um com a marca de demonstração quando fictício. */
+  | { id: string; type: "testimonials"; enabled: boolean; title: string; note: string; demoLabel: string; items: Testimonial[] }
   /** Entrada por setor (usa `config.sectors`: cada setor tem página com os produtos da aplicação e um case). */
   | { id: string; type: "sectors"; enabled: boolean; tone?: Tone; eyebrow?: string; title: string }
   /** Indicadores. Os valores são do preset e vêm marcados (`note`, ex.: "Números fictícios, apenas demonstração"). */
@@ -263,6 +342,10 @@ export type StoreConfig = {
   };
   /** Logo em texto com um caractere de destaque colorido (ex.: "forno.da vila" com o ponto). Sem isso, usa `name`. */
   wordmark?: { text: string; accent: string };
+  /** Módulos do diferencial (F6): textos e dados, obrigatórios quando o módulo correspondente está ligado. */
+  bot?: BotConfig;
+  whatsapp?: WhatsappConfig;
+  newsletter?: NewsletterConfig;
   /** Textos e dados do modo orçamento (obrigatório quando `modules.orcamento.enabled`). */
   quote?: {
     /** Nome da lista ("Lista de orçamento") e o gênero gramatical dele, como `cartLabel`/`cartGender`. */
