@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { ModulesSettings } from "@/components/painel/ModulesSettings";
 
 export default function Page() {
-  return <PagePlaceholder title="Configurações de módulos" />;
+  return <ModulesSettings />;
 }

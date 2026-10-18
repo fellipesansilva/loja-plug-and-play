@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { StoreSettings } from "@/components/painel/StoreSettings";
 
 export default function Page() {
-  return <PagePlaceholder title="Configurações da loja" />;
+  return <StoreSettings />;
 }

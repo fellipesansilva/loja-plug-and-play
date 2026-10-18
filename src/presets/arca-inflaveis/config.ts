@@ -252,6 +252,38 @@ export const config: StoreConfig = {
       xl: "2.5rem",
     },
   },
+  // Opções que o painel oferece em Configurações › Tema (aprovadas aqui; nunca cor livre). A primeira de cada lista é a do tema acima.
+  themeChoices: {
+    primary: [
+      { id: "petroleo", label: "Petróleo", value: "#0f4c5c" },
+      { id: "marinho", label: "Marinho", value: "#14365d" },
+      { id: "grafite", label: "Grafite azulado", value: "#1f3a44" },
+      { id: "floresta", label: "Floresta", value: "#2f6b4f" },
+    ],
+    accent: [
+      { id: "ambar", label: "Âmbar", value: "#f2b705" },
+      { id: "amarelo", label: "Amarelo", value: "#ffd24a" },
+      { id: "laranja", label: "Laranja", value: "#e07b00" },
+      { id: "azul-claro", label: "Azul claro", value: "#7fc8d9" },
+      { id: "azul", label: "Azul médio", value: "#1c6e8c" },
+    ],
+    fonts: {
+      heading: [
+        { id: "barlow-condensed", label: "Barlow Condensed (títulos estreitos)", value: "var(--font-barlow-condensed), 'Arial Narrow', 'Segoe UI', sans-serif" },
+        { id: "barlow", label: "Barlow", value: "var(--font-barlow), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
+      ],
+      body: [{ id: "barlow", label: "Barlow", value: "var(--font-barlow), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }],
+    },
+    // A cor de destaque também aparece sobre as faixas escuras (números e selos): par secondary/primary.
+    contrastPairs: [
+      ["announcementText", "announcementBg"],
+      ["highlightText", "highlightBg"],
+      ["background", "primary"],
+      ["primary", "background"],
+      ["text", "secondary"],
+      ["secondary", "primary"],
+    ],
+  },
   modules: {
     orcamento: { enabled: true },
     retiradaLocal: false,

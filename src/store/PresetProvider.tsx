@@ -40,7 +40,7 @@ export function PresetProvider({ presetId, children }: { presetId: string; child
   useEffect(() => {
     if (EXPOSE_STORE) window.__demoStore = store;
     // Hidratação manual (no cliente, após montar) do estado salvo desta loja (carrinho, pedidos, edições).
-    void store.persist.rehydrate();
+    void Promise.resolve(store.persist.rehydrate()).then(() => store.getState().loadOverrides());
     return () => {
       if (window.__demoStore === store) delete window.__demoStore;
     };

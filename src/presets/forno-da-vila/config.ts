@@ -109,6 +109,35 @@ export const config: StoreConfig = {
     },
     spacing: { xs: "0.25rem", sm: "0.5rem", md: "1rem", lg: "1.5rem", xl: "2.5rem" },
   },
+  // Opções que o painel oferece em Configurações › Tema (aprovadas aqui; nunca cor livre). A primeira de cada lista é a do tema acima.
+  themeChoices: {
+    primary: [
+      { id: "tomate", label: "Tomate", value: "#cf3512" },
+      { id: "tomate-escuro", label: "Tomate escuro", value: "#a8290e" },
+      { id: "castanha", label: "Castanha", value: "#7a2e12" },
+      { id: "manjericao", label: "Manjericão", value: "#2f6f3e" },
+    ],
+    accent: [
+      { id: "gema", label: "Gema", value: "#ffc531" },
+      { id: "creme", label: "Creme", value: "#ffd98a" },
+      { id: "laranja", label: "Laranja", value: "#f6a623" },
+      { id: "caramelo-escuro", label: "Caramelo escuro", value: "#6b3a1f" },
+    ],
+    fonts: {
+      heading: [
+        { id: "bricolage", label: "Bricolage Grotesque (títulos fortes)", value: "var(--font-bricolage), 'Trebuchet MS', 'Segoe UI', sans-serif" },
+        { id: "manrope", label: "Manrope (sem serifa)", value: "var(--font-manrope), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
+      ],
+      body: [{ id: "manrope", label: "Manrope", value: "var(--font-manrope), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }],
+    },
+    contrastPairs: [
+      ["announcementText", "announcementBg"],
+      ["highlightText", "highlightBg"],
+      ["background", "primary"],
+      ["primary", "background"],
+      ["text", "secondary"],
+    ],
+  },
   modules: {
     retiradaLocal: true,
     freteGratis: { enabled: true, minValue: 8000 },
