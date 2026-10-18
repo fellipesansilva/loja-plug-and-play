@@ -91,7 +91,7 @@ export function QuoteProductView({ slug }: { slug: string }) {
         )}
 
         <div className="flex flex-col gap-lg md:grid md:grid-cols-2 md:gap-lg">
-          <ProductGallery images={product.images} />
+          <ProductGallery images={product.images} gutterRem={2} />
 
           <div className="flex flex-col gap-md">
             <div>

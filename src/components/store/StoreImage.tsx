@@ -3,19 +3,9 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { Image as ImageData } from "@/domain/types";
+import { imageSrcSet } from "@/lib/image-variants";
 
-/** Larguras (px) das versões menores de cada foto (scripts/image-variants.mjs): <nome>-360.webp e <nome>-640.webp. */
-export const IMAGE_VARIANT_WIDTHS = [360, 640] as const;
-
-/**
- * srcset da foto de um preset (arquivo em /images/presets/<loja>/<nome>.webp, fora os banners): o navegador baixa a versão que cobre o espaço
- * exibido. Miniaturas de 100 px e cards de 200 px não precisam do arquivo de 150 KB. Fotos enviadas pelo painel (data:) não têm versões.
- */
-export function imageSrcSet(src: string): string | undefined {
-  const m = /^(\/images\/presets\/[^/]+\/(?!banner)[^/]+?)\.webp$/.exec(src);
-  if (!m || /-(360|640)\.webp$/.test(src)) return undefined;
-  return IMAGE_VARIANT_WIDTHS.map((w) => `${m[1]}-${w}.webp ${w}w`).join(", ");
-}
+export { IMAGE_VARIANT_WIDTHS, imageSrcSet } from "@/lib/image-variants";
 
 /**
  * Imagem do preset preenchendo o contêiner (que deve ser `relative` e ter dimensões).
