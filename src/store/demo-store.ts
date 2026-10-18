@@ -25,6 +25,7 @@ import { addConfiguredToList, normalizeQuoteList } from "@/lib/quote-list";
 import { applyQuoteStatus, isValidQuoteTransition } from "@/lib/quote-status";
 import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
+import { CONFIG_VERSION, applyOverrides, configKeyFor, emptyOverrides, migrateOverrides, type StoreOverrides } from "@/lib/store-config";
 import { safeStorage } from "./safe-storage";
 import { STORAGE_VERSION, storageKeyFor } from "./storage-key";
 
@@ -41,11 +42,17 @@ type DemoData = {
   /** Modo orçamento: a lista do visitante e as solicitações enviadas (exemplos do preset + feitas na demo, da mais recente à mais antiga). */
   quoteList: QuoteListItem[];
   quotes: QuoteRequest[];
+  /** Configuração salva no painel (tema, módulos, dados da loja, políticas). Vive na chave própria `loja-config-v1-<preset>`, não no estado de demonstração. */
+  overrides: StoreOverrides;
 };
 
 type DemoActions = {
-  /** Restaura tudo ao original do preset desta loja. */
+  /** Restaura tudo ao original do preset desta loja (inclusive a configuração salva no painel). */
   reset: () => void;
+  /** Grava a configuração do painel na chave própria e passa a usá-la na loja na hora (sem recarregar). */
+  saveOverrides: (next: StoreOverrides) => void;
+  /** Lê a configuração salva (migrando o formato antigo) e a aplica; chamado depois da hidratação do estado. */
+  loadOverrides: () => void;
   setThemeColor: (key: keyof ThemeTokens["colors"], value: string) => void;
   setStoreName: (name: string) => void;
   /** Soma à linha com o mesmo lineId (produto + variante + adicionais) ou cria uma nova; respeita o estoque. */
@@ -106,6 +113,7 @@ function dataFromPreset(id: string): DemoData {
     checkout: { ...EMPTY_CHECKOUT },
     quoteList: [],
     quotes: structuredClone(preset.quotes ?? []),
+    overrides: emptyOverrides(),
   };
 }
 
@@ -120,7 +128,27 @@ export function createDemoStore(presetId: string) {
   persist(
     (set, get) => ({
       ...dataFromPreset(preset.id),
-      reset: () => set(dataFromPreset(preset.id)),
+      reset: () => {
+        safeStorage.removeItem(configKeyFor(preset.shortId));
+        set(dataFromPreset(preset.id));
+      },
+      saveOverrides: (next) => {
+        safeStorage.setItem(configKeyFor(preset.shortId), JSON.stringify(next));
+        set((s) => ({ overrides: next, config: applyOverrides(preset, s.config, next) }));
+      },
+      loadOverrides: () => {
+        let raw: unknown = null;
+        try {
+          const text = safeStorage.getItem(configKeyFor(preset.shortId));
+          raw = text ? JSON.parse(text) : null;
+        } catch {
+          raw = null;
+        }
+        const ov = migrateOverrides(raw, preset.config.themeChoices);
+        if (!ov) return;
+        if ((raw as { version?: number }).version !== CONFIG_VERSION) safeStorage.setItem(configKeyFor(preset.shortId), JSON.stringify(ov));
+        set((s) => ({ overrides: ov, config: applyOverrides(preset, s.config, ov) }));
+      },
       setThemeColor: (key, value) =>
         set((s) => ({
           config: {

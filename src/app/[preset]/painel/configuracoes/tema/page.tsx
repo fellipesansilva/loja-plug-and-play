@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/PagePlaceholder";
+import { ThemeSettings } from "@/components/painel/ThemeSettings";
 
 export default function Page() {
-  return <PagePlaceholder title="Configurações de tema" />;
+  return <ThemeSettings />;
 }

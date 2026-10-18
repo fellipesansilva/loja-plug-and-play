@@ -1,7 +1,31 @@
-import { MIN_DEFECT_DAYS, MIN_REGRET_DAYS, type Preset } from "@/domain/types";
+import { contrastIssues, parseHex } from "@/theme/contrast";
+import { MIN_DEFECT_DAYS, MIN_REGRET_DAYS, type Modules, type Preset } from "@/domain/types";
 
 const filled = (v: unknown): boolean => typeof v === "string" && v.trim().length > 0;
 const filledList = (v: unknown): boolean => Array.isArray(v) && v.length > 0 && v.every(filled);
+
+/** Módulos de venda ligados (os que não podem coexistir com o modo orçamento). */
+export function salesModulesOn(m: Modules): string[] {
+  return [
+    m.retiradaLocal && "retiradaLocal",
+    m.freteGratis?.enabled && "freteGratis",
+    m.parcelamento?.enabled && "parcelamento",
+    m.boleto && "boleto",
+    m.cartao?.enabled && "cartao",
+    m.descontoPix?.enabled && "descontoPix",
+    m.cupom && "cupom",
+  ].filter((x): x is string => !!x);
+}
+
+/**
+ * Regra de exclusão: a loja em orçamento (`orcamento.enabled`) não pode ter nenhum módulo de venda ligado. Devolve a mensagem do
+ * problema, ou null se a combinação é válida. É a mesma regra que derruba o build (validatePreset) e que o painel aplica ao ligar módulos.
+ */
+export function quoteSalesConflict(m: Modules): string | null {
+  if (m.orcamento?.enabled !== true) return null;
+  const sales = salesModulesOn(m);
+  return sales.length === 0 ? null : `loja em orçamento (orcamento.enabled) não pode ter módulos de venda ligados; desligue: ${sales.join(", ")}`;
+}
 
 /**
  * Valida o que a lei e a conformidade exigem de TODO preset. Devolve a lista de problemas (vazia se estiver tudo certo);
@@ -26,21 +50,8 @@ export function validatePreset(preset: Preset): string[] {
   if (quoteMode) {
     // Modo orçamento: não há venda ao consumidor pela loja, então o arrependimento (CDC, art. 49) não se aplica,
     // mas a loja não pode ter nenhum módulo de venda e precisa dos dados do orçamento e das condições comerciais.
-    const m = preset.config.modules;
-    const sales = [
-      m.retiradaLocal && "retiradaLocal",
-      m.freteGratis?.enabled && "freteGratis",
-      m.parcelamento?.enabled && "parcelamento",
-      m.boleto && "boleto",
-      m.cartao?.enabled && "cartao",
-      m.descontoPix?.enabled && "descontoPix",
-      m.cupom && "cupom",
-    ].filter(Boolean);
-    need(
-      sales.length === 0,
-      "config.modules",
-      `loja em orçamento (orcamento.enabled) não pode ter módulos de venda ligados; desligue: ${sales.join(", ")}`,
-    );
+    const conflict = quoteSalesConflict(preset.config.modules);
+    need(conflict === null, "config.modules", conflict ?? "");
     const quote = preset.config.quote;
     need(!!quote && filled(quote.listLabel) && filled(quote.addLabel) && filled(quote.intro), "config.quote", "informe listLabel, addLabel e intro do modo orçamento");
     need(!!quote && filledList(quote.applications), "config.quote.applications", "liste as aplicações do formulário");
@@ -164,6 +175,20 @@ export function validatePreset(preset: Preset): string[] {
         "diasMin e diasMax inteiros, com diasMin >= 1 e diasMax maior",
       );
       need(filled(d.unidadeConsumo), "config.orcamentoBlocks.dimensionador.unidadeConsumo", "informe a unidade (ex.: L/dia)");
+    }
+  }
+
+  // Tema do painel: só opções aprovadas (cor principal, destaque e fontes); o tema atual tem que estar entre elas e passar no contraste.
+  const tc = cfg.themeChoices;
+  if (tc) {
+    const colors = cfg.theme.colors;
+    const hex = (list: { value: string }[]) => list.every((c) => parseHex(c.value) !== null);
+    need(tc.primary.length >= 2 && hex(tc.primary) && tc.primary.some((c) => c.value.toLowerCase() === colors.primary.toLowerCase()), "config.themeChoices.primary", "liste 2 ou mais cores hexadecimais, incluindo a cor principal do tema");
+    need(tc.accent.length >= 2 && hex(tc.accent) && tc.accent.some((c) => c.value.toLowerCase() === colors.secondary.toLowerCase()), "config.themeChoices.accent", "liste 2 ou mais cores hexadecimais, incluindo a cor de destaque do tema");
+    need(tc.fonts.heading.some((f) => f.value === cfg.theme.fonts.heading) && tc.fonts.body.some((f) => f.value === cfg.theme.fonts.body), "config.themeChoices.fonts", "inclua a fonte de título e a de texto do tema");
+    need(tc.contrastPairs.length > 0, "config.themeChoices.contrastPairs", "informe os pares de texto e fundo para o contraste");
+    for (const i of contrastIssues(colors, tc.contrastPairs)) {
+      need(false, `config.themeChoices.contrastPairs.${i.fg}/${i.bg}`, `o tema do preset tem contraste ${i.ratio.toFixed(2)}:1, abaixo de ${i.min}:1`);
     }
   }
 

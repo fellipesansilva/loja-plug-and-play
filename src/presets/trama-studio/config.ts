@@ -112,6 +112,36 @@ export const config: StoreConfig = {
     },
     spacing: { xs: "0.25rem", sm: "0.5rem", md: "1rem", lg: "1.5rem", xl: "2.5rem" },
   },
+  // Opções que o painel oferece em Configurações › Tema (aprovadas aqui; nunca cor livre). A primeira de cada lista é a do tema acima.
+  themeChoices: {
+    primary: [
+      { id: "oliva", label: "Oliva", value: "#4b5340" },
+      { id: "grafite", label: "Grafite", value: "#2f3430" },
+      { id: "petroleo", label: "Petróleo", value: "#26475a" },
+      { id: "vinho", label: "Vinho", value: "#6e2f3a" },
+    ],
+    accent: [
+      { id: "areia", label: "Areia", value: "#a68a64" },
+      { id: "ocre", label: "Ocre", value: "#b8863b" },
+      { id: "salvia", label: "Sálvia", value: "#8a9a7b" },
+      { id: "cafe", label: "Café", value: "#5c4033" },
+    ],
+    fonts: {
+      heading: [
+        { id: "bodoni-moda", label: "Bodoni Moda (serifada)", value: "var(--font-bodoni-moda), Georgia, 'Times New Roman', serif" },
+        { id: "manrope", label: "Manrope (sem serifa)", value: "var(--font-manrope), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
+      ],
+      body: [{ id: "manrope", label: "Manrope", value: "var(--font-manrope), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }],
+    },
+    // Texto sobre fundo: cada par precisa de 4,5:1 (WCAG AA).
+    contrastPairs: [
+      ["announcementText", "announcementBg"],
+      ["highlightText", "highlightBg"],
+      ["background", "primary"],
+      ["primary", "background"],
+      ["text", "secondary"],
+    ],
+  },
   modules: {
     retiradaLocal: false,
     freteGratis: { enabled: true, minValue: 19900 },

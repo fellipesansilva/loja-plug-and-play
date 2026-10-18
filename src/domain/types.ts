@@ -180,6 +180,23 @@ export type OrcamentoBlocks = {
   };
 };
 
+/** Opção aprovada da paleta de um preset: `value` é uma cor hexadecimal. */
+export type ColorChoice = { id: string; label: string; value: string };
+/** Fonte aprovada de um preset: `value` é a pilha CSS completa (a variável da fonte do preset e as reservas). */
+export type FontChoice = { id: string; label: string; value: string };
+
+/**
+ * O que o painel (Configurações › Tema) oferece: só opções aprovadas no preset, nunca cor livre. A cor principal e a de destaque
+ * trocam `colors.primary` e `colors.secondary` (e os tokens que, no preset, repetem essas cores); `contrastPairs` diz que textos
+ * ficam sobre que fundos, para o contraste mínimo de 4,5:1 (src/theme/contrast.ts).
+ */
+export type ThemeChoices = {
+  primary: ColorChoice[];
+  accent: ColorChoice[];
+  fonts: { heading: FontChoice[]; body: FontChoice[] };
+  contrastPairs: [fg: keyof ThemeTokens["colors"], bg: keyof ThemeTokens["colors"]][];
+};
+
 /** Fundo da seção: "dark" usa a cor primária; "light" (padrão) o fundo da loja. */
 export type Tone = "dark" | "light";
 
@@ -282,6 +299,8 @@ export type StoreConfig = {
     phone: string;
   };
   theme: ThemeTokens;
+  /** Opções aprovadas para o painel trocar o tema (ver ThemeChoices). */
+  themeChoices?: ThemeChoices;
   modules: Modules;
   policies: {
     /** Aviso curto sobre arrependimento, exibido na página do produto (antes do link de Trocas e devoluções). Não se aplica a loja em orçamento. */
