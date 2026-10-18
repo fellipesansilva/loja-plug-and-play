@@ -163,8 +163,13 @@ export const config: StoreConfig = {
     descontoPix: { enabled: true, percent: PIX_PERCENT },
     cupom: true,
     assistenteVirtual: false,
+    // Módulos do diferencial (F6), ligados na Trama; o painel (Configurações › Módulos) liga e desliga.
+    bot: true,
+    whatsapp: true,
+    depoimentos: true,
+    newsletter: true,
   },
-  // Dados dos módulos do diferencial: os módulos nascem desligados e o painel liga (Configurações › Módulos).
+  // Textos e dados dos módulos do diferencial.
   bot: tramaBot({ freeShippingMin: FREE_SHIPPING_MIN, maxInstallments: MAX_INSTALLMENTS, pixPercent: PIX_PERCENT, regretDays: REGRET_DAYS, defectDays: DEFECT_DAYS, economyDays: ECONOMY_DAYS, expressDays: EXPRESS_DAYS }),
   whatsapp: tramaWhatsapp,
   newsletter: tramaNewsletter,

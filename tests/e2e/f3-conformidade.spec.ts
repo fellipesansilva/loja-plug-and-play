@@ -180,7 +180,8 @@ test.describe("H4 · privacidade (LGPD)", () => {
     await ready(page, "/privacidade");
     const privacy = await page.evaluate(() => window.__demoStore!.getState().config.policies.privacy);
     const titles = ["Dados coletados", "Finalidade", "Prazo de guarda", "Compartilhamento", "Seus direitos como titular", "Responsável pelos dados"];
-    await expect(page.getByRole("heading", { level: 2 })).toHaveText(titles);
+    // só o conteúdo da página (o rodapé da Trama tem a newsletter, com título próprio)
+    await expect(page.locator("main").getByRole("heading", { level: 2 })).toHaveText(titles);
     await expect(page.getByTestId("priv-dados")).toContainText(privacy.dataCollected[0]);
     await expect(page.getByTestId("priv-finalidade")).toContainText(privacy.purpose);
     await expect(page.getByTestId("priv-guarda")).toContainText(privacy.retention);

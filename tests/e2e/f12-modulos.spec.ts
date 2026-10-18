@@ -2,11 +2,18 @@ import { type Page } from "@playwright/test";
 import { test, expect, currentPreset, SHORT, TRAMA } from "./helpers";
 import { ready } from "./painel-helpers";
 
-// F6 · módulos do diferencial: bot, WhatsApp, depoimentos e newsletter. Nenhum preset liga os módulos por padrão. A Trama traz os textos e
-// os dados; os testes ligam os módulos pelo painel (a mesma configuração salva da F5) e conferem a vitrine.
+// F6 · módulos do diferencial: bot, WhatsApp, depoimentos e newsletter. A Trama liga os quatro por padrão (e traz os textos e os dados);
+// Forno e Arca não ligam nenhum. Os testes ligam e desligam pelo painel (a mesma configuração salva da F5) e conferem a vitrine.
 const slug = () => SHORT[currentPreset()];
 const PRODUTO = "/produto/vestido-midi-linho";
 
+async function desligar(page: Page) {
+  await ready(page, "/");
+  await page.evaluate(() => {
+    const st = window.__demoStore!.getState();
+    st.saveOverrides({ ...st.overrides, modules: { ...st.config.modules, bot: false, whatsapp: false, depoimentos: false, newsletter: false } });
+  });
+}
 async function ligar(page: Page, keys: ("bot" | "whatsapp" | "depoimentos" | "newsletter")[]) {
   await ready(page, "/");
   await page.evaluate((ks) => {
@@ -26,36 +33,57 @@ const watchErrors = (page: Page) => {
 const overlap = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
   a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 
-test.describe("módulos desligados (estado padrão)", () => {
-  test("nenhum preset liga os módulos: nada aparece na home nem no produto", async ({ page }) => {
+test.describe("estado padrão dos presets", () => {
+  test("Trama liga os quatro módulos por padrão; Forno não liga nenhum (navegador limpo, sem erro de console)", async ({ page }) => {
     const errors = watchErrors(page);
-    for (const route of ["/", PRODUTO, "/carrinho"]) {
-      await ready(page, route);
-      await page.waitForTimeout(800); // depois do portão da foto principal
-      for (const id of ["bot-botao", "whatsapp-botao", "depoimentos", "newsletter"]) await expect(page.getByTestId(id), `${route} ${id}`).toHaveCount(0);
-      await expect(page.getByTestId("extras-dock")).toHaveCount(0);
-    }
-    const modules = await page.evaluate(() => window.__demoStore!.getState().config.modules);
-    expect([modules.bot, modules.whatsapp, modules.depoimentos, modules.newsletter]).not.toContain(true);
+    const trama = currentPreset() === TRAMA;
+    await ready(page, "/");
+    await page.waitForTimeout(1500); // depois do portão da foto principal
+    await expect(page.getByTestId("bot-botao")).toHaveCount(trama ? 1 : 0);
+    await expect(page.getByTestId("whatsapp-botao")).toHaveCount(trama ? 1 : 0);
+    await expect(page.getByTestId("depoimentos")).toHaveCount(trama ? 1 : 0);
+    await expect(page.getByTestId("newsletter")).toHaveCount(trama ? 1 : 0);
+    await expect(page.getByTestId("extras-dock")).toHaveCount(trama ? 1 : 0);
     expect(errors).toEqual([]);
   });
 
-  test("com os módulos desligados nenhum arquivo dos módulos é baixado; ligados, os arquivos novos aparecem depois da foto principal", async ({ page }) => {
+  test("Arca (endereço completo) segue sem módulos", async ({ page }) => {
+    test.skip(currentPreset() !== TRAMA, "Roda uma vez (projeto trama)");
+    await page.addInitScript(() => localStorage.setItem("loja-consent-v1-arca", JSON.stringify({ choice: "rejected", at: "2026-01-01T00:00:00.000Z", version: "1" })));
+    await page.goto("http://localhost:3411/arca", { waitUntil: "networkidle" });
+    await page.waitForTimeout(1500);
+    for (const id of ["bot-botao", "whatsapp-botao", "depoimentos", "newsletter", "extras-dock"]) await expect(page.getByTestId(id)).toHaveCount(0);
+  });
+
+  test("desligados pelo painel, nada aparece na Trama e nenhum arquivo dos módulos é baixado; ligados, os arquivos novos aparecem depois da foto principal", async ({ page }) => {
     test.skip(currentPreset() !== TRAMA, "A Trama é quem traz os dados dos módulos");
+    await desligar(page);
     const off = new Set<string>();
     jsUrls(page, off);
-    await ready(page, "/");
-    await page.waitForTimeout(1200);
+    for (const route of ["/", PRODUTO, "/carrinho"]) {
+      await ready(page, route);
+      await page.waitForTimeout(1200);
+      for (const id of ["bot-botao", "whatsapp-botao", "depoimentos", "newsletter", "extras-dock"]) await expect(page.getByTestId(id), `${route} ${id}`).toHaveCount(0);
+    }
     expect(off.size).toBeGreaterThan(5);
-    const on = new Set<string>();
     page.removeAllListeners("request");
     await ligar(page, ["bot", "whatsapp", "depoimentos", "newsletter"]);
+    const on = new Set<string>();
     jsUrls(page, on);
     await page.reload({ waitUntil: "networkidle" });
     await expect(page.getByTestId("bot-botao")).toBeVisible();
     const novos = [...on].filter((u) => !off.has(u));
     expect(novos.length, `arquivos só dos módulos: ${novos.join(", ")}`).toBeGreaterThanOrEqual(4); // bot, WhatsApp, depoimentos, newsletter
-    for (const u of off) expect(novos.includes(u)).toBe(false); // o que carrega desligado não é dos módulos
+    for (const u of off) expect(novos.includes(u)).toBe(false);
+  });
+
+  test("quem já tem configuração salva da Trama mantém o que salvou (módulos desligados ficam desligados depois de recarregar)", async ({ page }) => {
+    test.skip(currentPreset() !== TRAMA, "A Trama é quem traz os dados dos módulos");
+    await desligar(page);
+    await ready(page, "/");
+    await page.waitForTimeout(1200);
+    await expect(page.getByTestId("bot-botao")).toHaveCount(0);
+    await expect(page.getByTestId("depoimentos")).toHaveCount(0);
   });
 });
 
@@ -170,29 +198,42 @@ test.describe("módulos ligados (Trama)", () => {
 });
 
 test.describe("painel da F5 · Configurações › Módulos", () => {
-  test("os quatro módulos novos aparecem, desligados por padrão", async ({ page }) => {
+  test("os quatro módulos novos aparecem: ligados na Trama, desligados nos demais presets", async ({ page }) => {
+    const esperado = currentPreset() === TRAMA ? "true" : "false";
     await ready(page, "/painel/configuracoes/modulos");
     for (const k of ["bot", "whatsapp", "depoimentos", "newsletter"]) {
       await expect(page.getByTestId(`modulo-${k}`)).toBeVisible();
-      await expect(page.getByTestId(`modulo-${k}`).getByRole("switch")).toHaveAttribute("aria-checked", "false");
+      await expect(page.getByTestId(`modulo-${k}`).getByRole("switch")).toHaveAttribute("aria-checked", esperado);
     }
     await expect(page.getByTestId("modulo-bot")).toContainText("Depende de: WhatsApp.");
     await expect(page.getByTestId("modulo-whatsapp")).toContainText("Usado por: Atendimento simulado (bot).");
   });
 
-  test("dependência bot → WhatsApp: ligar o bot liga o WhatsApp junto; desligar o WhatsApp desliga o bot; salvar liga na loja", async ({ page }) => {
+  test("dependência bot → WhatsApp: desligar o WhatsApp desliga o bot; ligar o bot liga o WhatsApp junto; salvar vale na loja", async ({ page }) => {
     test.skip(currentPreset() !== TRAMA, "Só a Trama traz os dados dos módulos (no Forno a validação do build recusa)");
     await ready(page, "/painel/configuracoes/modulos");
     const sw = (k: string) => page.getByTestId(`modulo-${k}`).getByRole("switch");
-    await sw("bot").click();
     await expect(sw("bot")).toHaveAttribute("aria-checked", "true");
-    await expect(sw("whatsapp")).toHaveAttribute("aria-checked", "true");
-    await expect(page.getByTestId("modulos-avisos")).toContainText("WhatsApp foi ligado junto: Atendimento simulado (bot) depende dele.");
     await sw("whatsapp").click();
     await expect(sw("whatsapp")).toHaveAttribute("aria-checked", "false");
     await expect(sw("bot")).toHaveAttribute("aria-checked", "false");
     await expect(page.getByTestId("modulos-avisos")).toContainText("Atendimento simulado (bot) foi desligado junto: depende de WhatsApp.");
     await sw("bot").click();
+    await expect(sw("bot")).toHaveAttribute("aria-checked", "true");
+    await expect(sw("whatsapp")).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("modulos-avisos")).toContainText("WhatsApp foi ligado junto: Atendimento simulado (bot) depende dele.");
+    // desliga tudo, salva e confere a loja; depois liga de novo
+    for (const k of ["depoimentos", "newsletter", "whatsapp"]) await sw(k).click();
+    await expect(sw("bot")).toHaveAttribute("aria-checked", "false");
+    await page.getByTestId("modulos-salvar").click();
+    await expect(page.getByTestId("modulos-status")).toContainText("Módulos salvos");
+    await ready(page, "/");
+    await page.waitForTimeout(1200);
+    for (const id of ["bot-botao", "whatsapp-botao", "depoimentos", "newsletter"]) await expect(page.getByTestId(id)).toHaveCount(0);
+    await ready(page, "/painel/configuracoes/modulos");
+    await sw("bot").click();
+    await sw("depoimentos").click();
+    await sw("newsletter").click();
     await page.getByTestId("modulos-salvar").click();
     await expect(page.getByTestId("modulos-status")).toContainText("Módulos salvos");
     await ready(page, "/");
