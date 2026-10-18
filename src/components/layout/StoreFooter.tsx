@@ -10,11 +10,13 @@ const linkClass = "inline-flex min-h-11 items-center underline";
 export function StoreFooter() {
   const { name, legal } = useDemoStore((s) => s.config);
   const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
+  // Com os botões de atendimento e WhatsApp (canto esquerdo), o fim da página ganha espaço para eles não cobrirem o texto.
+  const dock = useDemoStore((s) => s.config.modules.bot === true || s.config.modules.whatsapp === true);
   const { reopen } = useConsent();
   return (
     <footer className="mt-xl border-t border-border bg-footer-bg" data-testid="store-footer">
       {/* pb-20: espaço no fim da página para o botão Demo (fixo no canto) não cobrir texto */}
-      <div className="mx-auto w-full max-w-page px-md pb-20 pt-lg text-sm text-footer-text">
+      <div className={`mx-auto w-full max-w-page px-md ${dock ? "pb-32" : "pb-20"} pt-lg text-sm text-footer-text`}>
         <NewsletterSlot />
         <p className="font-bold" data-testid="footer-name">
           {legal.name || name}
