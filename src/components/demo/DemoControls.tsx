@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { StoreLink } from "@/components/store/StoreLink";
 import { stripPresetPrefix } from "@/lib/preset-href";
+import { demoButtonTextKey } from "@/theme/contrast";
 import { useDemoStore } from "@/store/demo-store";
 import { usePreset } from "@/store/PresetProvider";
 
@@ -20,6 +21,8 @@ export function DemoControls({ presets }: { presets: PresetLink[] }) {
   const orderId = /^\/pedido\/([^/]+)$/.exec(path)?.[1];
   const awaitingPayment = useDemoStore((s) => s.orders.some((o) => o.id === orderId && o.status === "aguardando_pagamento"));
   const cursos = useDemoStore((s) => s.config.modules.cursos === true);
+  // Texto do botão: `text` ou `background`, o que tiver mais contraste sobre a cor de destaque (no tema escuro, `text` é claro como o destaque).
+  const textKey = demoButtonTextKey(useDemoStore((s) => s.config.theme.colors));
   const inPainel = path.startsWith("/painel");
   // Páginas de produto podem ter barra fixa de compra no rodapé: o botão sobe para não cobri-la.
   const aboveBuyBar = path.startsWith("/produto/");
@@ -100,7 +103,8 @@ export function DemoControls({ presets }: { presets: PresetLink[] }) {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="min-h-11 rounded-lg bg-secondary px-lg text-sm font-bold text-text shadow-lg"
+        style={{ color: `var(--t-color-${textKey})` }}
+        className="min-h-11 rounded-lg bg-secondary px-lg text-sm font-bold shadow-lg"
       >
         {open ? "Fechar demo" : "Demo"}
       </button>

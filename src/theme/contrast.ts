@@ -49,3 +49,16 @@ export function contrastIssues(colors: ThemeTokens["colors"], pairs: readonly Co
   }
   return issues;
 }
+
+/** Cor de texto do botão "Demo" (fundo `secondary`): `text` ou `background`, a que tiver o maior contraste sobre o destaque. Empate ou cor que não é hexadecimal: `text`. */
+export type DemoTextKey = "text" | "background";
+
+export function demoButtonTextKey(colors: ThemeTokens["colors"]): DemoTextKey {
+  if (!parseHex(colors.secondary) || !parseHex(colors.text) || !parseHex(colors.background)) return "text";
+  return contrastRatio(colors.background, colors.secondary) > contrastRatio(colors.text, colors.secondary) ? "background" : "text";
+}
+
+/** O par do botão Demo (texto escolhido sobre `secondary`) abaixo do mínimo. `key` fixo serve para provar o botão antigo (sempre `text`). */
+export function demoButtonIssues(colors: ThemeTokens["colors"], key: DemoTextKey = demoButtonTextKey(colors), min: number = MIN_TEXT_CONTRAST): ContrastIssue[] {
+  return contrastIssues(colors, [[key, "secondary"]], min);
+}

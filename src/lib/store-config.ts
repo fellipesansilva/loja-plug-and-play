@@ -1,5 +1,5 @@
 import type { Modules, Preset, StoreConfig, ThemeChoices } from "@/domain/types";
-import { contrastIssues, type ContrastIssue } from "@/theme/contrast";
+import { contrastIssues, demoButtonIssues, type ContrastIssue } from "@/theme/contrast";
 
 /** Chave da configuração salva no painel, uma por preset (ex.: `loja-config-v1-forno`). Separada do estado de demonstração (`loja-demo-v1-*`). */
 export function configKeyFor(slug: string): string {
@@ -125,7 +125,8 @@ export function themeWithChoice(base: StoreConfig, theme: ThemeIds): StoreConfig
 /** Pares de texto e fundo abaixo de 4,5:1 no tema escolhido. */
 export function themeContrastIssues(base: StoreConfig, theme: ThemeIds): ContrastIssue[] {
   if (!base.themeChoices) return [];
-  return contrastIssues(themeWithChoice(base, theme).colors, base.themeChoices.contrastPairs);
+  const colors = themeWithChoice(base, theme).colors;
+  return [...contrastIssues(colors, base.themeChoices.contrastPairs), ...demoButtonIssues(colors)];
 }
 
 export const COLOR_LABELS: Record<string, string> = {
