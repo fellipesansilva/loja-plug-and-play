@@ -184,7 +184,7 @@ test.describe("endereços: raiz, links antigos e 404", () => {
   });
 
   test("preset desconhecido retorna 404 de verdade", async ({ request }) => {
-    for (const path of ["/orbita", "/xyz", "/orbita/carrinho", "/orbita/produto/pizza-margherita"]) {
+    for (const path of ["/atlas", "/xyz", "/atlas/carrinho", "/atlas/produto/pizza-margherita"]) {
       expect((await get(request, path)).status(), path).toBe(404);
     }
   });

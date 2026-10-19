@@ -111,3 +111,28 @@ As fotos da Arca vêm do **Unsplash**, do **Pexels** (licenças que permitem uso
 | `public/images/presets/faisca/categoria-tecnologia.webp` | https://unsplash.com/photos/SH6hmu0eoas | Daniil Komov | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/faisca/categoria-carreira-e-dinheiro.webp` | https://unsplash.com/photos/Ok76F6yW2iA | NORTHFOLK | [Unsplash License](https://unsplash.com/license) |
 | `public/images/presets/faisca/banner.webp` | https://unsplash.com/photos/-2vD8lIhdnw | JESHOOTS.COM | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/banner.webp` | https://unsplash.com/photos/dBwadhWa-lI | C D-X | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/categoria-audio.webp` | https://unsplash.com/photos/PtPkHRUslFs | Immo Wegmann | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/categoria-vestiveis.webp` | https://unsplash.com/photos/VO1EyoKe2Ck | Vitaly Gariev | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/categoria-acessorios.webp` | https://unsplash.com/photos/dYocS1QjjvI | Mishaal Zahed | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/fone-orbita-studio-anc-1.webp` | https://unsplash.com/photos/PDX_a_82obo | C D-X | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/fone-orbita-air-1.webp` | https://unsplash.com/photos/qt9_OfTaaeY | TheRegisti | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/caixa-de-som-orbita-pulse-1.webp` | https://unsplash.com/photos/gbG65gRAGx4 | Nicolas J Leclercq | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/soundbar-orbita-horizon-1.webp` | https://unsplash.com/photos/2RyHepsRFqE | Jonas Leupe | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/microfone-orbita-cast-usb-1.webp` | https://unsplash.com/photos/fxHq67K11-E | Klim Musalimov | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/fone-orbita-sport-1.webp` | https://unsplash.com/photos/ySc-GCLzLTc | Caley Vanular | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/smartwatch-orbita-s-1.webp` | https://unsplash.com/photos/FPEBZJLD8Rs | pratik prasad | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/smartband-orbita-fit-1.webp` | https://unsplash.com/photos/NQf59hHbN34 | FitNish Media | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/smartwatch-orbita-s-pro-1.webp` | https://unsplash.com/photos/z3y7U4szCUM | Georgiy Lyamin | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/base-de-carga-orbita-sem-fio-1.webp` | https://unsplash.com/photos/iE-MsY-8vEw | Matteo Grobberio | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/carregador-orbita-gan-65-w-1.webp` | https://unsplash.com/photos/9QTFMkh-ezM | Markus Winkler | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/cabo-orbita-usb-c-trancado-2-m-1.webp` | https://unsplash.com/photos/RWxeE7wu1T8 | Mika Baumeister | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/power-bank-orbita-20000-mah-1.webp` | https://www.pexels.com/photo/3921704/ | readymade | [Pexels License](https://www.pexels.com/license/) |
+| `public/images/presets/orbita/capa-orbita-para-notebook-1.webp` | https://unsplash.com/photos/RPlqH2alKWk | Babak Eshaghian | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/suporte-orbita-stand-aluminio-1.webp` | https://unsplash.com/photos/Lg4weBBGbLU | Kiran CK | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/hub-orbita-usb-7-portas-1.webp` | https://unsplash.com/photos/XxvKhAUs2PA | Barry A | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/fone-orbita-studio-anc-2.webp` | https://unsplash.com/photos/xR4JHzr69Og | Jason Leung | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/fone-orbita-air-2.webp` | https://unsplash.com/photos/YwJGDLKOE48 | TheRegisti | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/smartwatch-orbita-s-2.webp` | https://unsplash.com/photos/9YEFoxOckzE | Vitaly Gariev | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/smartwatch-orbita-s-pro-2.webp` | https://unsplash.com/photos/FgPdqn6bDAk | Georgiy Lyamin | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/orbita/hub-orbita-usb-7-portas-2.webp` | https://unsplash.com/photos/b1UEh_5dKLY | Barry A | [Unsplash License](https://unsplash.com/license) |

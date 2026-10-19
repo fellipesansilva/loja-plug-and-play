@@ -1,0 +1,5 @@
+sku,nome,preco,estoque,categoria,descricao,tamanho,cor,conexao
+ORB-NOV-001,Fone Órbita Studio Max,1599.90,5,audio,Fone over-ear com cancelamento de ruído adaptativo,Pro,Grafite,Bluetooth 5.3
+ORB-NOV-002,Caixa de Som Órbita Pulse Mini,299.90,12,audio,Caixa de som compacta à prova d'água,Padrão,Prata,Bluetooth 5.3
+ORB-NOV-003,Smartband Órbita Fit 2,279.90,9,vestiveis,Pulseira inteligente com monitor de sono,Padrão,Grafite,Bluetooth 5.2
+ORB-NOV-004,Carregador Órbita GaN 100 W,329.90,7,acessorios,Carregador de 4 portas com tecnologia GaN,Padrão,Prata,USB-C

@@ -16,13 +16,13 @@ describe("registro de presets", () => {
     expect(resolvePresetKey("trama-studio")).toBe("trama-studio");
     expect(resolvePresetKey(null)).toBeNull();
     expect(resolvePresetKey("")).toBeNull();
-    expect(resolvePresetKey("orbita")).toBeNull();
+    expect(resolvePresetKey("atlas")).toBeNull();
   });
 
   it("cada preset tem apelido de URL único e conhecido", () => {
     expect(new Set(presets.map((p) => p.shortId)).size).toBe(presets.length);
     expect(presetBySlug("forno")?.id).toBe("forno-da-vila");
-    expect(presetBySlug("orbita")).toBeUndefined();
+    expect(presetBySlug("atlas")).toBeUndefined();
     expect(getPreset("trama-studio")?.shortId).toBe("trama");
   });
 });
@@ -34,7 +34,7 @@ describe("preset padrão (DEFAULT_PRESET)", () => {
     expect(resolveDefaultPresetSlug("FORNO")).toBe("forno");
   });
   it("valor desconhecido derruba o build", () => {
-    expect(() => resolveDefaultPresetSlug("orbita")).toThrow(/DEFAULT_PRESET="orbita".*trama.*forno/);
+    expect(() => resolveDefaultPresetSlug("atlas")).toThrow(/DEFAULT_PRESET="atlas".*trama.*forno/);
   });
 });
 
@@ -96,8 +96,8 @@ describe("fontes por preset (só as do preset entram na página)", () => {
   });
 
   it("slug desconhecido não gera CSS nem preload", () => {
-    expect(fontCssFor("orbita")).toBe("");
-    expect(fontUrlsFor("orbita")).toEqual([]);
+    expect(fontCssFor("atlas")).toBe("");
+    expect(fontUrlsFor("atlas")).toEqual([]);
   });
 });
 
