@@ -68,6 +68,11 @@ export type Modules = {
   whatsapp?: boolean;
   depoimentos?: boolean;
   newsletter?: boolean;
+  /**
+   * Área do aluno simulada (loja de cursos): "Meus cursos", página do curso, aula e progresso, tudo no navegador (sem login nem servidor).
+   * Estrutural do preset (não é ligado nem desligado no painel): exige `config.cursos` e produtos digitais com `course`.
+   */
+  cursos?: boolean;
 };
 
 /** Tema de resposta do bot: o visitante clica no tema ou escreve uma palavra de `keywords`. Tudo vem do preset (sem IA). */
@@ -136,6 +141,51 @@ export type NewsletterConfig = {
   /** Mensagem quando o envio é recusado por falta de consentimento. */
   refusal: string;
   success: string;
+};
+
+/** Aula de um curso (módulo `cursos`). Sem vídeo: a aula mostra a capa de demonstração e o texto. */
+export type Lesson = {
+  id: string;
+  title: string;
+  /** Duração em minutos; a carga horária do curso é a soma das aulas. */
+  minutes: number;
+  /** Texto da aula, um parágrafo por item. */
+  text: string[];
+};
+
+/** Conteúdo de um curso (produto digital do módulo `cursos`): instrutor fictício e a ementa, aula a aula. */
+export type Course = {
+  instructor: string;
+  /** Uma linha sobre o instrutor (marcada como fictícia no preset). */
+  instructorNote: string;
+  lessons: Lesson[];
+};
+
+/** Textos da área do aluno (módulo `cursos`). Tudo vem do preset. */
+export type CursosConfig = {
+  /** Link do menu e título da página ("Meus cursos"). */
+  myCoursesLabel: string;
+  intro: string;
+  /** Lista vazia: ninguém comprou curso neste navegador. */
+  empty: string;
+  emptyCtaLabel: string;
+  /** Botão da confirmação do pedido e da lista ("Acessar curso"). */
+  accessLabel: string;
+  /** Marca sobre a capa da aula ("Aula de demonstração") e o aviso de que não há vídeo. */
+  demoLabel: string;
+  demoNote: string;
+  completeLabel: string;
+  completedLabel: string;
+  /** Motivo do bloqueio: pedido aguardando pagamento e pedido cancelado / pagamento recusado. {pedido} vira o número do pedido. */
+  lockedAwaiting: string;
+  lockedCanceled: string;
+  /** Texto de apoio da lista de aulas e do progresso. */
+  progressLabel: string;
+  syllabusTitle: string;
+  instructorLabel: string;
+  workloadLabel: string;
+  /** Marca de demonstração do instrutor e do curso (aparece na página do curso). */
+  demoBadge: string;
 };
 
 /** Candidatos de uma imagem responsiva (`width` em px do arquivo). */
@@ -346,6 +396,8 @@ export type StoreConfig = {
   bot?: BotConfig;
   whatsapp?: WhatsappConfig;
   newsletter?: NewsletterConfig;
+  /** Textos da área do aluno (obrigatório quando `modules.cursos` está ligado). */
+  cursos?: CursosConfig;
   /** Textos e dados do modo orçamento (obrigatório quando `modules.orcamento.enabled`). */
   quote?: {
     /** Nome da lista ("Lista de orçamento") e o gênero gramatical dele, como `cartLabel`/`cartGender`. */
@@ -479,6 +531,8 @@ export type Product = {
   sectorSlugs?: string[];
   /** Até 3 benefícios com número (ex.: "20 min" / "para instalar"), na página do produto. */
   benefits?: { value: string; label: string }[];
+  /** Curso (só com `modules.cursos`; o produto é `digital`): instrutor e aulas. */
+  course?: Course;
   /** Padrão: `true`. Inativo some da loja (lista, busca, home e página do produto), mas continua no painel. */
   active?: boolean;
 };

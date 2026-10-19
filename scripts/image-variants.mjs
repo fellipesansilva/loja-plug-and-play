@@ -9,6 +9,8 @@
 // Uso: node scripts/image-variants.mjs                    (gera todas as variantes e o manifesto)
 //      node scripts/image-variants.mjs --add-960          (só as variantes de 960 px, e o manifesto; não mexe nas de 360 e 640 nem nos originais)
 //      node scripts/image-variants.mjs --manifest-only    (só o manifesto; não mexe em nenhuma imagem)
+//      node scripts/image-variants.mjs --preset=faisca    (gera as variantes só desse preset e refaz o manifesto; não mexe nas fotos das outras lojas.
+//                                                          Neste modo a variante de 960 px só fica se pesar menos de 85% do original: senão não vale o download extra)
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -20,6 +22,9 @@ const WIDTH_HI = 960;
 const MIN_BYTES_HI = 64 * 1024;
 const manifestOnly = process.argv.includes("--manifest-only");
 const add960 = process.argv.includes("--add-960");
+const only = process.argv.find((a) => a.startsWith("--preset="))?.slice("--preset=".length);
+/** No modo --preset, a variante de 960 px só vale se pesar menos que este fração do original. */
+const HI_MAX_RATIO = 0.85;
 let made = 0;
 let bytes = 0;
 const originals = {};
@@ -34,7 +39,8 @@ for (const preset of fs.readdirSync(ROOT).sort()) {
     const size = fs.statSync(full).size;
     const entry = { width: meta.width, bytes: size };
     const hi = size >= MIN_BYTES_HI;
-    if (!manifestOnly) {
+    const write = !manifestOnly && (!only || only === preset);
+    if (write) {
       if (!add960) {
         for (const w of WIDTHS) {
           const buf = await encode(full, w);
@@ -45,9 +51,13 @@ for (const preset of fs.readdirSync(ROOT).sort()) {
       }
       if (hi) {
         const buf = await encode(full, WIDTH_HI);
-        fs.writeFileSync(path.join(dir, `${base}-${WIDTH_HI}.webp`), buf);
-        made += 1;
-        bytes += buf.length;
+        const hiFile = path.join(dir, `${base}-${WIDTH_HI}.webp`);
+        if (only && buf.length >= HI_MAX_RATIO * size) fs.rmSync(hiFile, { force: true });
+        else {
+          fs.writeFileSync(hiFile, buf);
+          made += 1;
+          bytes += buf.length;
+        }
       }
     }
     if (hi && fs.existsSync(path.join(dir, `${base}-${WIDTH_HI}.webp`))) entry.w960 = Math.min(WIDTH_HI, meta.width);

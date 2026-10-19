@@ -9,6 +9,7 @@ export const STORE_ROUTES: ReadonlySet<string> = new Set([
   "condicoes-comerciais",
   "categoria",
   "checkout",
+  "meus-cursos",
   "orcamento",
   "pedido",
   "privacidade",

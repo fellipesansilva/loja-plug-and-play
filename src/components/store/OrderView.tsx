@@ -1,6 +1,7 @@
 "use client";
 
 import { StoreLink as Link } from "@/components/store/StoreLink";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { Order } from "@/domain/types";
 import { formatBRL } from "@/lib/money";
@@ -14,6 +15,9 @@ import { PageTitle } from "./PageTitle";
 import { ShippingRow } from "./ShippingRow";
 
 const METHOD_LABEL = PAYMENT_METHOD_LABEL;
+
+// "Acessar curso" (módulo cursos): fora do JavaScript das lojas que não têm a área do aluno; o trecho só é baixado onde o módulo está ligado.
+const CourseAccess = dynamic(() => import("./CourseAccess").then((m) => m.CourseAccess));
 
 function formatDate(isoDate: string): string {
   const [y, m, d] = isoDate.split("-");
@@ -108,6 +112,8 @@ export function OrderView({ id }: { id: string }) {
   const hydrated = useHydrated();
   const order = useDemoStore((s) => s.orders.find((o) => o.id === id));
   const config = useDemoStore((s) => s.config);
+  // Loja com área do aluno: o acesso vem pelo botão "Acessar curso" (não há envio de e-mail na demonstração).
+  const cursosOn = config.modules.cursos === true;
 
   if (!order) {
     return (
@@ -143,8 +149,9 @@ export function OrderView({ id }: { id: string }) {
 
       <div className="mt-md flex flex-col gap-md">
         <PaymentPanel order={order} />
+        {cursosOn && <CourseAccess order={order} />}
 
-        {order.delivery.type === "digital" && (
+        {order.delivery.type === "digital" && !cursosOn && (
           <p className="rounded-lg border border-border bg-surface p-md" data-testid="digital-access">
             O acesso será enviado para <strong>{order.customer.email}</strong>.
           </p>

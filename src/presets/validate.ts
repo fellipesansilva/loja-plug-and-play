@@ -30,7 +30,7 @@ export function quoteSalesConflict(m: Modules): string | null {
 
 /**
  * Valida o que a lei e a conformidade exigem de TODO preset. Devolve a lista de problemas (vazia se estiver tudo certo);
- * `assertValidPreset` transforma a lista em erro, e o registro de presets chama isso ao carregar: um preset incompleto
+ * `assertValidPreset` transforma a lista em erro (o registro de presets valida ao carregar com `assertBuildValid`, que soma a conferência dos cursos): um preset incompleto
  * derruba o build (e o servidor) com uma mensagem que diz o preset e o campo.
  */
 export function validatePreset(preset: Preset): string[] {
@@ -181,6 +181,10 @@ export function validatePreset(preset: Preset): string[] {
 
   // Módulos do diferencial (bot, WhatsApp, depoimentos, newsletter): dependências, textos e depoimento real com autorização.
   for (const p of extraModuleProblems(cfg)) problems.push(p);
+
+  // Módulo cursos: a loja de cursos vende pelo carrinho e não pode ser loja em orçamento. (Os dados dos cursos, mais pesados, são conferidos
+  // só no build, em validate-build.ts: o painel não muda textos nem aulas e o navegador não carrega essa conferência.)
+  need(!(cfg.modules.cursos === true && quoteMode), "config.modules.cursos", "o módulo cursos vende pelo carrinho e não pode coexistir com o modo orçamento");
 
   // Tema do painel: só opções aprovadas (cor principal, destaque e fontes); o tema atual tem que estar entre elas e passar no contraste.
   const tc = cfg.themeChoices;

@@ -95,11 +95,11 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
     await expect(page.locator("body")).toContainText("demonstração");
   });
 
-  test("a Arca é a terceira loja do painel Demo e o tema dela é o do preset", async ({ page }) => {
+  test("a Arca é a terceira loja do painel Demo (a Faísca, a quarta) e o tema dela é o do preset", async ({ page }) => {
     await arca(page, "");
     await page.getByRole("button", { name: "Demo", exact: true }).click();
     const list = page.getByRole("list", { name: "Lojas da demonstração" });
-    await expect(list.getByRole("listitem")).toHaveText(["Trama Studio", "Forno da Vila", "Arca Infláveis"]);
+    await expect(list.getByRole("listitem")).toHaveText(["Trama Studio", "Forno da Vila", "Arca Infláveis", "Faísca"]);
     await expect(list.locator('[aria-current="true"]')).toHaveText("Arca Infláveis");
     await expect(list.getByRole("link", { name: "Trama Studio" })).toHaveAttribute("href", "/trama");
     const primary = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--t-color-primary").trim());

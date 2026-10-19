@@ -10,8 +10,11 @@ const expectedFreeShipping: Record<string, number> = {
   "forno-da-vila": 8000,
 };
 
-/** Presets de venda (preço, carrinho e checkout). O preset em orçamento (Arca) tem os próprios testes em arca.test.ts. */
-const sales = presets.filter((p) => !p.config.modules.orcamento?.enabled);
+/**
+ * Presets de venda de produto físico (preço, carrinho, frete e checkout). O preset em orçamento (Arca) tem os próprios testes em arca.test.ts
+ * e a loja de cursos (Faísca, produto digital) em faisca.test.ts.
+ */
+const sales = presets.filter((p) => !p.config.modules.orcamento?.enabled && !p.config.modules.cursos);
 
 describe.each(sales.map((p) => [p.id, p] as const))("preset %s", (id, preset) => {
   it("tem 16–20 produtos em ≥ 3 categorias", () => {

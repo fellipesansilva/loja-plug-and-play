@@ -100,3 +100,14 @@ As fotos da Arca vêm do **Unsplash**, do **Pexels** (licenças que permitem uso
 | `public/images/presets/arca-inflaveis/case-agro.webp` | https://www.pexels.com/photo/12815288/ | lio-voo-262755153 | [Pexels License](https://www.pexels.com/license/) |
 | `public/images/presets/arca-inflaveis/case-icamento.webp` | https://www.pexels.com/photo/5504388/ | mike-van-schoonderwalt-1884800 | [Pexels License](https://www.pexels.com/license/) |
 | `public/images/presets/arca-inflaveis/case-eventos.webp` | https://unsplash.com/photos/bssA-XRpH3s | david Griffiths | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/fotografia-com-o-celular-1.webp` | https://unsplash.com/photos/FWoH2qhLb5I | Josh Power | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/desenho-do-zero-1.webp` | https://unsplash.com/photos/sJsjGWU3IVc | Annie Spratt | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/violao-para-iniciantes-1.webp` | https://unsplash.com/photos/hUHzaiAHuUc | Jacek Dylag | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/logica-de-programacao-1.webp` | https://unsplash.com/photos/41cG8-U74lc | Daniil Komov | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/planilhas-que-trabalham-por-voce-1.webp` | https://unsplash.com/photos/hpjSkU2UYSU | Carlos Muza | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/financas-pessoais-sem-complicacao-1.webp` | https://unsplash.com/photos/joqWSI9u_XM | Towfiqu barbhuiya | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/ingles-para-viagens-1.webp` | https://unsplash.com/photos/_P2FUxxU2qE | Amanda Bartel | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/categoria-criatividade.webp` | https://unsplash.com/photos/VkwRmha1_tI | Tim Arterbury | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/categoria-tecnologia.webp` | https://unsplash.com/photos/SH6hmu0eoas | Daniil Komov | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/categoria-carreira-e-dinheiro.webp` | https://unsplash.com/photos/Ok76F6yW2iA | NORTHFOLK | [Unsplash License](https://unsplash.com/license) |
+| `public/images/presets/faisca/banner.webp` | https://unsplash.com/photos/-2vD8lIhdnw | JESHOOTS.COM | [Unsplash License](https://unsplash.com/license) |

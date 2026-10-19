@@ -25,6 +25,7 @@ import { addConfiguredToList, normalizeQuoteList } from "@/lib/quote-list";
 import { applyQuoteStatus, isValidQuoteTransition } from "@/lib/quote-status";
 import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
+import { accessFor, isCourse, withLessonDone, type Progress } from "@/lib/course-access";
 import { CONFIG_VERSION, applyOverrides, configKeyFor, emptyOverrides, migrateOverrides, type StoreOverrides } from "@/lib/store-config";
 import { safeStorage } from "./safe-storage";
 import { STORAGE_VERSION, storageKeyFor } from "./storage-key";
@@ -42,6 +43,8 @@ type DemoData = {
   /** Modo orçamento: a lista do visitante e as solicitações enviadas (exemplos do preset + feitas na demo, da mais recente à mais antiga). */
   quoteList: QuoteListItem[];
   quotes: QuoteRequest[];
+  /** Área do aluno (módulo `cursos`): aulas concluídas por curso, neste navegador. Vazio nas lojas sem o módulo. */
+  progress: Progress;
   /** Configuração salva no painel (tema, módulos, dados da loja, políticas). Vive na chave própria `loja-config-v1-<preset>`, não no estado de demonstração. */
   overrides: StoreOverrides;
 };
@@ -72,6 +75,8 @@ type DemoActions = {
   /** Inativo some da loja, mas continua no painel. */
   setProductActive: (productId: string, active: boolean) => void;
   setOrderStatus: (orderId: string, status: OrderStatus, now?: Date) => void;
+  /** Marca a aula como concluída. Só vale com o acesso ao curso liberado (pedido pago ou entregue); devolve se marcou. */
+  completeLesson: (productId: string, lessonId: string) => boolean;
   /** Modo orçamento: lista de orçamento do visitante. */
   addToQuote: (productId: string, qty?: number) => void;
   /** Item configurado (pórtico com a marca, reservatório dimensionado). Observação acima de 500 caracteres: recusa e devolve a mensagem. */
@@ -111,6 +116,7 @@ function dataFromPreset(preset: Preset): DemoData {
     checkout: { ...EMPTY_CHECKOUT },
     quoteList: [],
     quotes: structuredClone(preset.quotes ?? []),
+    progress: {},
     overrides: emptyOverrides(),
   };
 }
@@ -182,6 +188,15 @@ export function createDemoStore(preset: Preset) {
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? applyStatus(o, status, now) : o)) }));
         return true;
       },
+      completeLesson: (productId, lessonId) => {
+        const { products, orders, progress } = get();
+        const product = products.find((p) => p.id === productId);
+        if (!product || !isCourse(product) || accessFor(orders, productId)?.status !== "liberado") return false;
+        const next = withLessonDone(progress, product, lessonId);
+        if (next === progress) return false;
+        set({ progress: next });
+        return true;
+      },
       addToQuote: (productId, qty = 1) => set((s) => ({ quoteList: addToList(s.quoteList, productId, qty) })),
       addConfiguredToQuote: (productId, note, qty = 1) => {
         const r = addConfiguredToList(get().quoteList, productId, note, qty);
@@ -238,8 +253,8 @@ export function createDemoStore(preset: Preset) {
       storage: createJSONStorage(() => safeStorage),
       // Hidratação manual (no cliente, após montar) para evitar mismatch com o SSR.
       skipHydration: true,
-      partialize: ({ presetId, config, categories, products, orders, coupons, cart, checkout, quoteList, quotes }) => ({
-        presetId, config, categories, products, orders, coupons, cart, checkout, quoteList, quotes,
+      partialize: ({ presetId, config, categories, products, orders, coupons, cart, checkout, quoteList, quotes, progress }) => ({
+        presetId, config, categories, products, orders, coupons, cart, checkout, quoteList, quotes, progress,
       }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<DemoData> | undefined;
