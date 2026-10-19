@@ -25,7 +25,7 @@ import { addConfiguredToList, normalizeQuoteList } from "@/lib/quote-list";
 import { applyQuoteStatus, isValidQuoteTransition } from "@/lib/quote-status";
 import { evaluateRegret, type RegretResult } from "@/lib/regret";
 import { addLine, removeLine, setLineQty, type AddToCartInput } from "@/lib/cart";
-import { accessFor, isCourse, withLessonDone, type Progress } from "@/lib/courses";
+import { accessFor, isCourse, withLessonDone, type Progress } from "@/lib/course-access";
 import { CONFIG_VERSION, applyOverrides, configKeyFor, emptyOverrides, migrateOverrides, type StoreOverrides } from "@/lib/store-config";
 import { safeStorage } from "./safe-storage";
 import { STORAGE_VERSION, storageKeyFor } from "./storage-key";

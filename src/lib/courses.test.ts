@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Order, OrderStatus, Preset } from "@/domain/types";
 import { getPreset } from "@/presets";
-import { assertValidPreset, validatePreset } from "@/presets/validate";
+import { assertBuildValid } from "@/presets/validate-build";
+import { validatePreset } from "@/presets/validate";
 import { createDemoStore } from "@/store/demo-store";
 import {
   accessFor,
   completedLessons,
-  cursosProblems,
   formatWorkload,
   isCourse,
   lockedReason,
@@ -17,6 +17,7 @@ import {
   withLessonDone,
   type CourseProduct,
 } from "./courses";
+import { cursosProblems } from "./courses-validate";
 
 const faisca = getPreset("faisca")!;
 const courses = faisca.products.filter(isCourse);
@@ -176,42 +177,42 @@ describe("o build recusa preset de cursos inválido", () => {
     const p = com((x) => {
       x.config.cursos!.accessLabel = "";
     });
-    expect(() => assertValidPreset(p)).toThrow(/Preset "faisca" inválido[\s\S]*config\.cursos: informe todos os textos/);
+    expect(() => assertBuildValid(p)).toThrow(/Preset "faisca" inválido[\s\S]*config\.cursos: informe todos os textos/);
   });
 
   it("motivo de bloqueio sem o número do pedido", () => {
     const p = com((x) => {
       x.config.cursos!.lockedAwaiting = "Curso bloqueado.";
     });
-    expect(() => assertValidPreset(p)).toThrow(/precisam conter \{pedido\}/);
+    expect(() => assertBuildValid(p)).toThrow(/precisam conter \{pedido\}/);
   });
 
   it("curso sem aulas, com aula repetida ou duração inválida", () => {
-    expect(() => assertValidPreset(com((x) => (x.products[0].course!.lessons = [])))).toThrow(/informe 2 ou mais aulas/);
-    expect(() => assertValidPreset(com((x) => (x.products[0].course!.lessons[1].id = x.products[0].course!.lessons[0].id)))).toThrow(/ids de aula vazios ou repetidos/);
-    expect(() => assertValidPreset(com((x) => (x.products[0].course!.lessons[0].minutes = 0)))).toThrow(/minutos inteiros e positivos/);
+    expect(() => assertBuildValid(com((x) => (x.products[0].course!.lessons = [])))).toThrow(/informe 2 ou mais aulas/);
+    expect(() => assertBuildValid(com((x) => (x.products[0].course!.lessons[1].id = x.products[0].course!.lessons[0].id)))).toThrow(/ids de aula vazios ou repetidos/);
+    expect(() => assertBuildValid(com((x) => (x.products[0].course!.lessons[0].minutes = 0)))).toThrow(/minutos inteiros e positivos/);
   });
 
   it("instrutor da demonstração sem a marca de fictício", () => {
     const p = com((x) => (x.products[0].course!.instructorNote = "Professora premiada."));
-    expect(() => assertValidPreset(p)).toThrow(/marcado como fictício/);
+    expect(() => assertBuildValid(p)).toThrow(/marcado como fictício/);
   });
 
   it("curso que não é produto digital", () => {
     const p = com((x) => (x.products[0].type = "physical"));
-    expect(() => assertValidPreset(p)).toThrow(/curso é produto digital/);
+    expect(() => assertBuildValid(p)).toThrow(/curso é produto digital/);
   });
 
   it("curso numa loja sem o módulo, ou o módulo junto com o modo orçamento", () => {
     const sem = com((x) => (x.config.modules.cursos = false));
-    expect(() => assertValidPreset(sem)).toThrow(/o módulo cursos está desligado/);
+    expect(() => assertBuildValid(sem)).toThrow(/o módulo cursos está desligado/);
     const orc = com((x) => (x.config.modules.orcamento = { enabled: true }));
-    expect(() => assertValidPreset(orc)).toThrow(/não pode coexistir com o modo orçamento/);
+    expect(() => assertBuildValid(orc)).toThrow(/não pode coexistir com o modo orçamento/);
   });
 
   it("produto digital sem o texto de produto digital (política) derruba o build", () => {
     const p = com((x) => (x.config.policies.digital = ""));
-    expect(() => assertValidPreset(p)).toThrow(/config\.policies\.digital/);
+    expect(() => assertBuildValid(p)).toThrow(/config\.policies\.digital/);
   });
 
   it("as outras lojas não têm o módulo nem curso", () => {

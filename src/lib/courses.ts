@@ -1,12 +1,7 @@
 import type { Course, CursosConfig, Lesson, Order, Product } from "@/domain/types";
+import { accessFor, isCourse, type CourseAccess, type CourseProduct, type Progress } from "./course-access";
 
-/** Produto digital com conteúdo de curso (módulo `cursos`). */
-export type CourseProduct = Product & { course: Course };
-
-export const isCourse = (p: Product): p is CourseProduct => p.type === "digital" && p.course !== undefined;
-
-/** Progresso do aluno neste navegador: id do curso (produto) → ids das aulas concluídas. */
-export type Progress = Record<string, string[]>;
+export { accessFor, isCourse, withLessonDone, type CourseAccess, type CourseProduct, type Progress } from "./course-access";
 
 export const totalMinutes = (course: Course): number => course.lessons.reduce((sum, l) => sum + l.minutes, 0);
 
@@ -16,24 +11,6 @@ export function formatWorkload(minutes: number): string {
   const m = minutes % 60;
   if (h === 0) return `${m} min`;
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
-}
-
-/** Acesso ao curso conforme o pedido: liberado (pago ou entregue), aguardando pagamento ou cancelado (inclui pagamento recusado). */
-export type CourseAccess = { status: "liberado" | "aguardando" | "cancelado"; orderId: string };
-
-const hasItem = (o: Order, productId: string) => o.items.some((i) => i.productId === productId);
-
-/**
- * Acesso do aluno ao curso, pelos pedidos deste navegador (do mais recente ao mais antigo, como o estado guarda). Um pedido pago ou
- * entregue libera; sem nenhum, vale o motivo do pedido mais recente (aguardando pagamento ou cancelado). Sem pedido do curso: null.
- */
-export function accessFor(orders: Order[], productId: string): CourseAccess | null {
-  const mine = orders.filter((o) => hasItem(o, productId));
-  const paid = mine.find((o) => o.status === "pago" || o.status === "entregue");
-  if (paid) return { status: "liberado", orderId: paid.id };
-  const last = mine[0];
-  if (!last) return null;
-  return { status: last.status === "cancelado" ? "cancelado" : "aguardando", orderId: last.id };
 }
 
 /** Cursos que este navegador comprou (qualquer status de pedido), na ordem do pedido mais recente. */
@@ -77,69 +54,4 @@ export function progressPercent(progress: Progress | undefined, product: CourseP
 export function nextLesson(progress: Progress | undefined, product: CourseProduct): Lesson | undefined {
   const done = new Set(completedLessons(progress, product));
   return product.course.lessons.find((l) => !done.has(l.id));
-}
-
-/** Marca a aula como concluída (idempotente). Aula que não existe no curso não muda nada. */
-export function withLessonDone(progress: Progress | undefined, product: CourseProduct, lessonId: string): Progress {
-  const current = progress ?? {};
-  if (!product.course.lessons.some((l) => l.id === lessonId)) return current;
-  const done = current[product.id] ?? [];
-  return done.includes(lessonId) ? current : { ...current, [product.id]: [...done, lessonId] };
-}
-
-const filled = (v: unknown): boolean => typeof v === "string" && v.trim().length > 0;
-
-const CURSOS_TEXTS: (keyof CursosConfig)[] = [
-  "myCoursesLabel",
-  "intro",
-  "empty",
-  "emptyCtaLabel",
-  "accessLabel",
-  "demoLabel",
-  "demoNote",
-  "completeLabel",
-  "completedLabel",
-  "lockedAwaiting",
-  "lockedCanceled",
-  "progressLabel",
-  "syllabusTitle",
-  "instructorLabel",
-  "workloadLabel",
-  "demoBadge",
-];
-
-/**
- * Problemas do módulo `cursos` (usado pelo validatePreset, que derruba o build). Lista vazia = tudo certo.
- * Com o módulo ligado: textos da área do aluno completos, venda ligada (não é modo orçamento) e cada curso com instrutor marcado como
- * fictício e aulas válidas. Sem o módulo: nenhum produto pode trazer `course`.
- */
-export function cursosProblems(preset: { config: { modules: { cursos?: boolean; orcamento?: { enabled: boolean } }; cursos?: CursosConfig }; products: Product[] }): string[] {
-  const out: string[] = [];
-  const need = (ok: boolean, field: string, why: string) => {
-    if (!ok) out.push(`${field}: ${why}`);
-  };
-  const { modules, cursos } = preset.config;
-  const withCourse = preset.products.filter((p) => p.course !== undefined);
-  if (modules.cursos !== true) {
-    need(withCourse.length === 0, "config.modules.cursos", `há produto com curso (${withCourse.map((p) => p.id).join(", ")}) e o módulo cursos está desligado`);
-    return out;
-  }
-  need(modules.orcamento?.enabled !== true, "config.modules.cursos", "o módulo cursos vende pelo carrinho e não pode coexistir com o modo orçamento");
-  need(!!cursos && CURSOS_TEXTS.every((k) => filled(cursos[k])), "config.cursos", "informe todos os textos da área do aluno");
-  need(!!cursos && cursos.lockedAwaiting.includes("{pedido}") && cursos.lockedCanceled.includes("{pedido}"), "config.cursos", "os motivos de bloqueio precisam conter {pedido}");
-  need(withCourse.length > 0, "products", "o módulo cursos precisa de ao menos um curso (produto digital com course)");
-  for (const p of withCourse) {
-    const c = p.course!;
-    need(p.type === "digital", `products.${p.id}.type`, "curso é produto digital");
-    need(filled(c.instructor) && filled(c.instructorNote), `products.${p.id}.course`, "informe o instrutor e a nota sobre ele");
-    need(/fictíci/i.test(c.instructorNote ?? ""), `products.${p.id}.course.instructorNote`, "o instrutor da demonstração precisa estar marcado como fictício");
-    need(c.lessons.length >= 2, `products.${p.id}.course.lessons`, "informe 2 ou mais aulas");
-    const ids = c.lessons.map((l) => l.id);
-    need(new Set(ids).size === ids.length && ids.every(filled), `products.${p.id}.course.lessons`, "ids de aula vazios ou repetidos");
-    for (const l of c.lessons) {
-      need(filled(l.title) && l.text.length > 0 && l.text.every(filled), `products.${p.id}.course.lessons.${l.id}`, "informe título e texto da aula");
-      need(Number.isInteger(l.minutes) && l.minutes > 0, `products.${p.id}.course.lessons.${l.id}.minutes`, "a duração é em minutos inteiros e positivos");
-    }
-  }
-  return out;
 }

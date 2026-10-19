@@ -4,7 +4,7 @@ import { fornoDaVila } from "./forno-da-vila";
 import { arcaInflaveis } from "./arca-inflaveis";
 import { faisca } from "./faisca";
 import { fictitiousPreset } from "./fictitious";
-import { assertValidPreset } from "./validate";
+import { assertBuildValid } from "./validate-build";
 
 /**
  * Registro de presets (só no servidor: o cliente recebe os dados do preset da rota como props do layout e nunca importa este arquivo).
@@ -13,7 +13,7 @@ import { assertValidPreset } from "./validate";
 export const presets: readonly Preset[] = [tramaStudio, fornoDaVila, arcaInflaveis, faisca, ...(process.env.FICTITIOUS_PRESET === "1" ? [fictitiousPreset] : [])];
 
 // Preset sem os dados de conformidade (identificação, arrependimento, privacidade, cookies) derruba o build.
-for (const preset of presets) assertValidPreset(preset);
+for (const preset of presets) assertBuildValid(preset);
 
 export function getPreset(id: string): Preset | undefined {
   return presets.find((p) => p.id === id);

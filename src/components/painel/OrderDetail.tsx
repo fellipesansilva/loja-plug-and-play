@@ -117,7 +117,7 @@ export function OrderDetail({ id }: { id: string }) {
           <Card id="detail-delivery" title="Entrega">
             {delivery.type === "entrega" && <p data-testid="detail-address">{delivery.address}</p>}
             {delivery.type === "retirada" && <p data-testid="detail-address">Retirada na loja: {config.legal.address}</p>}
-            {delivery.type === "digital" && <p data-testid="detail-address">Produto digital: sem entrega física (acesso enviado por e-mail).</p>}
+            {delivery.type === "digital" && <p data-testid="detail-address">Produto digital: sem entrega física ({config.modules.cursos ? "acesso pela área do aluno, em Meus cursos" : "acesso enviado por e-mail"}).</p>}
           </Card>
 
           <Card id="detail-payment" title="Pagamento">

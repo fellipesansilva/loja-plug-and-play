@@ -2,6 +2,7 @@
 
 import { StoreLink as Link } from "@/components/store/StoreLink";
 import { usePresetRouter } from "@/components/store/StoreLink";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/domain/types";
 import { unitPrice } from "@/lib/cart";
@@ -18,13 +19,15 @@ import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { ChevronLeftIcon, HeartIcon, MinusIcon, PlusIcon } from "./Icons";
 import { InstallmentLine } from "./InstallmentLine";
-import { CourseSyllabus } from "./CourseSyllabus";
 import { PageTitle } from "./PageTitle";
 import { PixLine } from "./PixLine";
 import { ProductGallery } from "./ProductGallery";
 import { ShippingCalculator } from "./ShippingCalculator";
 import { useCartWords } from "./useCartWords";
 import { VariantSelectors } from "./VariantSelectors";
+
+// Ementa do curso (módulo cursos): fora do JavaScript das lojas sem curso; só é baixada na página de um produto com `course`.
+const CourseSyllabus = dynamic(() => import("./CourseSyllabus").then((m) => m.CourseSyllabus));
 
 const LOW_STOCK = 3;
 const TOAST_MS = 6000;
@@ -406,7 +409,7 @@ function ProductDetails({ product }: { product: Product }) {
             </section>
           )}
 
-          <CourseSyllabus product={product} />
+          {product.course && <CourseSyllabus product={product} />}
 
           {regretLine}
         </div>
