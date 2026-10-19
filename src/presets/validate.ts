@@ -1,5 +1,5 @@
 import { extraModuleProblems } from "@/lib/extras";
-import { contrastIssues, parseHex } from "@/theme/contrast";
+import { contrastIssues, demoButtonIssues, parseHex } from "@/theme/contrast";
 import { MIN_DEFECT_DAYS, MIN_REGRET_DAYS, type Modules, type Preset } from "@/domain/types";
 
 const filled = (v: unknown): boolean => typeof v === "string" && v.trim().length > 0;
@@ -197,6 +197,14 @@ export function validatePreset(preset: Preset): string[] {
     need(tc.contrastPairs.length > 0, "config.themeChoices.contrastPairs", "informe os pares de texto e fundo para o contraste");
     for (const i of contrastIssues(colors, tc.contrastPairs)) {
       need(false, `config.themeChoices.contrastPairs.${i.fg}/${i.bg}`, `o tema do preset tem contraste ${i.ratio.toFixed(2)}:1, abaixo de ${i.min}:1`);
+    }
+  }
+
+  // Botão Demo (todas as lojas): o texto escolhido sobre `secondary` precisa de 4,5:1 no tema do preset e em cada cor de destaque aprovada para o painel.
+  const demoColors = [{ id: "tema", value: cfg.theme.colors.secondary }, ...(tc?.accent ?? [])];
+  for (const a of demoColors) {
+    for (const i of demoButtonIssues({ ...cfg.theme.colors, secondary: a.value })) {
+      need(false, `config.themeChoices.accent.${a.id}`, `o botão Demo tem contraste ${i.ratio.toFixed(2)}:1 (${i.fg} sobre o destaque ${a.value}), abaixo de ${i.min}:1`);
     }
   }
 
