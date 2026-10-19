@@ -43,8 +43,8 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/(busca|carrinho|condicoes-comerciais|categoria|checkout|orcamento|pedido|privacidade|necessidade|produto|setor|sobre|trocas-e-devolucoes|painel)",
-    "/(busca|carrinho|condicoes-comerciais|categoria|checkout|orcamento|pedido|privacidade|necessidade|produto|setor|sobre|trocas-e-devolucoes|painel)/:path*",
+    "/(busca|carrinho|condicoes-comerciais|categoria|checkout|meus-cursos|orcamento|pedido|privacidade|necessidade|produto|setor|sobre|trocas-e-devolucoes|painel)",
+    "/(busca|carrinho|condicoes-comerciais|categoria|checkout|meus-cursos|orcamento|pedido|privacidade|necessidade|produto|setor|sobre|trocas-e-devolucoes|painel)/:path*",
     { source: "/((?!_next/|api/|placeholder|favicon.ico|.*\\..*).*)", has: [{ type: "query", key: "preset" }] },
   ],
 };

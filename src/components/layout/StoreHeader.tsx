@@ -75,7 +75,10 @@ export function StoreHeader() {
   const name = useDemoStore((s) => s.config.name);
   const wordmark = useDemoStore((s) => s.config.wordmark);
   const quote = useDemoStore((s) => s.config.modules.orcamento?.enabled === true);
-  const links = quote ? quoteLinks : saleLinks;
+  const myCourses = useDemoStore((s) => (s.config.modules.cursos ? s.config.cursos?.myCoursesLabel : undefined));
+  const baseLinks = quote ? quoteLinks : saleLinks;
+  // Loja com área do aluno (módulo cursos): "Meus cursos" entra no menu.
+  const links = myCourses ? [{ href: "/meus-cursos", label: myCourses }, ...baseLinks] : baseLinks;
   const cartLabel = useDemoStore((s) => (s.config.modules.orcamento?.enabled ? (s.config.quote?.listLabel ?? "Lista de orçamento") : (s.config.cartLabel ?? "Carrinho")));
   const searchLayout = useDemoStore((s) => s.config.layout.search);
   const categories = useDemoStore((s) => s.categories);

@@ -2,6 +2,7 @@ import type { Preset } from "@/domain/types";
 import { tramaStudio } from "./trama-studio";
 import { fornoDaVila } from "./forno-da-vila";
 import { arcaInflaveis } from "./arca-inflaveis";
+import { faisca } from "./faisca";
 import { fictitiousPreset } from "./fictitious";
 import { assertValidPreset } from "./validate";
 
@@ -9,7 +10,7 @@ import { assertValidPreset } from "./validate";
  * Registro de presets (só no servidor: o cliente recebe os dados do preset da rota como props do layout e nunca importa este arquivo).
  * Para adicionar um novo, crie a pasta e registre aqui. O preset fictício só entra com FICTITIOUS_PRESET=1 (teste de guarda do bundle).
  */
-export const presets: readonly Preset[] = [tramaStudio, fornoDaVila, arcaInflaveis, ...(process.env.FICTITIOUS_PRESET === "1" ? [fictitiousPreset] : [])];
+export const presets: readonly Preset[] = [tramaStudio, fornoDaVila, arcaInflaveis, faisca, ...(process.env.FICTITIOUS_PRESET === "1" ? [fictitiousPreset] : [])];
 
 // Preset sem os dados de conformidade (identificação, arrependimento, privacidade, cookies) derruba o build.
 for (const preset of presets) assertValidPreset(preset);

@@ -3,6 +3,7 @@
 import { StoreLink as Link } from "@/components/store/StoreLink";
 import { useEffect, useState } from "react";
 import type { Order } from "@/domain/types";
+import { isCourse } from "@/lib/courses";
 import { formatBRL } from "@/lib/money";
 import { statusLabel } from "@/lib/order-status";
 import { PAYMENT_METHOD_LABEL, PIX_EXPIRES_MINUTES } from "@/lib/payment";
@@ -43,6 +44,41 @@ function PixCountdown({ createdAt }: { createdAt: string }) {
     <p className="text-sm">
       O código expira em <strong data-testid="pix-countdown">{mm}:{ss}</strong>
     </p>
+  );
+}
+
+/** Cursos do pedido (módulo cursos): com o pagamento aprovado, o botão "Acessar curso"; sem ele, o aviso de que o curso segue bloqueado. */
+function CourseAccess({ order }: { order: Order }) {
+  const texts = useDemoStore((s) => s.config.cursos);
+  const products = useDemoStore((s) => s.products);
+  if (!texts) return null;
+  const courses = order.items.flatMap((i) => products.find((p) => p.id === i.productId && isCourse(p)) ?? []);
+  if (courses.length === 0) return null;
+  const approved = order.status === "pago" || order.status === "entregue";
+  if (!approved) {
+    return (
+      <p role="status" className="rounded-lg border border-warning bg-surface p-md text-sm font-medium" data-testid="order-course-locked">
+        {order.status === "cancelado" ? texts.lockedCanceled : texts.lockedAwaiting}
+      </p>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-success bg-surface p-md" data-testid="order-course-access">
+      <ul className="flex flex-col gap-sm">
+        {courses.map((c) => (
+          <li key={c.id} className="flex flex-wrap items-center justify-between gap-sm">
+            <span className="font-medium">{c.name}</span>
+            <Link
+              href={`/meus-cursos/${c.slug}`}
+              className="inline-flex min-h-11 items-center rounded-button bg-primary px-lg font-bold text-background"
+              data-testid="course-access"
+            >
+              {texts.accessLabel}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -108,6 +144,8 @@ export function OrderView({ id }: { id: string }) {
   const hydrated = useHydrated();
   const order = useDemoStore((s) => s.orders.find((o) => o.id === id));
   const config = useDemoStore((s) => s.config);
+  // Loja com área do aluno: o acesso vem pelo botão "Acessar curso" (não há envio de e-mail na demonstração).
+  const cursosOn = config.modules.cursos === true;
 
   if (!order) {
     return (
@@ -143,8 +181,9 @@ export function OrderView({ id }: { id: string }) {
 
       <div className="mt-md flex flex-col gap-md">
         <PaymentPanel order={order} />
+        <CourseAccess order={order} />
 
-        {order.delivery.type === "digital" && (
+        {order.delivery.type === "digital" && !cursosOn && (
           <p className="rounded-lg border border-border bg-surface p-md" data-testid="digital-access">
             O acesso será enviado para <strong>{order.customer.email}</strong>.
           </p>

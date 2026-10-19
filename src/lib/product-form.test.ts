@@ -51,7 +51,7 @@ describe("arquivo de imagem", () => {
   });
 });
 
-describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled).map((p) => [p.id, p] as const))("formulário de produto · %s", (_id, preset) => {
+describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled && !p.config.modules.cursos).map((p) => [p.id, p] as const))("formulário de produto · %s", (_id, preset) => {
   const ctx = (over: Partial<FormContext> = {}): FormContext => ({ products: preset.products, categories: preset.categories, defs: preset.config.attributeDefs, ...over });
   const { axes, descriptive } = splitDefs(preset.config.attributeDefs);
   const valid = (): ProductFormValues => ({

@@ -18,6 +18,7 @@ import { useDemoStore } from "@/store/demo-store";
 import { useHydrated } from "@/store/use-hydrated";
 import { ChevronLeftIcon, HeartIcon, MinusIcon, PlusIcon } from "./Icons";
 import { InstallmentLine } from "./InstallmentLine";
+import { CourseSyllabus } from "./CourseSyllabus";
 import { PageTitle } from "./PageTitle";
 import { PixLine } from "./PixLine";
 import { ProductGallery } from "./ProductGallery";
@@ -404,6 +405,8 @@ function ProductDetails({ product }: { product: Product }) {
               </dl>
             </section>
           )}
+
+          <CourseSyllabus product={product} />
 
           {regretLine}
         </div>

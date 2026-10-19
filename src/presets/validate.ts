@@ -1,3 +1,4 @@
+import { cursosProblems } from "@/lib/courses";
 import { extraModuleProblems } from "@/lib/extras";
 import { contrastIssues, parseHex } from "@/theme/contrast";
 import { MIN_DEFECT_DAYS, MIN_REGRET_DAYS, type Modules, type Preset } from "@/domain/types";
@@ -181,6 +182,9 @@ export function validatePreset(preset: Preset): string[] {
 
   // Módulos do diferencial (bot, WhatsApp, depoimentos, newsletter): dependências, textos e depoimento real com autorização.
   for (const p of extraModuleProblems(cfg)) problems.push(p);
+
+  // Módulo cursos (área do aluno): textos, cursos com instrutor marcado como fictício e aulas válidas.
+  for (const p of cursosProblems(preset)) problems.push(p);
 
   // Tema do painel: só opções aprovadas (cor principal, destaque e fontes); o tema atual tem que estar entre elas e passar no contraste.
   const tc = cfg.themeChoices;

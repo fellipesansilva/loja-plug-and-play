@@ -65,5 +65,24 @@
       "--font-barlow-condensed": "Barlow Condensed",
       "--font-barlow": "Barlow"
     }
+  },
+  "faisca": {
+    "afterLcp": true,
+    "faces": [
+      {
+        "family": "Sora",
+        "file": "sora-latin.woff2",
+        "weight": "600 800"
+      },
+      {
+        "family": "Manrope",
+        "file": "manrope-latin.woff2",
+        "weight": "400 700"
+      }
+    ],
+    "vars": {
+      "--font-sora": "Sora",
+      "--font-manrope": "Manrope"
+    }
   }
 }
