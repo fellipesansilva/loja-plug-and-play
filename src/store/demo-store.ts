@@ -10,6 +10,7 @@ import type {
   Coupon,
   Order,
   OrderStatus,
+  Preset,
   Product,
   QuoteContact,
   QuoteListItem,
@@ -18,7 +19,6 @@ import type {
   StoreConfig,
   ThemeTokens,
 } from "@/domain/types";
-import { getPreset } from "@/presets";
 import { applyStatus, isValidTransition, withHistory } from "@/lib/order-status";
 import { addToList, clampNote, clampQty, makeProtocol } from "@/lib/quote";
 import { addConfiguredToList, normalizeQuoteList } from "@/lib/quote-list";
@@ -95,9 +95,7 @@ export const EMPTY_CHECKOUT: CheckoutDraft = { couponCode: null, cep: "", shippi
 export type DemoState = DemoData & DemoActions;
 
 /** Cópia profunda do preset: o estado nunca compartilha referência com os dados-fonte. */
-function dataFromPreset(id: string): DemoData {
-  const preset = getPreset(id);
-  if (!preset) throw new Error(`Preset desconhecido: ${id}`);
+function dataFromPreset(preset: Preset): DemoData {
   const clone = structuredClone({
     config: preset.config,
     categories: preset.categories,
@@ -121,16 +119,14 @@ function dataFromPreset(id: string): DemoData {
  * Um store por preset: cada loja (/trama, /forno…) tem o seu, com os dados do preset e o estado salvo na chave dela.
  * O preset chega aos componentes por um único ponto, o PresetProvider do layout da rota.
  */
-export function createDemoStore(presetId: string) {
-  const preset = getPreset(presetId);
-  if (!preset) throw new Error(`Preset desconhecido: ${presetId}`);
+export function createDemoStore(preset: Preset) {
   return createStore<DemoState>()(
   persist(
     (set, get) => ({
-      ...dataFromPreset(preset.id),
+      ...dataFromPreset(preset),
       reset: () => {
         safeStorage.removeItem(configKeyFor(preset.shortId));
-        set(dataFromPreset(preset.id));
+        set(dataFromPreset(preset));
       },
       saveOverrides: (next) => {
         safeStorage.setItem(configKeyFor(preset.shortId), JSON.stringify(next));
@@ -238,7 +234,7 @@ export function createDemoStore(presetId: string) {
       // v5 → v6 (histórico de status, produto ativo/inativo, rótulo de retirada): pedidos, catálogo, carrinho e cupons são
       // mantidos; a config volta a ser a do preset (que ganhou campos), preservando o nome e o tema editados.
       // Qualquer outro formato antigo é descartado (cai no preset padrão) em vez de quebrar a vitrine.
-      migrate: (persisted, version) => migrateState(persisted, version, preset.id) as DemoState,
+      migrate: (persisted, version) => migrateState(persisted, version, preset) as DemoState,
       storage: createJSONStorage(() => safeStorage),
       // Hidratação manual (no cliente, após montar) para evitar mismatch com o SSR.
       skipHydration: true,
@@ -261,11 +257,11 @@ export type DemoStore = ReturnType<typeof createDemoStore>;
 const stores = new Map<string, DemoStore>();
 
 /** Store do preset (criado uma vez por preset e reaproveitado; no servidor serve só para renderizar a página estática). */
-export function getDemoStore(presetId: string): DemoStore {
-  let store = stores.get(presetId);
+export function getDemoStore(preset: Preset): DemoStore {
+  let store = stores.get(preset.id);
   if (!store) {
-    store = createDemoStore(presetId);
-    stores.set(presetId, store);
+    store = createDemoStore(preset);
+    stores.set(preset.id, store);
   }
   return store;
 }
@@ -289,10 +285,9 @@ export function useDemoStore<T>(selector: (state: DemoState) => T): T {
  * v5/v6 → v7: histórico dos pedidos, lista e solicitações de orçamento. v7 → v8: blocos de segmento e produtos novos da loja em orçamento.
  * v8 → v9: ferramentas do orçamento (config.orcamentoBlocks) e itens da lista com `id` e `configurado` (id = productId, configurado = false).
  */
-export function migrateState(persisted: unknown, version: number, presetId: string): Partial<DemoData> {
+export function migrateState(persisted: unknown, version: number, current: Preset): Partial<DemoData> {
   const saved = persisted as Partial<DemoData> | undefined;
-  if (!saved || saved.presetId !== presetId || !saved.config) return {};
-  const current = getPreset(presetId)!;
+  if (!saved || saved.presetId !== current.id || !saved.config) return {};
   const quoteStore = current.config.modules.orcamento?.enabled === true;
   const refreshedConfig = () => ({ ...structuredClone(current.config), name: saved.config!.name, theme: saved.config!.theme });
   let state: Partial<DemoData>;

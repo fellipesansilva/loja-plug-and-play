@@ -4,16 +4,15 @@ import { useState } from "react";
 import type { Modules } from "@/domain/types";
 import { PageTitle } from "@/components/store/PageTitle";
 import { MODULE_DEPENDS_ON, MODULE_INFO, MODULE_KEYS, dependentsOf, isModuleOn, moduleLabel, toggleModule, type ModuleKey } from "@/lib/modules";
-import { getPreset } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
+import { usePreset } from "@/store/PresetProvider";
 
 /** Configurações › Módulos: liga e desliga cada módulo do preset. As regras de dependência e de exclusão vêm de src/lib/modules.ts. */
 export function ModulesSettings() {
-  const presetId = useDemoStore((s) => s.presetId);
   const config = useDemoStore((s) => s.config);
   const overrides = useDemoStore((s) => s.overrides);
   const saveOverrides = useDemoStore((s) => s.saveOverrides);
-  const preset = getPreset(presetId)!;
+  const { preset } = usePreset();
   const [draft, setDraft] = useState<Modules | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
   const [error, setError] = useState<{ key: ModuleKey; text: string } | null>(null);

@@ -114,7 +114,7 @@ describe("store em orçamento", () => {
   const other = arca.products[1];
 
   it("monta a lista, edita quantidade e observação, remove", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     s.getState().addToQuote(product.id);
     s.getState().addToQuote(other.id, 2);
     s.getState().addToQuote(product.id, 2);
@@ -129,7 +129,7 @@ describe("store em orçamento", () => {
   });
 
   it("enviar grava a solicitação com itens e contato, esvazia a lista e devolve o protocolo", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     const before = s.getState().quotes.length;
     s.getState().addToQuote(product.id, 2);
     s.getState().setQuoteNote(product.id, "Medidas 3 x 2 m");
@@ -148,7 +148,7 @@ describe("store em orçamento", () => {
   });
 
   it("changeQuoteStatus percorre nova → ganho, marca perdido com histórico e recusa transição inválida", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     s.getState().addToQuote(product.id);
     const a = s.getState().submitQuote(toContact(VALID), new Date("2026-10-16T12:00:00Z"))!;
     s.getState().addToQuote(product.id);
@@ -164,7 +164,7 @@ describe("store em orçamento", () => {
   });
 
   it("reset volta as solicitações de exemplo e esvazia a lista", () => {
-    const s = createDemoStore(arca.id);
+    const s = createDemoStore(arca);
     s.getState().addToQuote(product.id);
     s.getState().submitQuote(toContact(VALID));
     s.getState().addToQuote(other.id);
@@ -175,7 +175,7 @@ describe("store em orçamento", () => {
 
   it("Trama e Forno nascem sem solicitações nem lista", () => {
     for (const id of ["trama-studio", "forno-da-vila"]) {
-      const st = createDemoStore(id).getState();
+      const st = createDemoStore(presets.find((p) => p.id === id)!).getState();
       expect(st.quotes).toEqual([]);
       expect(st.quoteList).toEqual([]);
     }

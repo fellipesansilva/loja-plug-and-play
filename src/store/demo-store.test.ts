@@ -6,7 +6,7 @@ const [trama, forno] = presets;
 let store: ReturnType<typeof createDemoStore>;
 
 beforeEach(() => {
-  store = createDemoStore(trama.id);
+  store = createDemoStore(trama);
   store.getState().reset();
 });
 
@@ -25,7 +25,7 @@ describe("demo-store (um store por preset)", () => {
   });
 
   it("o store do Forno não carrega nada da Trama", () => {
-    const s = createDemoStore(forno.id).getState();
+    const s = createDemoStore(forno).getState();
     expect(s.presetId).toBe(forno.id);
     expect(s.config.name).toBe(forno.config.name);
     expect(s.products.map((p) => p.id)).toEqual(forno.products.map((p) => p.id));

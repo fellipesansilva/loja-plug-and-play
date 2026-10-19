@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import type { Preset } from "@/domain/types";
 import { shouldExposeStore } from "@/lib/expose-store";
-import { getPreset } from "@/presets";
 import { StoreContext, getDemoStore, type DemoStore } from "./demo-store";
 
 declare global {
@@ -17,10 +17,11 @@ const EXPOSE_STORE = shouldExposeStore({
   NEXT_PUBLIC_EXPOSE_STORE: process.env.NEXT_PUBLIC_EXPOSE_STORE,
 });
 
-type PresetInfo = { id: string; slug: string };
+/** `preset` é o preset base desta loja (os dados originais, entregues pelo servidor); o estado editável fica no store. */
+type PresetInfo = { id: string; slug: string; preset: Preset };
 const PresetContext = createContext<PresetInfo | null>(null);
 
-/** Preset da rota atual: id e segmento da URL. É a única fonte do preset para os componentes. */
+/** Preset da rota atual: id, segmento da URL e os dados base. É a única fonte do preset para os componentes. */
 export function usePreset(): PresetInfo {
   const preset = useContext(PresetContext);
   if (!preset) throw new Error("usePreset precisa estar dentro do PresetProvider (layout /[preset]).");
@@ -28,14 +29,13 @@ export function usePreset(): PresetInfo {
 }
 
 /**
- * Único ponto por onde o preset chega aos componentes: o layout da rota /[preset] passa o id do segmento e este
- * provider entrega o store e o contexto do preset. Cada preset tem o seu store e o seu localStorage.
+ * Único ponto por onde o preset chega aos componentes: o layout da rota /[preset] (servidor) lê o preset e passa os dados dele como
+ * props (vão no HTML, não no JavaScript); este provider entrega o store e o contexto do preset. O cliente nunca importa o registro com
+ * todos os presets: cada loja recebe só os dados do próprio preset. Cada preset tem o seu store e o seu localStorage.
  */
-export function PresetProvider({ presetId, children }: { presetId: string; children: ReactNode }) {
-  const preset = getPreset(presetId);
-  if (!preset) throw new Error(`Preset desconhecido: ${presetId}`);
-  const store = getDemoStore(preset.id);
-  const info = useMemo(() => ({ id: preset.id, slug: preset.shortId }), [preset.id, preset.shortId]);
+export function PresetProvider({ preset, children }: { preset: Preset; children: ReactNode }) {
+  const store = getDemoStore(preset);
+  const info = useMemo(() => ({ id: preset.id, slug: preset.shortId, preset }), [preset]);
 
   useEffect(() => {
     if (EXPOSE_STORE) window.__demoStore = store;

@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { StoreLink } from "@/components/store/StoreLink";
 import { stripPresetPrefix } from "@/lib/preset-href";
-import { presets } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
 import { usePreset } from "@/store/PresetProvider";
 
-export function DemoControls() {
+/** Lojas da demonstração para a troca de loja: só id, apelido da URL e nome (o resto dos dados fica no servidor). */
+export type PresetLink = { id: string; shortId: string; name: string };
+
+export function DemoControls({ presets }: { presets: PresetLink[] }) {
   const [open, setOpen] = useState(false);
   const { id: currentId, slug } = usePreset();
   const path = stripPresetPrefix(slug, usePathname());
@@ -40,14 +42,14 @@ export function DemoControls() {
               p.id === currentId ? (
                 <li key={p.id}>
                   <span aria-current="true" className={`${presetRow} block border-primary bg-primary text-background`}>
-                    {p.config.name}
+                    {p.name}
                   </span>
                 </li>
               ) : (
                 // Cada preset é uma loja em /<preset>: a troca é um link interno para a home da outra loja.
                 <li key={p.id}>
                   <Link href={`/${p.shortId}`} className={`${presetRow} block border-border text-text`}>
-                    {p.config.name}
+                    {p.name}
                   </Link>
                 </li>
               ),

@@ -18,7 +18,6 @@ import {
   type FormErrors,
   type ProductFormValues,
 } from "@/lib/product-form";
-import { getPreset } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
 import { usePreset } from "@/store/PresetProvider";
 import { safeStorage } from "@/store/safe-storage";
@@ -81,7 +80,7 @@ export function ProductEditor({ productId }: { productId?: string }) {
 
 function ProductForm({ initial, editingId }: { initial: ProductFormValues; editingId?: string }) {
   const router = usePresetRouter();
-  const { id: presetId } = usePreset();
+  const { preset } = usePreset();
   const products = useDemoStore((s) => s.products);
   const categories = useDemoStore((s) => s.categories);
   const defs = useDemoStore((s) => s.config.attributeDefs);
@@ -162,7 +161,7 @@ function ProductForm({ initial, editingId }: { initial: ProductFormValues; editi
     }
   }
 
-  const pool = presetImagePool(getPreset(presetId)!);
+  const pool = presetImagePool(preset);
   const togglePool = (image: ImageData) => {
     const on = form.images.some((i) => i.src === image.src);
     set("images", on ? form.images.filter((i) => i.src !== image.src) : [...form.images, { ...image }]);

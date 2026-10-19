@@ -9,8 +9,8 @@ import { validateConfig } from "@/lib/modules";
 import { formatBRL } from "@/lib/money";
 import { formatPriceInput, parsePriceBR } from "@/lib/price-input";
 import { RULE_LIMITS, applyOverrides, type StoreOverrides } from "@/lib/store-config";
-import { getPreset } from "@/presets";
 import { useDemoStore } from "@/store/demo-store";
+import { usePreset } from "@/store/PresetProvider";
 
 type Form = { name: string; legalName: string; document: string; address: string; email: string; phone: string; defectDays: string; pix: string; freeMin: string };
 type FieldKey = keyof Form;
@@ -46,11 +46,10 @@ function formFrom(config: StoreConfig, ov: StoreOverrides): Form {
 
 /** Configurações › Loja: identificação, prazo de troca (CDC, art. 26) e as regras de venda editáveis (Pix e frete grátis). */
 export function StoreSettings() {
-  const presetId = useDemoStore((s) => s.presetId);
   const config = useDemoStore((s) => s.config);
   const overrides = useDemoStore((s) => s.overrides);
   const saveOverrides = useDemoStore((s) => s.saveOverrides);
-  const preset = getPreset(presetId)!;
+  const { preset } = usePreset();
   const base = preset.config;
   const saved = formFrom(config, overrides);
   const [draft, setDraft] = useState<Form | null>(null);

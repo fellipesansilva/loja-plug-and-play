@@ -71,7 +71,7 @@ describe("histórico e rótulos", () => {
 
 describe("store: mudança de status", () => {
   it("changeOrderStatus só aceita transição válida e registra no histórico", () => {
-    const store = createDemoStore(trama.id);
+    const store = createDemoStore(trama);
     store.getState().placeOrder({ ...order("pago", physical), id: "XX-1" });
     const at = new Date("2026-10-15T12:00:00Z");
     expect(store.getState().changeOrderStatus("XX-1", "enviado", at)).toBe(false);
@@ -86,7 +86,7 @@ describe("store: mudança de status", () => {
 
   it("todos os pedidos do preset nascem com histórico", () => {
     for (const p of presets) {
-      const s = createDemoStore(p.id).getState();
+      const s = createDemoStore(p).getState();
       expect(s.orders.every((o) => (o.history?.length ?? 0) >= 1)).toBe(true);
     }
   });
@@ -108,7 +108,7 @@ describe("migração do estado salvo (v5 → v6)", () => {
       cart: [{ lineId: "x", productId: "fv-001", qty: 1, addonIds: [] }],
       checkout: { couponCode: null, cep: "01310100", shippingId: "economico" },
     };
-    const m = migrateState(v5, 5, forno.id);
+    const m = migrateState(v5, 5, forno);
     expect(m.orders!.map((o) => o.id)).toEqual(["FV-9999"]);
     expect(m.orders![0].history).toEqual([{ status: forno.orders[0].status, at: forno.orders[0].createdAt }]);
     expect(m.cart).toEqual(v5.cart);
@@ -128,18 +128,18 @@ describe("migração do estado salvo (v5 → v6)", () => {
       quoteList: [{ productId: "arc-004", qty: 2, note: "" }],
       quotes: [],
     };
-    const m = migrateState(old, 7, arca.id);
+    const m = migrateState(old, 7, arca);
     expect(m.config!.name).toBe("Minha Arca");
     expect(m.config!.sectors).toHaveLength(6);
     expect(m.products).toHaveLength(arca.products.length);
     expect(m.quoteList).toEqual([{ id: "arc-004", productId: "arc-004", qty: 2, note: "", configurado: false }]);
     const sales = { presetId: forno.id, config: forno.config, products: forno.products.slice(0, 2) };
-    expect(migrateState(sales, 7, forno.id)).toEqual({ ...sales, quoteList: [] });
+    expect(migrateState(sales, 7, forno)).toEqual({ ...sales, quoteList: [] });
   });
 
   it("formato que não dá para aproveitar (outra versão, outro preset, vazio) é descartado", () => {
-    expect(migrateState({ presetId: trama.id, config: trama.config }, 4, trama.id)).toEqual({});
-    expect(migrateState({ presetId: forno.id, config: forno.config }, 5, trama.id)).toEqual({});
-    expect(migrateState(undefined, 5, trama.id)).toEqual({});
+    expect(migrateState({ presetId: trama.id, config: trama.config }, 4, trama)).toEqual({});
+    expect(migrateState({ presetId: forno.id, config: forno.config }, 5, trama)).toEqual({});
+    expect(migrateState(undefined, 5, trama)).toEqual({});
   });
 });
