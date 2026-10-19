@@ -2,12 +2,14 @@ import { type Page } from "@playwright/test";
 import { test, expect, ORIGIN, TRAMA } from "./helpers";
 
 // A troca da fonte reserva pela fonte da loja não pode deslocar o layout. Para forçar a troca DEPOIS da primeira pintura, o teste atrasa
-// os arquivos de fonte; as três lojas rodam uma vez só, pelo projeto "trama" (endereços completos).
+// os arquivos de fonte; as lojas rodam uma vez só, pelo projeto "trama" (endereços completos).
 const FONT_DELAY_MS = 1200;
 const PAGES = [
   ["home da Trama", "trama", "/trama"],
   ["home do Forno", "forno", "/forno"],
   ["home da Arca", "arca", "/arca"],
+  ["home da Faísca", "faisca", "/faisca"],
+  ["home da Órbita", "orbita", "/orbita"],
   ["lista de produtos do Forno", "forno", "/forno/categoria/pizzas"],
 ] as const;
 

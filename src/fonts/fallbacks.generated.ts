@@ -179,9 +179,24 @@ export const fallbackFaces: Record<string, FallbackFace[]> = {
         "Liberation Sans Bold",
         "Helvetica Bold"
       ],
-      "sizeAdjust": 106.08,
-      "ascent": 91.44,
+      "sizeAdjust": 106.09,
+      "ascent": 91.43,
       "descent": 27.34,
+      "lineGap": 0,
+      "fallback": "Arial Bold"
+    },
+    {
+      "family": "Sora",
+      "weight": 700,
+      "local": [
+        "Arial Bold",
+        "Arial-BoldMT",
+        "Liberation Sans Bold",
+        "Helvetica Bold"
+      ],
+      "sizeAdjust": 106.69,
+      "ascent": 90.92,
+      "descent": 27.18,
       "lineGap": 0,
       "fallback": "Arial Bold"
     },
@@ -194,8 +209,8 @@ export const fallbackFaces: Record<string, FallbackFace[]> = {
         "Liberation Sans Bold",
         "Helvetica Bold"
       ],
-      "sizeAdjust": 107.27,
-      "ascent": 90.42,
+      "sizeAdjust": 107.28,
+      "ascent": 90.41,
       "descent": 27.03,
       "lineGap": 0,
       "fallback": "Arial Bold"
@@ -208,9 +223,9 @@ export const fallbackFaces: Record<string, FallbackFace[]> = {
         "Liberation Sans",
         "Helvetica"
       ],
-      "sizeAdjust": 102.14,
-      "ascent": 104.36,
-      "descent": 29.37,
+      "sizeAdjust": 102.16,
+      "ascent": 104.34,
+      "descent": 29.36,
       "lineGap": 0,
       "fallback": "Arial"
     },
@@ -223,8 +238,8 @@ export const fallbackFaces: Record<string, FallbackFace[]> = {
         "Liberation Sans Bold",
         "Helvetica Bold"
       ],
-      "sizeAdjust": 100.39,
-      "ascent": 106.18,
+      "sizeAdjust": 100.41,
+      "ascent": 106.16,
       "descent": 29.88,
       "lineGap": 0,
       "fallback": "Arial Bold"

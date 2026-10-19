@@ -72,6 +72,8 @@ for (const [slug, preset] of Object.entries(fontsBySlug)) {
   for (const face of preset.faces) {
     const font = await open(path.join("public/fonts", slug, face.file));
     const points = [...new Set(face.weight.split(" ").map(Number))];
+    // Peso 700 (o dos títulos e do negrito) dentro de uma faixa variável (ex.: "600 800"): a reserva também precisa dele, ou o título cai no 600/800 mais próximo e a troca da fonte desloca o texto.
+    if (points.length === 2 && points[0] < 700 && points[1] > 700) points.splice(1, 0, 700);
     for (const weight of points) {
       const kind = SERIF_FAMILIES.has(face.family) ? "serif" : "sans";
       const fb = FALLBACKS[kind];
