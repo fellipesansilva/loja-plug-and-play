@@ -22,12 +22,12 @@ import {
 /** Todo contato desta prévia abre o Instagram da Better em outra aba. */
 const external = { href: CONTACT_URL, target: "_blank", rel: "noopener" } as const;
 
-/** Logo de 44 px: WebP de 96 px, com o PNG de reserva. */
-function Logo({ alt }: { alt: string }) {
+/** Logo de 44 px: WebP de 96 px, com o PNG de reserva. Decorativo (alt vazio): o nome "Better Studio" já está no texto ao lado, no cabeçalho e no rodapé. */
+function Logo() {
   return (
     <picture>
       <source srcSet="/images/better/logo-96.webp" type="image/webp" />
-      <img className="better-logo" src="/images/better/logo.png" alt={alt} width={44} height={44} decoding="async" />
+      <img className="better-logo" src="/images/better/logo.png" alt="" width={44} height={44} decoding="async" />
     </picture>
   );
 }
@@ -40,7 +40,7 @@ export default function BetterPage() {
       <header className="better-header">
         <div className="better-wrap">
           <a href="#" className="better-brand">
-            <Logo alt={BRAND} />
+            <Logo />
             <span className="better-brand-name">{BRAND}</span>
           </a>
           <nav className="better-nav" aria-label="Principal">
@@ -247,7 +247,7 @@ export default function BetterPage() {
       <footer className="better-footer">
         <div className="better-wrap">
           <span className="better-footer-brand">
-            <Logo alt="" />
+            <Logo />
             <span>
               <span className="better-footer-name">{BRAND}</span> · {FOOTER.cnpj}
             </span>

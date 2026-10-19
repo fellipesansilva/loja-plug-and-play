@@ -19,7 +19,10 @@ test.describe("H1 · a landing", () => {
     await expect(page).toHaveTitle("Better Studio · Lojas virtuais");
     await expect(page.getByText("Prévia para validação interna · preços, prazos e condições em definição · não publicar")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sua loja virtual em até 7 dias úteis. Sem comissão sobre as suas vendas.");
-    await expect(page.getByRole("link", { name: "Better Studio" }).first().locator("img")).toHaveAttribute("alt", "Better Studio");
+    // o logo é decorativo (alt vazio): o nome "Better Studio" já está no texto do link do cabeçalho
+    const marca = page.getByRole("link", { name: "Better Studio" }).first();
+    await expect(marca.locator("img")).toHaveAttribute("alt", "");
+    await expect(marca).toContainText("Better Studio");
   });
 
   test("planos e preços como na referência, com o selo Recomendado e o produto adicional", async ({ page }) => {
