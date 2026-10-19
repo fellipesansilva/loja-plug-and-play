@@ -51,6 +51,8 @@ describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled && !p.c
     ...over,
   });
   const short = preset.shortId;
+  /** Trama e Órbita (moda e eletrônicos) têm arquivos de teste próprios; o Forno usa os dele. */
+  const own = short === "trama" || short === "orbita";
   const cat = preset.categories[0];
   const header = `sku;nome;preco;estoque;categoria;descricao;${preset.config.attributeDefs.map((d) => d.key).join(";")}`;
   const csv = (...rows: string[]) => [header, ...rows].join("\r\n");
@@ -68,7 +70,7 @@ describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled && !p.c
   });
 
   it("arquivo válido: cria e atualiza pelo SKU (arquivos de teste do repositório)", () => {
-    const file = short === "trama" ? "trama-valido.csv" : "forno-valido.csv";
+    const file = own ? `${short}-valido.csv` : "forno-valido.csv";
     const plan = planImport(fixture(file), ctx());
     expect(plan).toMatchObject({ ok: true, created: 2, updated: 1, errors: 0 });
     if (!plan.ok) return;
@@ -81,15 +83,15 @@ describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled && !p.c
   });
 
   it("preço em formato BR (vírgula, com aspas no ,) e com ponto; grava em centavos", () => {
-    const file = short === "trama" ? "trama-valido.csv" : "forno-valido.csv";
+    const file = own ? `${short}-valido.csv` : "forno-valido.csv";
     const plan = planImport(fixture(file), ctx());
     if (!plan.ok) throw new Error("plano");
     const prices = plan.rows.map((r) => r.product!.price);
-    expect(prices).toEqual(short === "trama" ? [12990, 7990, 19990] : [3490, 1490, 5990]);
+    expect(prices).toEqual(own ? [12990, 7990, 19990] : [3490, 1490, 5990]);
   });
 
   it("linhas inválidas: a prévia traz número da linha e motivo, e só as válidas entram", () => {
-    const file = short === "trama" ? "trama-linhas-invalidas.csv" : "forno-linhas-invalidas.csv";
+    const file = own ? `${short}-linhas-invalidas.csv` : "forno-linhas-invalidas.csv";
     const plan = planImport(fixture(file), ctx());
     expect(plan).toMatchObject({ ok: true, created: 1, updated: 1, errors: 6 });
     if (!plan.ok) return;
@@ -162,7 +164,7 @@ describe.each(presets.filter((p) => !p.config.modules.orcamento?.enabled && !p.c
 
   it("não grava nada: o planejamento não muda os produtos recebidos", () => {
     const before = structuredClone(preset.products);
-    planImport(fixture(short === "trama" ? "trama-valido.csv" : "forno-valido.csv"), ctx());
+    planImport(fixture(own ? `${short}-valido.csv` : "forno-valido.csv"), ctx());
     expect(preset.products).toEqual(before);
   });
 });

@@ -40,6 +40,7 @@ const corpusBySlug = {
   forno: strings("src/presets/forno-da-vila").join(" "),
   arca: strings("src/presets/arca-inflaveis").join(" "),
   faisca: strings("src/presets/faisca").join(" "),
+  orbita: strings("src/presets/orbita").join(" "),
 };
 
 // woff2 → ttf (o getVariation do fontkit não funciona direto em woff2)

@@ -21,10 +21,10 @@ describe("redirecionamentos legados (proxy)", () => {
     expect(call("/carrinho")).toEqual({ status: 308, to: "/trama/carrinho" });
     expect(call("/painel/produtos")).toEqual({ status: 308, to: "/trama/painel/produtos" });
   });
-  it("preset desconhecido na query cai no padrão", () => expect(call("/?preset=orbita")).toEqual({ status: 308, to: "/trama" }));
+  it("preset desconhecido na query cai no padrão", () => expect(call("/?preset=atlas")).toEqual({ status: 308, to: "/trama" }));
   it("rotas já prefixadas passam; desconhecidas passam para o 404", () => {
     expect(call("/forno/carrinho").status).toBe(200);
-    expect(call("/orbita").status).toBe(200);
+    expect(call("/atlas").status).toBe(200);
     expect(call("/xyz").status).toBe(200);
   });
   it("/trama?preset=forno tira o parâmetro redundante", () => expect(call("/trama?preset=forno")).toEqual({ status: 308, to: "/trama" }));
@@ -52,8 +52,8 @@ describe("onde o proxy roda (matcher)", () => {
     }
   });
 
-  it("caminhos desconhecidos sem ?preset= (/orbita, /xyz) não passam pelo proxy e caem no 404 da rota", () => {
-    expect(runs("/orbita")).toBe(false);
+  it("caminhos desconhecidos sem ?preset= (/atlas, /xyz) não passam pelo proxy e caem no 404 da rota", () => {
+    expect(runs("/atlas")).toBe(false);
     expect(runs("/xyz")).toBe(false);
   });
 

@@ -99,7 +99,7 @@ test.describe("H1 · módulo orçamento: loja sem preço", () => {
     await arca(page, "");
     await page.getByRole("button", { name: "Demo", exact: true }).click();
     const list = page.getByRole("list", { name: "Lojas da demonstração" });
-    await expect(list.getByRole("listitem")).toHaveText(["Trama Studio", "Forno da Vila", "Arca Infláveis", "Faísca"]);
+    await expect(list.getByRole("listitem")).toHaveText(["Trama Studio", "Forno da Vila", "Arca Infláveis", "Faísca", "Órbita"]);
     await expect(list.locator('[aria-current="true"]')).toHaveText("Arca Infláveis");
     await expect(list.getByRole("link", { name: "Trama Studio" })).toHaveAttribute("href", "/trama");
     const primary = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--t-color-primary").trim());

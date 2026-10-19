@@ -8,6 +8,7 @@ import { presets } from "./index";
 const expectedFreeShipping: Record<string, number> = {
   "trama-studio": 19900,
   "forno-da-vila": 8000,
+  orbita: 29900,
 };
 
 /**
