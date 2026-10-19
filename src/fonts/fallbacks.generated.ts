@@ -304,5 +304,80 @@ export const fallbackFaces: Record<string, FallbackFace[]> = {
       "lineGap": 0,
       "fallback": "Arial Bold"
     }
+  ],
+  "better": [
+    {
+      "family": "Sora",
+      "weight": 400,
+      "local": [
+        "Arial",
+        "Liberation Sans",
+        "Helvetica"
+      ],
+      "sizeAdjust": 112.05,
+      "ascent": 86.57,
+      "descent": 25.88,
+      "lineGap": 0,
+      "fallback": "Arial"
+    },
+    {
+      "family": "Sora",
+      "weight": 700,
+      "local": [
+        "Arial Bold",
+        "Arial-BoldMT",
+        "Liberation Sans Bold",
+        "Helvetica Bold"
+      ],
+      "sizeAdjust": 106.79,
+      "ascent": 90.83,
+      "descent": 27.16,
+      "lineGap": 0,
+      "fallback": "Arial Bold"
+    },
+    {
+      "family": "Sora",
+      "weight": 800,
+      "local": [
+        "Arial Bold",
+        "Arial-BoldMT",
+        "Liberation Sans Bold",
+        "Helvetica Bold"
+      ],
+      "sizeAdjust": 107.38,
+      "ascent": 90.33,
+      "descent": 27.01,
+      "lineGap": 0,
+      "fallback": "Arial Bold"
+    },
+    {
+      "family": "DM Sans",
+      "weight": 400,
+      "local": [
+        "Arial",
+        "Liberation Sans",
+        "Helvetica"
+      ],
+      "sizeAdjust": 103.59,
+      "ascent": 95.76,
+      "descent": 29.93,
+      "lineGap": 0,
+      "fallback": "Arial"
+    },
+    {
+      "family": "DM Sans",
+      "weight": 700,
+      "local": [
+        "Arial Bold",
+        "Arial-BoldMT",
+        "Liberation Sans Bold",
+        "Helvetica Bold"
+      ],
+      "sizeAdjust": 102.08,
+      "ascent": 97.18,
+      "descent": 30.37,
+      "lineGap": 0,
+      "fallback": "Arial Bold"
+    }
   ]
 };
