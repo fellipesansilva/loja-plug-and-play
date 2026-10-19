@@ -109,5 +109,23 @@
       "--font-manrope": "Manrope",
       "--font-barlow": "Barlow"
     }
+  },
+  "better": {
+    "faces": [
+      {
+        "family": "Sora",
+        "file": "sora-latin.woff2",
+        "weight": "400 800"
+      },
+      {
+        "family": "DM Sans",
+        "file": "dm-sans-latin.woff2",
+        "weight": "400 700"
+      }
+    ],
+    "vars": {
+      "--font-sora": "Sora",
+      "--font-dm-sans": "DM Sans"
+    }
   }
 }
